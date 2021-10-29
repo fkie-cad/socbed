@@ -1,0 +1,29 @@
+# YAML 1.2
+---
+cff-version: "1.2.0"
+message: "If you use this software, please cite both the paper from preferred-citation and the software itself."
+authors: 
+  - name: "SOCBED contributors"
+title: "SOCBED: A Self-Contained Open-Source Cyberattack Experimentation Testbed"
+repository-code: "https://github.com/fkie-cad/socbed"
+license: "GPL-3.0"
+preferred-citation:
+  type: "conference-paper"
+  authors: 
+    - family-names: "Uetz"
+      given-names: "Rafael"
+    - family-names: "Hemminghaus"
+      given-names: "Christian"
+    - family-names: "Hackländer"
+      given-names: "Louis"
+    - family-names: "Schlipper"
+      given-names: "Philipp"
+    - family-names: "Henze"
+      given-names: "Martin"
+  title: "Reproducible and Adaptable Log Data Generation for Sound Cybersecurity Experiments"
+  collection-title: "Annual Computer Security Applications Conference"
+  year: 2021
+  publisher:
+    name: "Association for Computing Machinery"
+    address: "New York, NY, USA"
+  doi: "10.1145/3485832.3488020"
