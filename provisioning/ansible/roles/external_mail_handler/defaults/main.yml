@@ -1,0 +1,8 @@
+---
+script: "external_mail_handler.py"
+script_dir: "/usr/bin"
+service_name: "externalmailhandler"
+script_path: "{{ script_dir }}/{{ script }}"
+exec_cmd: "/usr/bin/python3 {{ script_path }}"
+log_dir: "/var/log/breach"
+logrotate_config_path: "/etc/logrotate.d/breach"

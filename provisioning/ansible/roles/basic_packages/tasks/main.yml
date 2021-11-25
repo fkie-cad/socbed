@@ -1,0 +1,10 @@
+---
+#
+# Install Basic Packages
+#
+
+- name: Install Basic Packages
+  apt:
+    name: ['curl', 'apt-transport-https', 'lsb-release']
+    update_cache: yes 
+    state: present

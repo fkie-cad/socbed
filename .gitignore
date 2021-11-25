@@ -1,0 +1,67 @@
+### TOX and egg files
+.tox/
+*.egg-info
+
+### Editor backup files ###
+*~
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# py.test cache
+.cache/
+.pytest_cache
+
+# Created by https://www.gitignore.io/api/pycharm
+
+### Cache ###
+.cache/*
+
+# DS_STORE 
+.DS_STORE
+
+### PyCharm ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion,
+# Android Studio and Webstorm
+
+*.iml
+
+## Directory-based project format:
+.idea/
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Packer ISO files
+iso_files/
+packer_cache/
+
+# Packer exports (OVA and VDI files)
+exports/
+
+# Generated Malware
+provisioning/ansible/roles/generate_malware/files/
+
+# ISO files
+*.iso

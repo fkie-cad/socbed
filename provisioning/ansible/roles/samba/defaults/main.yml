@@ -1,0 +1,5 @@
+---
+share_path: "/srv/samba/breach-shared"
+realm: "BREACH.LOCAL"
+administrator_password: "breach"
+samba_conf_path: "/etc/samba/smb.conf"

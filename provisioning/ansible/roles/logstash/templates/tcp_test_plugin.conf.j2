@@ -1,0 +1,14 @@
+input {
+  tcp {
+    port => [6000]
+    type => "tcp_test_plugin"
+  }
+}
+
+output {
+  elasticsearch {
+    id => "elasticsearch_tcp_test_output"
+    hosts => ["172.16.0.3:9200"]
+    index => "tcp_test_plugin-%{+YYYY.MM.dd}"
+  }
+}

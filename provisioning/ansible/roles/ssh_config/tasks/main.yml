@@ -1,0 +1,18 @@
+- name: Install sshpass
+  apt:
+    name: sshpass
+    state: present
+    update_cache: yes
+    
+- name: Create .ssh directory
+  file:
+    path: /root/.ssh
+    state: directory
+    mode: 644
+    
+- name: Copy ssh config-file (ignore fingerprints)
+  copy:
+    src: files/config
+    dest: /root/.ssh/config
+    owner: root
+    mode: 644

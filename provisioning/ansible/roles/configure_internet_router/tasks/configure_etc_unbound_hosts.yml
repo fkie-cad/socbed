@@ -1,0 +1,4 @@
+- name: Replace old /etc/unbound/hosts
+  copy:
+    src: files/etc_unbound_hosts
+    dest: /etc/unbound/hosts

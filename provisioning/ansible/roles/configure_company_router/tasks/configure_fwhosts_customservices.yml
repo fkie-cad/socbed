@@ -1,0 +1,8 @@
+- name: Configure /var/ipfire/fwhosts/customservices
+  lineinfile:
+    path: /var/ipfire/fwhosts/customservices
+    line: "{{ item }}"
+  with_items:
+    - 37,syslog (tcp),514,TCP,BLANK
+    - 38,Wazuh Communication,1514,TCP,BLANK
+    - 39,Wazuh Registration,1515,TCP,BLANK,

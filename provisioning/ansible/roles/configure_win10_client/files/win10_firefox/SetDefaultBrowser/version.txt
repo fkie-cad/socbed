@@ -1,0 +1,36 @@
+this is version 1.5
+===================
+
+Release Notes:
+==============
+
+version 1.5 - Supports Side-by-side Edge installations
+version 1.4 - Added Support for Microsoft Edge Chromium
+version 1.3 - Support for ALL Browsers, delay parameter, full Unicode, EULA added
+version 1.2 - Windows 8.x and Server 2012/R2 supported
+version 1.1 - adds support for Windows 1703 and 1709
+version 1.0 - first public version
+
+HOW TO:
+=======
+
+run SetDefaultBrowser without parameters to list all Browsers on your system. then use 
+
+  SetDefaultBrowser.exe hive browser
+
+to change the default browser.
+
+Examples:
+=========
+
+  SetDefaultBrowser HKLM IEXPLORE.EXE
+  SetDefaultBrowser HKLM "Microsoft Edge"
+  SetDefaultBrowser HKLM FIREFOX.EXE delay=1000
+  SetDefaultBrowser HKCU "Google Chrome" group=ChromeUsers
+
+  SetDefaultBrowser edge
+  SetDefaultBrowser edgelegacy
+  SetDefaultBrowser chrome
+  SetDefaultBrowser ie
+
+visit my blog for more information: http://kolbi.cz/blog/?p=396

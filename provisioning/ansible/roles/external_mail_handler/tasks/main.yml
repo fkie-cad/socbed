@@ -1,0 +1,48 @@
+---
+#
+# Adds externalmailhandler systemd service and enables it to run on startup
+# Additionally, creates a logrotate config file for logs
+#
+
+- name: "Create script directory {{ script_dir }}"
+  file:
+    path: "{{ script_dir }}"
+    state: directory
+
+- name: "Copy the script to fixed destination"
+  copy:
+    src: "../../../../Attacker/externalmailhandler/{{ script }}"
+    dest: "{{ script_path }}"
+
+- name: "Create log directory {{ log_dir }}"
+  file:
+    path: "{{ log_dir }}"
+    state: directory
+
+- name: "Create logrotate config"
+  blockinfile:
+    path: "{{ logrotate_config_path }}"
+    create: yes
+    block: |
+      /var/log/breach/external_mail_handler.log {
+        daily
+        rotate 365
+        create
+        missingok
+        notifempty
+      }
+
+- name: "Install script as a systemd service file"
+  template:
+    src: "../templates/{{ service_name }}.service.j2"
+    dest: "/etc/systemd/system/{{ service_name }}.service"
+    owner: root
+    group: root
+    mode: '0664'
+
+- name: "Force systemd to reread configs and enable the script to run at startup"
+  systemd:
+    name: "{{ service_name }}"
+    daemon_reload: yes
+    enabled: yes
+    state: started

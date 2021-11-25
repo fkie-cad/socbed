@@ -1,0 +1,26 @@
+---
+
+- name: Install Firefox
+  win_chocolatey:
+    name: firefox
+    state: present
+    architecture: x86
+    version: 38.0.5
+    pinned: yes
+
+- name: Copy override.ini
+  win_copy:
+    src: files/win10_firefox/override.ini
+    dest: C:\Program Files (x86)\Mozilla Firefox\browser\override.ini
+    
+- name: Copy local-settings.js
+  win_copy:
+    src: files/win10_firefox/local-settings.js
+    dest: C:\Program Files (x86)\Mozilla Firefox\defaults\pref\local-settings.js
+
+- name: Copy mozilla.cfg
+  win_copy:
+    src: files/win10_firefox/mozilla.cfg
+    dest: C:\Program Files (x86)\Mozilla Firefox\mozilla.cfg
+
+- include: set_default_browser.yml

@@ -1,0 +1,5 @@
+- name: Create symbolik link for syslog logs
+  file:
+    src: /var/log/messages
+    dest: /var/log/syslog
+    state: link

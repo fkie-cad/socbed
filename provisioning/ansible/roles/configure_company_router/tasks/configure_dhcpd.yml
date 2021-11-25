@@ -1,0 +1,20 @@
+- name: Replace old dhcpd.conf in /var/ipfire/dhcp
+  copy:
+    src: files/dhcpd.conf
+    dest: /var/ipfire/dhcp/dhcpd.conf
+
+- name: Replace old dhcpd.conf in /etc/dhcp
+  copy:
+    src: files/dhcpd.conf
+    dest: /etc/dhcp/dhcpd.conf
+
+- name: Replace old fixleases in /var/ipfire/dhcp
+  copy:
+    src: files/fixleases
+    dest: /var/ipfire/dhcp/fixleases
+
+- name: Replace old settings in /var/ipfire/dhcp
+  copy:
+    src: files/settings
+    dest: /var/ipfire/dhcp/settings
+

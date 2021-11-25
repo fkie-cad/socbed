@@ -1,0 +1,39 @@
+# Source: https://github.com/Ableton/windows-openssh
+
+---
+- name: SSH - Create temporary directory
+  win_file:
+    path: "{{ openssh_temporary_dir }}"
+    state: directory
+
+- name: SSH - Get openssh for windows release
+  win_get_url:
+    url: "{{ openssh_download_url }}"
+    dest: "{{ openssh_temporary_dir }}\\openssh.zip"
+
+- name: SSH - Unzip openssh in extraction dir
+  win_unzip:
+    src: "{{ openssh_temporary_dir }}\\openssh.zip"
+    dest: "{{ openssh_extract_dir }}"
+    creates: "{{ openssh_extract_dir }}"
+
+- name: SSH - Check if ssh private key exists
+  win_stat: path="{{ openssh_extract_dir }}\\{{ openssh_archive_name }}\\ssh_host_dsa_key"
+  register: private_key
+
+- name: SSH - Copy installation script
+  win_template:
+    src: "{{ role_path }}/templates/install-openssh.ps1.j2"
+    dest: "C:\\install-openssh.ps1"
+  when: not private_key.stat.exists
+
+- name: SSH - Run installation script
+  raw: "C:\\install-openssh.ps1"
+  when: not private_key.stat.exists
+
+- name: SSH - Deploy ssh server configuration
+  win_template:
+    src: "{{ role_path }}/templates/sshd_config.j2"
+    dest: "{{ openssh_extract_dir }}\\{{ openssh_archive_name }}\\sshd_config"
+  notify:
+    - restart sshd

@@ -1,0 +1,4 @@
+- name: Replace old /var/ipfire/loggings/settings
+  copy:
+    src: files/logging_settings
+    dest: /var/ipfire/logging/settings

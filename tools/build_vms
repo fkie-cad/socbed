@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+VM_NAMES=(
+	"Internet Router"
+	"Company Router"
+	"Attacker"
+	"Log Server"
+	"Internal Server"
+	"DMZ Server"
+	"Client"
+)
+
+SCRIPT_NAMES=(
+	"build_internetrouter"
+	"build_companyrouter"
+	"build_attacker"
+	"build_logserver"
+	"build_internalserver"
+	"build_dmzserver"
+	"build_client"
+)
+
+TASK_QTY=8
+
+if [[ "$PWD" != *"socbed" ]]; then
+	printf "Current directory must be root directory of the SOCBED repository! Exiting...\n"
+	exit 1
+fi
+
+if [[ ${#VM_NAMES[@]} != ${#SCRIPT_NAMES[@]} ]]; then
+	printf "Error in script!
+Number of VMs to build doesn't match number of available build scripts. Exiting...\n"
+	exit 1
+fi
+
+for ((count = 0; count < ${#VM_NAMES[@]}; count++)); do
+	printf "\e[1;4mTask $(($count+1))/$TASK_QTY: ${VM_NAMES[$count]} build\e[0m\n"
+	if ! vboxmanage showvminfo "${VM_NAMES[$count]}" > /dev/null 2>&1;then
+		CMD="source ./tools/${SCRIPT_NAMES[$count]}"
+		eval $CMD
+	else
+		printf "${VM_NAMES[$count]} already exists. Skipping task.\n\n"
+	fi
+done
+
+
+# Logging Setup
+printf "\e[1;4mTask 8/$TASK_QTY: Logging setup\e[0m\n"
+if ! vboxmanage snapshot "Log Server" list | grep -q "pre_logging_setup"; then
+	source ./tools/logging_setup
+else
+	printf "Logging setup has already been executed on the present machines. Skipping Task.\n\n"
+fi
+

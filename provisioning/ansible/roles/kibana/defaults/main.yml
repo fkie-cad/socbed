@@ -1,0 +1,5 @@
+---
+elasticsearch_hosts: "http://localhost:{{ elasticsearch_port }}"
+kibana_server_host: "0.0.0.0"
+kibana_port: 5601  # Overwritten in group_vars/all/settings.yml, because it is shared with other roles
+kibana_version: "{{ elastic_stack_version }}"

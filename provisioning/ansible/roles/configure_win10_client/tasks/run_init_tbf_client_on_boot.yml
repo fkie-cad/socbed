@@ -1,0 +1,6 @@
+- name: Create a shortcut to the init_tbf_client-script inside the autostart-folder (for all users)
+  win_shortcut:
+    src: C:\BREACH\init_tbf_client.py
+    dest: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\init_tbf_client.lnk
+    directory: C:\BREACH
+    state: present

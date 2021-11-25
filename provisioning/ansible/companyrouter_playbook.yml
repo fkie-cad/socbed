@@ -1,0 +1,10 @@
+---
+- hosts: companyrouter
+  become: yes
+  gather_facts: true
+
+  roles:
+    - configure_company_router
+    - rsyslog_install_ipfire
+    - rsyslog_ISO8601
+    - rsyslog_forwarding

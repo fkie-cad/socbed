@@ -1,0 +1,8 @@
+---
+#
+# Copies the spearphishing content to the attacker
+#
+- name: "Extract {{ bank_archive }} into {{ vhost_path }}"
+  unarchive:
+    src: "{{ bank_archive }}"
+    dest: "{{ vhost_path }}"

@@ -1,0 +1,15 @@
+- name: Edit lines in /var/ipfire/time/settings
+  lineinfile:
+    path: /var/ipfire/time/settings
+    regexp: "{{ item.old }}"
+    line: "{{ item.new }}"
+  with_items:
+    - { old: ENABLECLNTP=off, new: ENABLECLNTP=on}
+    - { old: ENABLESETONBOOT=on, new: ENABLESETONBOOT=off}
+    - { old: NTP_ADDR_1=0\.ipfire\.pool\.ntp\.org, new: NTP_ADDR_1=172.18.0.1}
+    - { old: NTP_ADDR_2=1\.ipfire\.pool\.ntp\.org, new: NTP_ADDR_2=}
+
+- name: Copy /var/ipfire/time/settime.conf
+  copy:
+    src: files/time_settime.conf
+    dest: /var/ipfire/time/settime.conf

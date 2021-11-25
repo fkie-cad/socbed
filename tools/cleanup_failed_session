@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+VM_NAMES=(
+	"Attacker"
+	"Client"
+	"Company Router"
+	"DMZ Server"
+	"Log Server"
+	"Internal Server"
+	"Internet Router"
+)
+RUNNING_VMS=`vboxmanage list runningvms | sed -e 's/["a-zA-Z0-9 ]*//'`
+CLONED_VMS=`vboxmanage list vms | grep 'Clone'| sed -e 's/["a-zA-Z0-9 ]*//'`
+
+echo "Powering off any VMs that are still running..."
+IFS=$'\n'
+for RUNNINGVM in ${RUNNING_VMS[@]}; do
+	if ! vboxmanage showvminfo "$RUNNINGVM" | grep -q "BREACH"; then
+		continue
+	fi
+	vboxmanage controlvm $RUNNINGVM poweroff
+done
+echo -e "Done.\n"
+
+echo "Deleting any remaining clones..."
+for CLONEVM in ${CLONED_VMS[@]}; do
+	vboxmanage unregistervm $CLONEVM --delete
+done
+echo -e "Done.\n"
+
+echo "Deleting backup snapshots and restoring the original one..."
+for VMNAME in ${VM_NAMES[@]}; do
+	if ! vboxmanage showvminfo "$VMNAME" > /dev/null 2>&1;then
+		printf "$VMNAME doesn't exist!\n"
+		continue
+	fi
+	SNAPSHOTS=`vboxmanage snapshot "$VMNAME" list | grep -E ' *Name: Backup[0-9]* \(UUID: ([a-z0-9-])+\)'`
+	for SNAPSHOT in $SNAPSHOTS; do
+		SNAPSHOT_UUID=`echo $SNAPSHOT | sed -e 's/ *Name: Backup[0-9]* (UUID: //' | sed -e 's/).*//'`
+		vboxmanage snapshot "$VMNAME" delete $SNAPSHOT_UUID 
+	done
+	vboxmanage snapshot "$VMNAME" restorecurrent
+done
+echo "Done."

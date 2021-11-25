@@ -1,0 +1,16 @@
+install_elk: true
+install_kafka: true
+install_spark: true
+elasticdump_version: 4.2.0
+process_syslog_data: false
+# true:  forwarding logs to Kafka for processing the logs
+# false: write unchanged raw logs to Elasticsearch
+process_win_event_log_data: false
+# true: forwarding logs to Kafka for processing the logs
+# false: write unchanged raw logs to Elasticsearch
+customize_kibana: false
+# kibana_customizing are tasks for automatically adding indices
+# in Kibana, does not work properly, so currently disabled
+kafka_broker_ip: 172.16.0.3
+kafka_advertised_listeners: 172.16.0.3
+kibana_server_host: 0.0.0.0

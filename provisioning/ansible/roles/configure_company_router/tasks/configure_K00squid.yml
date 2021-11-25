@@ -1,0 +1,9 @@
+- name: Replace old K00squid in /etc/rc.d/rc0.d
+  copy:
+    src: files/K00squid
+    dest: /etc/rc.d/rc0.d/K00squid
+
+- name: Replace old K00squid in /etc/rc.d/rc6.d
+  copy:
+    src: files/K00squid
+    dest: /etc/rc.d/rc6.d/K00squid

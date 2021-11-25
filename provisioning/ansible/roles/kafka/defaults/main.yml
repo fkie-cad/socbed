@@ -1,0 +1,17 @@
+---
+kafka_version:                  kafka_2.11-2.3.1
+kafka_url:                      https://archive.apache.org/dist/kafka/2.3.1/{{ kafka_version }}.tgz
+kafka_install_dir:              /usr/share/
+kafka_bin_tmp_archive:          "/tmp/kafka.tgz"
+kafka_dir:                      "{{ kafka_install_dir }}kafka/"
+kafka_zookeeper_data_dir:       /var/zookeeper/data_dir
+kafka_log_data_dir:             /var/kafka/log_data
+java_dir:                       /usr/lib/jvm/java-8-openjdk-amd64
+kafka_port:                     9092
+zookeeper_port:                 2181
+
+# Topics
+topic_syslog_raw:               syslog_raw
+topic_syslog_processed:         syslog_processed
+topic_wineventlog_raw:          wineventlog_raw
+topic_wineventlog_processed:    wineventlog_processed

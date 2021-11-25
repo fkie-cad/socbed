@@ -1,0 +1,20 @@
+- name: Copy suricata configuration files
+  copy:
+    src: "{{ item }}"
+    dest: "/var/ipfire/suricata/"
+  with_fileglob:
+    - "files/suricata/configs/*"
+
+- name: Unarchive suricata rule files to cr
+  unarchive:
+    src: "files/suricata/rules.tar.xz"
+    dest: "/var/lib/suricata/"
+
+- name: Add syslog output to /etc/suricata/suricata.yaml
+  lineinfile:
+    path: "/etc/suricata/suricata.yaml"
+    insertafter: "^outputs:"
+    line: "  # Output alerts to syslog\n  - syslog:\n      enabled: yes\n      facility: local5\n"
+
+- name: Reboot after suricata config
+  reboot:

@@ -1,0 +1,6 @@
+---
+elasticsearch_version:        "{{ elastic_stack_version }}"
+elasticsearch_port:           9200  # Overwritten in group_vars/all/settings.yml, because it is shared with other roles
+cluster_name:                 logserver-cluster
+node_name:                    logserver
+cluster_initial_master_nodes: logserver

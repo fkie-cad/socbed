@@ -1,0 +1,4 @@
+- name: Replace old /etc/hosts
+  copy:
+    src: files/etc_hosts
+    dest: /etc/hosts

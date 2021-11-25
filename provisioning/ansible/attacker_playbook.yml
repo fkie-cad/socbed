@@ -1,0 +1,33 @@
+---
+- hosts: attacker
+  become: yes
+  gather_facts: true
+
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+
+  pre_tasks:
+    - name: "Add 172.18.0.3 attacker line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '172.18.0.3	attacker'
+        state: present
+
+    - name: "Remove 127.0.1.1 attacker line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '127.0.1.1	attacker'
+        state: absent
+
+
+  roles:
+    - ntp_kali
+    - ftp
+    - external_mail_handler
+    - sqlmap_wordlist
+    - rsyslog_ISO8601
+    - virtualhost
+    - browser_exploit_server
+    - spearphishing
+    - generate_malware
+    - ssh_config

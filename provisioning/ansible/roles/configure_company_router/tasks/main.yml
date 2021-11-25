@@ -1,0 +1,17 @@
+- include: configure_suricata.yml
+- include: configure_dhcpd.yml
+- include: configure_fwhosts_customservices.yml
+- include: configure_hosts.yml
+- include: configure_K00squid.yml
+- include: configure_loggings_settings.yml
+- include: configure_ntp.yml
+- include: configure_proxy_advanced.yml
+- include: configure_proxy_cachemgr.yml
+- include: configure_proxy_settings.yml
+- include: configure_proxy_viewersettings.yml
+- include: configure_squid.yml
+- include: configure_squid_cachemgr.yml
+- include: configure_syslog.yml
+- include: configure_time_settings.yml
+- include: create_ipfire_proxy_enable.yml
+- include: create_symbolic_link_for_syslog.yml

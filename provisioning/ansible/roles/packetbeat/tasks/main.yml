@@ -1,0 +1,25 @@
+- name: Download packetbeat to /tmp
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/beats/packetbeat/{{ packetbeat_name }}.tar.gz"
+    dest: "/tmp"
+    
+- name: Unpack packetbeat files to /opt/
+  unarchive:
+    src: /tmp/{{ packetbeat_name }}.tar.gz
+    dest: /opt
+    remote_src: yes
+    
+- name: Copy packetbeat configuration file to companyrouter
+  copy:
+    src: files/packetbeat.yml
+    dest: "/opt/{{ packetbeat_name }}/packetbeat.yml"
+    
+- name: Run setup with custom configuration
+  command:
+    cmd: ./packetbeat setup -e
+    chdir: "/opt/{{ packetbeat_name }}/"
+  
+- name: Configure rc.local to run packetbeat on startup
+  lineinfile:
+    path: /etc/sysconfig/rc.local
+    line: "/opt/{{ packetbeat_name }}/packetbeat --path.config /opt/{{ packetbeat_name }}/ &"

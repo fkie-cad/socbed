@@ -1,0 +1,10 @@
+---
+#
+# Install Basic Tools
+#
+
+- name: Install Basic Tools
+  apt: 
+    name: ['tree', 'htop']
+    state: present
+    update_cache: yes

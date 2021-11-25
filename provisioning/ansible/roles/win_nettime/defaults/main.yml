@@ -1,0 +1,3 @@
+---
+nettime_reg_path: 'HKLM:\Software\Subjective Software\NetTime'
+ntp_server: "172.16.0.1"

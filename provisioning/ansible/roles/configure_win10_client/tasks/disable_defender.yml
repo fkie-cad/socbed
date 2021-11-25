@@ -1,0 +1,7 @@
+- name: Install disabledefender-winconfig v{{ disable_defender_version }}
+  win_chocolatey:
+    name: disabledefender-winconfig
+    state: present
+    version: "{{ disable_defender_version }}"
+    pinned: yes
+

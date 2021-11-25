@@ -1,0 +1,121 @@
+{
+  "_comment": "This is a packer template for Attacker",
+  "builders": [
+    {
+      "boot_command": [
+        "<wait><esc><wait>",
+        "/install.amd/vmlinuz ",
+        "initrd=/install.amd/initrd.gz ",
+        "auto-install/enable=true ",
+        "debconf/priority=critical ",
+        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ",
+        "netcfg/choose_interface=enp0s8 ",
+        "netcfg/disable_autoconfig=true ",
+        "netcfg/get_ipaddress=192.168.56.31 ",
+        "netcfg/get_netmask=255.255.255.0 ",
+        "netcfg/get_gateway=192.168.56.1 ",
+        "netcfg/get_nameservers=192.168.56.1 ",
+        "netcfg/confirm_static=true ",
+        "netcfg/get_hostname=attacker ",
+        "netcfg/get_domain=breach.local ",
+        "console-setup/ask_detect=false ",
+        "<enter>"
+      ],
+      "boot_keygroup_interval": "500ms",
+      "boot_wait": "5s",
+      "disk_size": "16384",
+      "export_opts": [
+        "--manifest",
+        "--vsys",
+        "0",
+        "--description",
+        "{{user `vm_description`}}",
+        "--version",
+        "{{user `vm_version`}}"
+      ],
+      "format": "ova",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "Debian_64",
+      "headless": "true",
+      "http_directory": "http",
+      "iso_checksum": "sha1:fc46ccdbccda8723aae257f190182b4ac41e91bd",
+      "iso_urls": [
+        "https://cdimage.kali.org/kali-2021.1/kali-linux-2021.1-installer-amd64.iso"
+      ],
+      "keep_registered": "true",
+      "memory": "1024",
+      "output_directory": "{{user `vm_output`}}",
+      "shutdown_command": "echo 'breach' | sudo -S shutdown -P now",
+      "skip_export": "true",
+      "ssh_clear_authorized_keys": "true",
+      "ssh_host": "{{user `ssh_host_addr`}}",
+      "ssh_password": "breach",
+      "ssh_port": "22",
+      "ssh_skip_nat_mapping": "true",
+      "ssh_timeout": "60m",
+      "ssh_username": "breach",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "intnet",
+          "--intnet1",
+          "Internet",
+          "--nic2",
+          "hostonly",
+          "--hostonlyadapter2",
+          "vboxnet0"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--rtcuseutc",
+          "on"
+        ]
+      ],
+      "vboxmanage_post": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--groups",
+          "/SOCBED"
+        ],
+        [
+          "snapshot",
+          "{{.Name}}",
+          "take",
+          "{{user `vm_version`}}"
+        ]
+      ],
+      "vm_name": "Attacker"
+    }
+  ],
+  "provisioners": [
+    {
+      "expect_disconnect": "true",
+      "script": "./post_install/attacker_setup.sh",
+      "timeout": "2m",
+      "type": "shell"
+    },
+    {
+      "extra_arguments": [
+        "-i",
+        "../ansible/hosts"
+      ],
+      "pause_before": "2m",
+      "playbook_file": "../ansible/attacker_playbook.yml",
+      "type": "ansible"
+    }
+  ],
+  "variables": {
+    "host_ip_addr": "192.168.56.1",
+    "ssh_host_addr": "192.168.56.31",
+    "vm_description": "SOCBED: Attacker",
+    "vm_version": "fresh",
+    "vm_output": "./exports/attacker"
+  }
+}
+
+

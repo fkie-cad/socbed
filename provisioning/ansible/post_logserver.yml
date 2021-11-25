@@ -1,0 +1,22 @@
+---
+- hosts: logserver
+  become: yes
+  gather_facts: true
+
+  tasks:
+    - name: "Create kibana index pattern for syslogs"
+      uri:
+        url: http://127.0.0.1:5601/api/saved_objects/index-pattern/syslog-*
+        method: POST
+        headers:
+          Content-Type: application/json
+          kbn-xsrf: true
+        body: '{ "attributes": { "title": "syslog-*", "timeFieldName": "@timestamp" } }'
+        status_code: 200
+        
+# curl command in case you want to do this manually:
+#     curl \
+#     -X POST "localhost:5601/api/saved_objects/index-pattern/syslog-*" \
+#     -H 'kbn-xsrf: true' \
+#     -H 'Content-Type: application/json' \
+#     -d '{ "attributes": { "title": "syslog-*", "timeFieldName": "@timestamp" } }'

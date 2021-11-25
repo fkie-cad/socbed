@@ -1,0 +1,16 @@
+---
+- name: Add Port-Forwarding for 172.16.0.3 514 -> 5514 
+  shell: iptables -A PREROUTING -t nat -i enp0s3 -p tcp --dport 514 -j DNAT --to 172.16.0.3:5514
+
+- name: Debconf installation selection true for ipv4
+  shell: echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+
+- name: Debconf installation selection true for ipv6
+  shell: echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+
+- name: Install iptables-persistent
+  apt:
+    name: ['iptables-persistent']
+    update_cache: yes
+    force_apt_get: yes
+    state: present

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+export http_proxy=''
+export https_proxy=''
+
+TOKEN=`curl -s http://127.0.0.1/dvwa/setup.php --cookie-jar dvwa.jar | grep token | cut -f 6 -d "'"`
+
+curl -s -k -X POST \
+--cookie dvwa.jar \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+--data-binary "create_db=Create+%2F+Reset+Database&user_token=$TOKEN" \
+http://127.0.0.1/dvwa/setup.php

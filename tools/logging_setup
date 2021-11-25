@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+printf "Starting logging setup. Please allow up to 20 minutes.\n"
+./tools/cleanup_failed_session  > /dev/null 2>&1
+
+vboxmanage startvm "Internet Router" --type headless
+vboxmanage startvm "Company Router" --type headless
+vboxmanage startvm "Log Server" --type headless
+export ANSIBLE_HOST_KEY_CHECKING=False
+cd ./provisioning/ansible/
+
+ansible_failure () {
+	printf "Ansible exited with non-zero return code.\nResetting all previously built machines to their old snapshots...\n"
+	../../tools/cleanup_failed_session  > /dev/null 2>&1
+	exit 1
+}
+
+echo "Sleep for 180 seconds to ensure the elasticsearch-service (Log Server) is up and running..."
+sleep 180
+
+echo "Running playbook post_companyrouter"
+ansible-playbook -i hosts post_companyrouter.yml
+if [ $? != 0 ]; then ansible_failure; fi
+
+echo "Running playbook post_logserver"
+ansible-playbook -i hosts post_logserver.yml
+if [ $? != 0 ]; then ansible_failure; fi
+
+vboxmanage controlvm "Company Router" acpipowerbutton
+vboxmanage controlvm "Log Server" acpipowerbutton
+echo "Wait until Log Server and Company Router shut down completely before taking snapshot..."
+
+for i in {1..300}; do
+  sleep 1
+  if ! vboxmanage list runningvms | grep -q "Log Server\|Company Router"; then
+    break
+  fi
+done
+sleep 5
+
+vboxmanage snapshot "Company Router" edit "fresh" --name "pre_logging_setup"
+vboxmanage snapshot "Log Server" edit "fresh" --name "pre_logging_setup"
+vboxmanage snapshot "Company Router" take "fresh"
+vboxmanage snapshot "Log Server" take "fresh"
+
+cd ../..
+./tools/cleanup_failed_session  > /dev/null 2>&1
+printf "Task finished.\n\n"

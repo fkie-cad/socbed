@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+printf "Starting Internal Server build. Please allow up to 40 minutes.\n"
+./tools/cleanup_failed_session  > /dev/null 2>&1
+
+vboxmanage startvm "Internet Router" --type headless
+vboxmanage startvm "Company Router" --type headless
+vboxmanage startvm "Log Server" --type headless
+export ANSIBLE_HOST_KEY_CHECKING=False
+cd ./provisioning/packer/
+
+echo "Sleep for 180 seconds to ensure the elasticsearch-service (Log Server) is up and running..."
+sleep 180
+
+if [ -n "$1" ] && [ $1 == "runner" ]; then
+export PACKER_CACHE_DIR=/usr/share/runner-dependencies
+packer build -force -var 'vm_output=/usr/share/runner-dependencies/internalserver' internalserver.json
+else
+packer build -force internalserver.json
+fi
+
+if [ $? != 0 ]; then
+	printf "Packer exited with non-zero return code.\nResetting all previously built machines to their old snapshots...\n"
+	../../tools/cleanup_failed_session  > /dev/null 2>&1
+	exit 1
+fi
+
+vboxmanage controlvm "Log Server" acpipowerbutton
+echo "Wait until the Log Server shuts down completely before taking snapshot..."
+
+for i in {1..300}; do
+  sleep 1
+  if ! vboxmanage list runningvms | grep -q "Log Server"; then
+    break
+  fi
+done
+sleep 5
+
+vboxmanage snapshot "Log Server" edit "fresh" --name "pre_internalserver_build"
+vboxmanage snapshot "Log Server" take "fresh"
+
+cd ../..
+./tools/cleanup_failed_session  > /dev/null 2>&1
+printf "Task finished.\n\n"

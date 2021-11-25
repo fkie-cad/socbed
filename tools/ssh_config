@@ -1,0 +1,30 @@
+# OpenSSH SSH client configuration file for connecting to
+# the SOCBED virtual machines over their management network.
+# This can be handy for development and testing.
+
+Host attacker
+	Hostname 192.168.56.31
+	Port 22
+
+Host companyrouter
+	Hostname 192.168.56.10
+	Port 222
+
+Host dmzserver
+	Hostname 192.168.56.20
+	Port 22
+
+Host internalserver
+	Hostname 192.168.56.11
+	Port 22
+
+Host internetrouter
+	Hostname 192.168.56.30
+	Port 222
+
+Host logserver
+	Hostname 192.168.56.12
+	Port 22
+
+Host *
+	User root

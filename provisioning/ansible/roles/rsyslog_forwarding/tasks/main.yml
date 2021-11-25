@@ -1,0 +1,13 @@
+---
+- name: Configure rsyslog to forward to log server
+  template:
+    src: 99-logserver.conf.j2
+    dest: /etc/rsyslog.d/99-logserver.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted

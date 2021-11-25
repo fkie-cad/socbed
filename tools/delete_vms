@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+./tools/cleanup_failed_session  > /dev/null 2>&1
+
+VM_NAMES=(
+	"Internet Router"
+	"Company Router"
+	"Attacker"
+	"Log Server"
+	"DMZ Server"
+	"Internal Server"
+	"Client"
+)
+
+echo "Deleting all SOCBED VMs..."
+for VMNAME in "${VM_NAMES[@]}"; do
+	if vboxmanage unregistervm --delete "$VMNAME" > /dev/null 2>&1; then
+		echo "$VMNAME successfully deleted"
+	else
+		echo "Cannot delete $VMNAME: VM doesn't exist"
+	fi
+done
+
+vbox_path=`VBoxManage list systemproperties | grep -i "default machine folder:" \
+    | cut -b 24- | awk '{gsub(/^ +| +$/,"")}1'`
+socbed_path="${vbox_path}/SOCBED"
+echo "Deleting SOCBED VM directory..."
+rm -r "$socbed_path"
+echo "Done."

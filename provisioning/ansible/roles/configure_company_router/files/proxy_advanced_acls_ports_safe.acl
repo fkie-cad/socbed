@@ -1,0 +1,5 @@
+80 # http
+21 # ftp
+443 # https
+1025-65535 # unregistered ports
+8080 # Squids port (for icons)

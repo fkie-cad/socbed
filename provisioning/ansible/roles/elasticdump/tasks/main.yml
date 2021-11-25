@@ -1,0 +1,16 @@
+---
+#
+# Install Elasticdump
+#
+
+# install in /usr/share/node_modules/elasticdump/bin
+- name: Install elasticdump
+  npm: 
+    name: elasticdump
+    version: "{{ elasticdump_version }}" 
+    path: /usr/share/
+
+- name: Add elastidcump bin dir to system-wide $PATH.
+  copy:
+    dest: /etc/profile.d/elasticdump.sh
+    content: 'PATH=$PATH:/usr/share/node_modules/elasticdump/bin'

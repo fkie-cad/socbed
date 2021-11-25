@@ -1,0 +1,10 @@
+---
+- name: Add Elastic apt key
+  apt_key:
+    url: "https://packages.elastic.co/GPG-KEY-elasticsearch"
+    state: present
+
+- name: Add Elastic repo
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/{{ elastic_stack_repository_version }}/apt stable main
+    state: present

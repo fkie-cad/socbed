@@ -1,0 +1,5 @@
+---
+php_ini_path: "/etc/php/7.0/apache2/php.ini"
+dvwapage_inc_php_path: "/var/www/html/dvwa/dvwa/includes/dvwaPage.inc.php"
+dvwa_config_inc_path: "/var/www/html/dvwa/config/config.inc.php"
+sqli_index_path: "/var/www/html/dvwa/vulnerabilities/sqli/index.php"

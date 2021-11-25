@@ -1,0 +1,32 @@
+---
+- hosts: internalserver 
+  become: true
+  gather_facts: true
+
+  vars:
+    logserver_ip: 172.16.0.3
+    ansible_python_interpreter: "/usr/bin/python3"
+    auditbeat_version: 7.3.2
+
+  # These may not be necessary
+  tasks:
+    - name: "Add 172.16.0.2 internalserver line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '172.16.0.2	internalserver'
+        state: present
+
+    - name: "Remove 127.0.1.1 internalserver line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '127.0.1.1	internalserver'
+        state: absent
+
+  roles:
+    - basic_packages
+    - basic_tools
+    - auditbeat
+    - ntp
+    - rsyslog_ISO8601
+    - rsyslog_forwarding
+    - samba

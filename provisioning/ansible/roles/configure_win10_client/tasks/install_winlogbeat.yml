@@ -1,0 +1,36 @@
+# Do note that, when running this role manually, the "Install winlogbeat as a service"- and
+# "Run setup with custom configuration"-tasks will only be attempted if winlogbeat is not
+# already installed. If either of these task fails and you want to run this role again, you should
+# uninstall winlogbeat from the respective machine, otherwise these tasks will not trigger.
+
+- name: Install Winlogbeat (pinned v{{ winlogbeat_version }})
+  win_chocolatey:
+    name: winlogbeat
+    state: present
+    version: "{{ winlogbeat_version }}"
+    pinned: yes
+  register: winlogbeat_key
+    
+- name: Copy Winlogbeat config to client
+  win_copy:
+    src: files/winlogbeat/winlogbeat.yml
+    dest: "{{ winlogbeat_tools_path }}winlogbeat.yml"
+    force: yes
+    
+- name: Install winlogbeat as a service
+  win_shell: .\install-service-winlogbeat.ps1
+  args:
+    chdir: "{{ winlogbeat_tools_path }}"
+  when: winlogbeat_key.changed
+  
+- name: Run setup with custom configuration
+  win_shell: .\winlogbeat.exe setup -e
+  args:
+    chdir: "{{ winlogbeat_tools_path }}"
+  when: winlogbeat_key.changed
+    
+- name: Start winlogbeat-service
+  win_service:
+    name: winlogbeat
+    state: started
+    

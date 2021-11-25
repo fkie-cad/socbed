@@ -1,0 +1,26 @@
+---
+
+- name: Install Winlogbeat 6.3.1 (pinned version)
+  win_chocolatey:
+    name: winlogbeat
+    state: present
+    architecture: x86
+    version: 6.3.1
+    pinned: yes
+
+- name: Copy configuration settings
+  win_copy:
+    src: files/winlogbeat.yml
+    dest: C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat-6.3.1-windows-x86\winlogbeat.yml
+
+# NOTE:
+#
+# We didn't add the kafka output to the winlogbeat.yml.
+# It was mentioned in the wiki (as optional) and wasn't
+# present in the original config. So, we used the same config.
+#
+# Add this to files/winlogbeat.yml if you'd like to include that:
+#
+# output.kafka:
+#   hosts: ["172.16.0.3:9092"]
+#   topic: 'topic_wineventlog_raw'

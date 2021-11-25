@@ -1,0 +1,67 @@
+---
+- name: Add apt repository for php7.0
+  apt_repository:
+    repo: ppa:ondrej/php
+
+- name: Run the equivalent of apt-get update as a separate step
+  apt:
+    update_cache: yes
+
+- name: Install apache packages
+  apt:
+    name: ['apache2', 'php7.0', 'php7.0-mysql', 'php-pear', 'php7.0-gd', 'libapache2-mod-php7.0', 'unzip', 'curl']
+    update_cache: yes
+    state: present
+
+- name: Download DVWA and Unarchive it
+  unarchive:
+    src: https://github.com/digininja/DVWA/archive/refs/tags/2.0.zip
+    dest: /var/www/html/
+    remote_src: yes
+
+- name: Move DVWA-2.0 to dvwa
+  command:  mv "/var/www/html/DVWA-2.0" "/var/www/html/dvwa"
+  args:
+    creates: "/var/www/html/dvwa"
+
+- name: Remove DVWA-2.0 folder if it exists
+  file:
+    path: "/var/www/html/DVWA-2.0"
+    state: absent
+
+- name: Configure allow_url_include
+  lineinfile:
+    path: "{{ php_ini_path }}"
+    state: present
+    regexp: "allow_url_include ="
+    line: "allow_url_include = On"
+
+- name: Copy configured dvwaPage.inc.php
+  copy:
+    src: "../files/dvwaPage.inc.php"
+    dest: "{{ dvwapage_inc_php_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy configured dvwa config
+  copy:
+    src: "../files/config/config.inc.php"
+    dest: "{{ dvwa_config_inc_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy modified sqli index page
+  copy:
+    src: "../files/sqli/index.php"
+    dest: "{{ sqli_index_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart apache2 service
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: apache2

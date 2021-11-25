@@ -1,0 +1,35 @@
+{
+  "index_patterns": ["winlogbeat-*"],
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "event_data_param_as_keyword": {
+          "path_match": "winlog.event_data.param*",
+          "mapping": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      {
+        "user_data_param_as_keyword": {
+          "path_match": "winlog.user_data.param*",
+          "mapping": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+---
+#
+# Install Packages and Tools for Python
+#
+
+# packages contains pip, setuptools etc.
+- name: Install packages for python development 
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+    state: present
+  vars:
+    packages:
+    - build-essential
+    - python3-dev
+
+- name: Install Virtualenv
+  apt:
+    name: virtualenv
+    update_cache: yes
+    state: present
+
+- name: Set locals for creating virtualenv
+  shell: "export LC_ALL=C"
+
+

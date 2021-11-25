@@ -1,0 +1,125 @@
+{
+  "_comment": "This is a packer template for the Win10 client",
+  "builders": [
+    {
+      "communicator": "winrm",
+      "cpus": 2,
+      "disk_size": "24576",
+      "export_opts": [
+        "--manifest",
+        "--vsys",
+        "0",
+        "--description",
+        "{{user `vm_description`}}",
+        "--version",
+        "{{user `vm_version`}}"
+      ],
+      "floppy_files": [
+        "{{user `floppy_files_path`}}autounattend.xml",
+        "{{user `floppy_files_path`}}enable_win_rm.ps1"
+      ],
+      "format": "ova",
+      "guest_additions_mode": "attach",
+      "guest_os_type": "Windows10_64",
+      "iso_checksum": "md5:{{user `iso_checksum`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "keep_registered": "true",
+      "memory": "2048",
+      "output_directory": "{{user `vm_output`}}",
+      "shutdown_command": "shutdown /s /f /t 5 /c \"Packer Shutdown\"",
+      "headless": "true",
+      "skip_export": "true",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "NAT",
+          "--nic2",
+          "hostonly",
+          "--hostonlyadapter2",
+          "vboxnet0",
+          "--macaddress2",
+          "005056000101",
+          "--nic3",
+          "intnet",
+          "--intnet3",
+          "Internal",
+          "--macaddress3",
+          "005056000001"
+        ]
+      ],
+      "vboxmanage_post": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--groups",
+          "/SOCBED"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "intnet",
+          "--intnet1",
+          "Internal",
+          "--macaddress1",
+          "005056000001",
+          "--nic3",
+          "none"
+        ],
+        [
+          "snapshot",
+          "{{.Name}}",
+          "take",
+          "{{user `vm_version`}}"
+        ]
+      ],
+      "vm_name": "Client",
+      "winrm_host": "127.0.0.1",
+      "winrm_insecure": true,
+      "winrm_password": "breach",
+      "winrm_username": "breach",
+      "boot_wait": "0h7m0s"
+    }
+  ],
+  "provisioners": [
+    {
+      "script" : "win-shell-scripts/setip.bat",
+      "type": "windows-shell"
+    },    
+    {
+      "inline": [
+        "iwr https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -UseBasicParsing | iex"
+      ],
+      "type": "powershell"
+    },
+    {
+      "inline": [
+        "Rename-Computer -NewName CLIENT"
+      ],
+      "type": "powershell"
+    },
+    {
+      "extra_arguments": [
+        "-e",
+        "ansible_winrm_server_cert_validation=ignore",
+        "-i",
+        "../ansible/hosts"
+      ],
+      "playbook_file": "../ansible/client10_playbook.yml",
+      "type": "ansible",
+      "use_proxy": false
+    }
+  ],
+  "variables": {
+    "floppy_files_path": "./floppy_files/",
+    "iso_checksum": "e47890d75a6e18211f6790d9d4864a17",
+    "iso_url": "/usr/share/runner-dependencies/Win10.iso",
+    "vm_description": "SOCBED: Client",
+    "vm_version": "fresh",
+    "vm_output": "./exports/client"
+  }
+}
+

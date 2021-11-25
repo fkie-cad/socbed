@@ -1,0 +1,25 @@
+---
+#
+# Install Kibana
+#
+
+- name: Install Kibana {{ kibana_version }}
+  apt:
+    name: kibana={{kibana_version}}
+    update_cache: yes
+    state: present
+ 
+- name: Add Kibana template
+  template:
+    src: kibana.yml
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: root
+    mode: '0644'
+   
+- name: Enable Kibana service
+  systemd:
+    name: kibana
+    state: started
+    enabled: yes
+    daemon_reload: yes

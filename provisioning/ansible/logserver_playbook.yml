@@ -1,0 +1,63 @@
+---
+- hosts: logserver
+  become: true
+  gather_facts: true
+
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+
+  pre_tasks:
+    - name: "Add group variables"
+      include_vars:
+        dir: group_vars/all
+        depth: 1
+
+    - name: "Add logserver host variables"
+      include_vars: host_vars/logserver
+
+  roles:
+    - basic_packages
+    - basic_tools
+    - {
+        role: localisation_settings,
+        when: ansible_distribution == 'Ubuntu'
+      }
+    - java
+    - rsyslog_ISO8601
+    - ntp
+    - {
+        role: elasticsearch,
+        elasticsearch_version: "{{elastic_stack_version}}",
+        when: install_elk == true
+      }
+    - {
+        role: elasticsearch_templates,
+        when: install_elk == true
+      }
+    - {
+        role: kibana,
+        kibana_version: "{{elastic_stack_version}}",
+        when: install_elk == true
+      }
+    - {
+        role: logstash,
+        logstash_version: "1:{{elastic_stack_version}}-1",
+        when: install_elk == true
+      }
+    - logserver_iptables
+    - python_dev_tools_and_virtualenv
+    - {
+        role: elasticdump,
+        tags: "elasticdump" }
+    - {
+        role: kafka,
+        when: install_kafka == true
+      }
+    - {
+        role: spark,
+        when: install_spark == true
+      }
+    - {
+        role: kibana_customizing,
+        when: customize_kibana == true
+      }

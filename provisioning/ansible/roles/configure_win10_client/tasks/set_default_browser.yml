@@ -1,0 +1,12 @@
+---
+- name: Upload SetDefaultBrowser directory to client
+  win_copy:
+    src: files/win10_firefox/SetDefaultBrowser
+    dest: C:\BREACH
+
+- name: Create a shortcut to the set_default_browser-script inside the autostart-folder (for all users)
+  win_shortcut:
+    src: C:\BREACH\SetDefaultBrowser\set_default_browser.bat
+    dest: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\set_default_browser.lnk
+    directory: C:\BREACH\SetDefaultBrowser
+    state: present

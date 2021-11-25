@@ -1,0 +1,14 @@
+input {
+  beats {
+    port => [5044]
+  }
+}
+
+output {
+  kafka {
+    codec => json
+    topic_id => "wineventlog_raw"
+    bootstrap_servers => "{{ kafka_broker_ip }}:9092"
+  }
+}
+

@@ -1,0 +1,7 @@
+logserver	 ansible_host=192.168.56.12	 ansible_user=root 	ansible_ssh_pass=breach ansible_connection=paramiko
+dmzserver	 ansible_host=192.168.56.20	 ansible_user=root 	ansible_ssh_pass=breach ansible_connection=paramiko
+internalserver	 ansible_host=192.168.56.11	 ansible_user=root 	ansible_ssh_pass=breach ansible_connection=paramiko
+companyrouter	 ansible_host=192.168.56.10	 ansible_user=root 	ansible_ssh_pass=breach		ansible_ssh_port=222 ansible_connection=paramiko ansible_python_interpreter=/usr/bin/python3
+internetrouter	 ansible_host=192.168.56.30	 ansible_user=root 	ansible_ssh_pass=breach		ansible_ssh_port=222 ansible_connection=paramiko ansible_python_interpreter=/usr/bin/python3
+attacker	 ansible_host=192.168.56.31	 ansible_user=root 	ansible_ssh_pass=breach ansible_connection=paramiko
+client		 ansible_host=192.168.56.254	 ansible_user=breach 	ansible_password=breach	ansible_connection=winrm ansible_winrm_server_cert_validation=ignore
