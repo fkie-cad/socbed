@@ -2,7 +2,7 @@ name: SOCBED System Tests
 
 on:
   schedule:
-    - cron: "0 1 * * MON-FRI" # At 01:00 on every day-of-week from Monday through Friday
+    - cron: "0 1 * * MON,WED,FRI" # At 01:00 on Monday, Wednesday and Friday
   workflow_dispatch:
   
 jobs:
