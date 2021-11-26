@@ -1,0 +1,132 @@
+name: SOCBED System Tests - DEV
+
+on:
+  schedule:
+    - cron: "0 1 * * TUE,THU,SAT" # At 01:00 on Tuesday, Thursday and Saturday
+  
+jobs:
+  prepare-environment:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      
+      - name: Create virtual environment
+        run: python3 -m venv /usr/share/runner-dependencies/socbed_env
+        
+      - name: Activate virtual environment
+        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
+        
+      - name: Upgrade pip3 inside virtual environment
+        run: pip3 install --upgrade pip
+        
+      - name: Install requirements in virtual environment (without using cached packages)
+        run: pip3 install -r requirements.txt --no-cache-dir
+  
+  build-machines:
+    runs-on: [self-hosted, linux]
+    needs: [prepare-environment]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      
+      - name: Activate virtual environment
+        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
+      
+      - name: Build Internet Router
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/build_internetrouter runner
+      
+      - name: Build Company Router
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/build_companyrouter runner
+        
+      - name: Build Attacker
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 120
+          max_attempts: 3
+          command: ./tools/build_attacker runner
+        
+      - name: Build Log Server
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/build_logserver runner
+        
+      - name: Build Internal Server
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/build_internalserver runner
+        
+      - name: Build DMZ Server
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/build_dmzserver runner
+        
+      - name: Build Client
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 120
+          max_attempts: 3
+          command: ./tools/build_client runner
+        
+      - name: Run logging setup
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: ./tools/logging_setup
+        
+  test-machines:
+    runs-on: [self-hosted, linux]
+    needs: [prepare-environment, build-machines]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      
+      - name: Activate virtual environment
+        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
+      
+      - name: Ensure all machines are powered off
+        run: ./tools/cleanup_failed_session
+      
+      - name: Run system tests ("not longtest")
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: tox -- -m "systest and not longtest"
+   
+  delete-machines:
+    runs-on: [self-hosted, linux]
+    if: always()
+    needs: [prepare-environment, build-machines, test-machines]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      
+      - name: Delete created VMs
+        run: ./tools/delete_vms
+        
+      - name: Deactivate virtual environment
+        run: deactivate || true
+        
+      - name: Delete virtual environment
+        run: rm -rf /usr/share/runner-dependencies/socbed_env
+

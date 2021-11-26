@@ -1,0 +1,13 @@
+name: SOCBED Unit Tests
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs: 
+  tox-unit-test:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+      - run: tox -- -m "not systest"
+
