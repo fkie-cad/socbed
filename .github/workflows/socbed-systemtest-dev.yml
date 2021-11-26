@@ -1,4 +1,4 @@
-name: SOCBED System Tests
+name: SOCBED System Tests - DEV
 
 on:
   schedule:
