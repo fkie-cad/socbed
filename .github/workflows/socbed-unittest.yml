@@ -1,4 +1,4 @@
-name: SOCBED Unit Tests
+name: Unit Tests
 
 on:
   push:

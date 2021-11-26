@@ -1,4 +1,4 @@
-name: SOCBED System Tests
+name: Nightly Build with System Tests
 
 on:
   schedule:
