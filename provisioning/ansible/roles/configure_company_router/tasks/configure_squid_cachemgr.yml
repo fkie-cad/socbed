@@ -1,0 +1,5 @@
+- name: Create /etc/squid/cachemgr.conf
+  copy:
+    src: files/squid_cachemgr.conf
+    dest: /etc/squid/cachemgr.conf
+

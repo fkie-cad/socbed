@@ -1,0 +1,5 @@
+- name: Create /var/ipfire/proxy/cachemgr.conf
+  copy:
+    src: files/squid_cachemgr.conf
+    dest: /var/ipfire/proxy/cachemgr.conf
+

@@ -1,0 +1,17 @@
+- include: setup_user.yml
+- include: add_exclusion_folder.yml
+- include: disable_firewall.yml
+- include: disable_screen_lock.yml
+- include: install_python.yml
+- include: upload_assets.yml
+- include: install_firefox.yml
+- include: disable_automatic_updates.yml
+- include: run_init_tbf_client_on_boot.yml
+- include: install_ssh_server.yml
+- include: disable_ipv6.yml
+- include: set_autostart.yml
+- include: install_imdisk.yml
+- include: set_logging_config.yml
+- include: install_sysmon.yml
+- include: install_winlogbeat.yml
+- include: disable_defender.yml

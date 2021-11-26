@@ -1,0 +1,8 @@
+elastic_stack_version: 7.4.2
+elastic_stack_repository_version: "{{ (elastic_stack_version|string).split('.')[0] }}.x"
+logserver_ip: 172.16.0.3
+elasticsearch_port: 9200
+kibana_port: 5601
+kafka_port: 9092
+zookeeper_port: 2181
+logstash_syslog_port: 5514

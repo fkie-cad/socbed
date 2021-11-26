@@ -1,0 +1,9 @@
+- name: Replace old squid.conf in /var/ipfire 
+  copy:
+    src: files/squid.conf
+    dest: /var/ipfire/proxy/squid.conf
+
+- name: Replace old squid.conf in /etc
+  copy:
+    src: files/squid.conf
+    dest: /etc/squid/squid.conf

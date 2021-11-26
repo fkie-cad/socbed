@@ -1,0 +1,22 @@
+input {
+  beats {
+    port => [5044]
+  }
+}
+
+filter {
+  mutate {
+    add_field => { "[@metadata][indexname]" => "%{[beat][hostname]}" }
+  }
+  mutate {
+    lowercase => "[@metadata][indexname]"
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["172.16.0.3:9200"]
+    index => "winlogbeat-%{[@metadata][indexname]}-%{+YYYY.MM.dd}"
+  }
+}
+

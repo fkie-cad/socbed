@@ -1,0 +1,6 @@
+---
+disable_defender_version: 0.0.1
+imdisk_version: 20.11.20
+sysmon_version: 13.01
+winlogbeat_tools_path: C:\ProgramData\chocolatey\lib\winlogbeat\tools\
+winlogbeat_version: 7.10.2

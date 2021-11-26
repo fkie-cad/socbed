@@ -1,0 +1,40 @@
+---
+- name: Create C:\Temp directory
+  win_file:
+    path: C:\Temp
+    state: directory
+
+- name: Upload assets to the client
+  win_copy:
+    src: files/win10_assets/assets.zip
+    dest: C:\Temp\assets.zip
+
+- name: Extract assets to the C:\BREACH folder
+  win_unzip:
+    src: C:\Temp\assets.zip
+    dest: C:\BREACH
+    creates: C:\BREACH
+
+- name: Upload init_tbf_client.py to the client
+  win_copy:
+    src: files/win10_assets/init_tbf_client.py
+    dest: C:\BREACH\init_tbf_client.py
+
+- name: Upload run_userbehavior.py to the client
+  win_copy:
+    src: files/win10_assets/run_userbehavior.py
+    dest: C:\BREACH\run_userbehavior.py
+
+- name: Allow all users the write permission for C:\BREACH folder (for logs)
+  win_acl:
+    path: C:\BREACH
+    user: Users
+    rights: Write
+    type: allow
+    state: present
+
+#- name: Create a shortcut for run_userbehavior in the Startup folder (for all users)
+#  win_shortcut:
+#    src: C:\BREACH\run_userbehavior.py
+#    dest: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\run_userbehavior.lnk'
+#    directory: C:\BREACH

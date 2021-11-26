@@ -1,0 +1,6 @@
+- name: Install ImDisk-Toolkit v{{ imdisk_version }}
+  win_chocolatey:
+    name: imdisk-toolkit
+    state: present
+    version: "{{ imdisk_version }}"
+    pinned: yes

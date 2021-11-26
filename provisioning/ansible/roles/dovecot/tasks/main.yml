@@ -1,0 +1,133 @@
+---
+- name: Install dovecot + extensions
+  apt:
+    name: ['dovecot-core', 'dovecot-mysql', 'dovecot-imapd', 'dovecot-lmtpd']
+    update_cache: yes
+    state: present
+
+- name: create vmail user
+  user:
+    name: vmail
+    state: present
+    create_home: no
+
+- name: create /var/vmail directory owned by the vmail user
+  file:
+    path: /var/vmail
+    state: directory
+    owner: vmail
+    group: vmail
+    mode: 0770
+    recurse: yes
+
+- name: Enable mysql driver
+  lineinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: present
+    line: "driver = mysql"
+
+- name: Configure db
+  lineinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: present
+    line: "connect = host=127.0.0.1 dbname=vmail user=vmail password=breach"
+
+- name: Configure default password scheme
+  lineinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: present
+    line: "default_pass_scheme = SHA512-CRYPT"
+
+- name: Remove commented password_query
+  blockinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: absent
+    block: |
+      \#password_query = \
+      \#  SELECT username, domain, password \
+      \#  FROM users WHERE username = '%n' AND domain = '%d'
+
+- name: Configure password_query
+  blockinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: present
+    block: |
+      password_query = \
+        SELECT username, domain, password \
+        FROM users WHERE username = '%n' AND domain = '%d'
+
+- name: Add iterate_query sql
+  lineinfile:
+    path: "{{ dovecot_sql_conf_path }}"
+    state: present
+    line: "iterate_query = SELECT username, domain FROM users"
+
+- name: Copy dovecot conf
+  copy:
+    src: "../files/dovecot.conf"
+    dest: "{{ dovecot_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+    
+- name: Copy auth conf
+  copy:
+    src: "../files/10-auth.conf"
+    dest: "{{ dovecot_auth_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy mail conf
+  copy:
+    src: "../files/10-mail.conf"
+    dest: "{{ dovecot_mail_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy master conf
+  copy:
+    src: "../files/10-master.conf"
+    dest: "{{ dovecot_master_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy ssl conf
+  copy:
+    src: "../files/10-ssl.conf"
+    dest: "{{ dovecot_ssl_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy lda conf
+  copy:
+    src: "../files/15-lda.conf"
+    dest: "{{ dovecot_lda_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+    
+- name: Copy ssl certificate
+  copy:
+    src: "../files/crt.dovecot.pem"
+    dest: /etc/dovecot/dovecot.pem
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy ssl key
+  copy:
+    src: "../files/key.dovecot.pem"
+    dest: /etc/dovecot/private/dovecot.pem
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Restart dovecot service
+  systemd:
+    name: dovecot
+    state: restarted
+    daemon_reload: yes

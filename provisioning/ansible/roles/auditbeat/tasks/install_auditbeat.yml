@@ -1,0 +1,9 @@
+---
+
+# https://www.elastic.co/guide/en/beats/auditbeat/6.3/auditbeat-module-auditd.html
+
+- name: "Install Auditbeat"
+  apt:
+    name: auditbeat={{ auditbeat_version }}
+    update_cache: yes
+    state: present

@@ -1,0 +1,5 @@
+---
+vhost_logs_dir: "/var/www/vhost.com/logs/"
+sites_available_default_conf: "/etc/apache2/sites-available/000-default.conf"
+sites_enabled_default_conf: "/etc/apache2/sites-enabled/000-default.conf"
+ports_conf: "/etc/apache2/ports.conf"

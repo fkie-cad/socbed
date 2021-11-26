@@ -1,0 +1,27 @@
+---
+- name: Add auditbeat.yml template
+  template:
+    src: "auditbeat.yml"
+    dest: "/etc/auditbeat/auditbeat.yml"
+    owner: root
+    group: root
+    mode: 0600
+  notify: Restart auditbeat
+
+- name: Check auditbeat dashbaords setup previously completed
+  stat:
+    path: /tmp/audit_beat_dashbaords_exist
+  register: stat_auditbeat_dashbaords
+
+- name: Integrate Auditbeat dashboards
+  shell: auditbeat setup --dashboards && touch /tmp/audit_beat_dashbaords_exist
+  notify: Restart auditbeat
+  when:
+    - inventory_hostname == "internalserver"
+    - stat_auditbeat_dashbaords.stat.exists == False
+
+- name: Enable and (re)start auditbeat
+  service:
+    name: auditbeat
+    state: started
+    enabled: true

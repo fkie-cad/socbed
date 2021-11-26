@@ -1,0 +1,27 @@
+---
+- name: Install MySQL packages
+  apt:
+    name: ['mysql-server', 'mysql-client', 'libmysqld-dev', 'libmysqlclient-dev', 'python3-mysqldb']
+    state: present
+    
+- name: Set password for the root user in mysql
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+    check_implicit_admin: yes
+
+- name: Create .my.cnf
+  template:
+    src: "../templates/client.my.cnf.j2"
+    dest: "/root/.my.cnf"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Restart mysql
+  service:
+    name: mysql
+    state: restarted
+    enabled: yes

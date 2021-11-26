@@ -1,0 +1,10 @@
+---
+#
+# Upgrade Apt Packages
+#
+
+- name: Update and upgrade apt packages
+  become: yes
+  apt:
+    upgrade: yes
+    update_cache: yes

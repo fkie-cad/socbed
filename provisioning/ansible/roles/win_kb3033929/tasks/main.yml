@@ -1,0 +1,22 @@
+---
+
+- name: grant the ansible user the SeDebugPrivilege right
+  win_user_right:
+    name: SeDebugPrivilege
+    users: '{{ansible_user}}'
+    action: add
+
+# The following security updates were installed using chocolatey in the beginning.
+# But it kept failing after some package upgrade.
+# It is relatively painless to simply install like this.
+# It might take a long time for this ansible task to finish running though.
+#
+# NOTE: It is recommended to install KB3035131 before KB3033929
+
+- name: Install only particular updates based on the KB numbers
+  win_updates:
+    category_name:
+    - SecurityUpdates
+    whitelist:
+    - KB3035131
+    - KB3033929

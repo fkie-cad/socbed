@@ -1,0 +1,21 @@
+---
+- name: Disable old rsyslog format (TraditionalFileFormat)
+  replace:
+    path: /etc/rsyslog.conf
+    regexp: '^\$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat'
+    replace: '#$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat'
+
+- name: Add config lines for rsyslog format with ISO 8601
+  lineinfile:
+    path: /etc/rsyslog.conf
+    line: "{{ item }}"
+    state: present
+    insertafter: 'ActionFileDefaultTemplate'
+  with_items:
+    - "$ActionFileDefaultTemplate RSYSLOG_FileFormat"
+    - "$ActionForwardDefaultTemplate RSYSLOG_ForwardFormat"
+
+- name: Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted

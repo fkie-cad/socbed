@@ -1,0 +1,104 @@
+---
+- name: Install postfix packages
+  apt:
+    name: ['postfix', 'postfix-mysql' ]
+    update_cache: yes
+    state: present
+
+- name: Install dovecot for the doveadm command for creating user accounts
+  apt:
+    name: dovecot-core
+    state: present
+
+- name: Install pexpect
+  apt:
+    name: python3-pexpect
+    state: present
+
+- name: create /etc/postfix/virtual directory
+  file:
+    path: /etc/postfix/virtual
+    state: directory
+    owner: root
+    group: root
+    mode: 0660
+    recurse: yes
+
+- name: Copy vmail schema
+  copy:
+    src: "../files/vmail_schema.sql"
+    dest: /tmp/vmail_schema.sql
+
+- name: Copy python script to generate sql for creating email accounts
+  copy:
+    src: "../files/useraccounts/create_email_accounts.py"
+    dest: /tmp/create_email_accounts.py
+
+- name: Generate sql for creating email accounts
+  shell: "python3 /tmp/create_email_accounts.py > /tmp/email_accounts.sql"
+    
+- name: Create vmail db
+  expect:
+    command: /bin/bash -c "mysql -u root -p < /tmp/vmail_schema.sql"
+    responses:
+      "Enter password:": "{{ mysql_root_password }}"
+
+- name: Create email accounts
+  expect:
+    command: /bin/bash -c "mysql vmail -u root -p < /tmp/email_accounts.sql"
+    responses:
+      "Enter password:": "{{ mysql_root_password }}"
+
+- name: Create mysql_user vmail
+  mysql_user:
+    name: vmail
+    password: breach
+    priv: "vmail.*:ALL"
+    state: present
+
+- name: Create mysql-domains.cf
+  copy:
+    src: "../files/mysql-domains.cf"
+    dest: /etc/postfix/virtual/mysql-domains.cf
+    owner: root
+    group: root
+    mode: 0644
+      
+
+- name: Create mysql-aliases.cf
+  copy:
+    src: "../files/mysql-aliases.cf"
+    dest: /etc/postfix/virtual/mysql-aliases.cf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create mysql-maps.cf
+  copy:
+    src: "../files/mysql-maps.cf"
+    dest: /etc/postfix/virtual/mysql-maps.cf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy /etc/postfix/main.cf
+  copy:
+    src: "../files/main.cf"
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy /etc/postfix/master.cf
+  copy:
+    src: "../files/master.cf"
+    dest: /etc/postfix/master.cf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart postfix service
+  systemd:
+    name: postfix
+    state: restarted
+    daemon_reload: yes

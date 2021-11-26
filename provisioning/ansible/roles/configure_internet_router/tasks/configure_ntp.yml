@@ -1,0 +1,4 @@
+- name: Replace old ntp.conf
+  copy:
+    src: files/ntp.conf
+    dest: /etc/ntp.conf

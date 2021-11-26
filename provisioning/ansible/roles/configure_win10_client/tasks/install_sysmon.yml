@@ -1,0 +1,19 @@
+- name: Install SysMon (pinned v{{ sysmon_version }})
+  win_chocolatey:
+    name: sysmon
+    state: present
+    version: "{{ sysmon_version }}"
+    pinned: yes
+    ignore_checksums: yes
+    # if checksum is not ignored, installing will fail due to a checksum error. More info:
+    # https://www.gep13.co.uk/blog/chocolatey-error-hashes-do-not-match#so-why-did-this-go-wrong
+  register: sysmon_key
+    
+- name: Copy SysMon config to client
+  win_copy:
+    src: files/sysmon/sysmonconfig-export.xml
+    dest: C:\Temp\sysmonconfig.xml
+    
+- name: Register SysMon-service with updated config
+  win_command: sysmon.exe -accepteula -i C:\Temp\sysmonconfig.xml
+  when: sysmon_key.changed

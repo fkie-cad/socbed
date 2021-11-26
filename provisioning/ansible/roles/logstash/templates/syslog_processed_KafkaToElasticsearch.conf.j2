@@ -1,0 +1,15 @@
+input {
+  kafka {
+    bootstrap_servers => "{{ kafka_broker_ip }}:9092"
+    codec => json
+    topics => "syslog_processed"
+  }
+}
+
+output {
+  elasticsearch {
+    id => "elasticsearch_syslog_output"
+    hosts => ["172.16.0.3:9200"]
+    index => "syslog-%{logsource}-%{+YYYY.MM.dd}"
+  }
+}

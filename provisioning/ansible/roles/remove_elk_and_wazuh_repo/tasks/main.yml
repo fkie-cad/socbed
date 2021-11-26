@@ -1,0 +1,9 @@
+---
+#
+# Remove ELK repo
+#
+
+- name: Remove ELK repo
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/6.x/apt stable main
+    state: absent

@@ -1,0 +1,46 @@
+---
+#
+# Install Elasticsearch
+#
+
+- name: Add Elastic apt key
+  apt_key:
+    url: "https://packages.elastic.co/GPG-KEY-elasticsearch"
+    state: present
+
+- name: Add Elastic repo
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/{{ elastic_stack_repository_version }}/apt stable main
+    state: present
+
+- name: Install Elasticsearch {{ elasticsearch_version }}
+  apt:
+    name: elasticsearch={{ elasticsearch_version }}
+    update_cache: yes
+    state: present
+
+- name: Add Elasticsearch config template
+  template:
+    src: elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable Elasticsearch service
+  systemd:
+    name: elasticsearch
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Create elasticsearch.service.d directory
+  file:
+    path: /etc/systemd/system/elasticsearch.service.d
+    state: directory
+    mode: 755
+  
+- name: Increase startup timeout to 500 seconds
+  copy:
+    src: files/startup-timeout.conf
+    dest: /etc/systemd/system/elasticsearch.service.d/startup-timeout.conf

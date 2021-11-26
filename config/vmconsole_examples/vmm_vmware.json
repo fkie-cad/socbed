@@ -1,0 +1,11 @@
+{
+  "vmm": "VMWare",
+  "host": "127.0.0.1",
+  "port": 443,
+  "user": "vsphere.local\\SOCBED_User",
+  "password": "PUT_PASSWORD_HERE",
+  "resource_pool": "SOCBED",
+  "data_center": "FOO",
+  "data_store": "BAR",
+  "vm_folder": "SOCBED"
+}

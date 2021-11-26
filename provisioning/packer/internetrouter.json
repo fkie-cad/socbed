@@ -1,0 +1,148 @@
+{
+  "_comment": "This is a packer template for IP-Fire-Router for Internet Router. Login with root / breach in the VM and admin / breach at the Web-Interface",
+  "variables": {
+    "host_ip_addr": "127.0.0.1",
+    "ssh_host_addr": "192.168.56.30",
+    "vm_description": "SOCBED: Internet Router",
+    "vm_version": "fresh",
+    "vm_output": "./exports/InternetRouter"
+  },
+  "builders": [
+    {
+      "name": "Internet-Router (IP-Fire)",
+      "type": "virtualbox-iso",
+      "guest_os_type": "Linux_64",
+      "vm_name": "Internet Router",
+      "guest_additions_mode": "disable",
+      "headless": "true",
+      "iso_checksum": "sha256:7793981fbe39cb1fa3cb2f89dd1472751d502823b2fc333449171af1bc225f8f",
+      "iso_urls": [
+        "https://downloads.ipfire.org/releases/ipfire-2.x/2.25-core141/ipfire-2.25.x86_64-full-core141.iso"
+      ],
+      "ssh_host": "{{user `ssh_host_addr`}}",
+      "ssh_password": "breach",
+      "ssh_port": "222",
+      "ssh_skip_nat_mapping": "true",
+      "ssh_timeout": "20m",
+      "ssh_username": "root",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nic1",
+          "nat",
+          "--nic2",
+          "intnet",
+          "--intnet2",
+          "Internet",
+          "--nic3",
+          "hostonly",
+          "--hostonlyadapter3",
+          "vboxnet0"
+        ]
+      ],
+      "boot_wait": "10s",
+      "boot_command": [
+        "<enter><wait10s>",
+        "<tab><enter>",
+        "<wait10s><enter>",
+        "<wait10s><tab><spacebar><tab><spacebar>",
+        "<wait><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait60s>",
+        "<spacebar>",
+        "<wait60s>",
+        "<tab><spacebar>",
+        "<wait4s><tab><spacebar>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>internetrouter<tab><spacebar>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>localdomain<tab><spacebar>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>breach<tab>breach<tab><spacebar>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>breach<tab>breach<tab><spacebar>",       
+	"<wait10s><tab><spacebar>",
+        "<wait><down><down><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait><tab><tab><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait><spacebar>",
+        "<wait>172.18.0.1<tab>",
+        "<wait><left><left><bs><bs><bs>0<tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait>192.168.56.30<tab>",
+        "<wait><tab><spacebar>",
+        "<wait><down><tab><spacebar>",
+        "<wait><tab><spacebar><tab><tab><tab><tab><spacebar>",
+        "<wait><tab><tab><spacebar>",
+        "<wait><down><tab><tab><spacebar>",
+        "<wait><tab><spacebar>",
+        "<wait><spacebar>",    
+        "<wait60s>",
+        "root<wait><enter>breach<wait><enter>",
+        "<wait20s>iptables -I INPUT -p tcp --dport 444 -j ACCEPT<enter>",
+        "<wait>iptables -I INPUT -p tcp --dport 222 -j ACCEPT<enter>",
+        "<wait>sed -i 's/ENABLE_SSH=off/ENABLE_SSH=on/g' /var/ipfire/remote/settings<enter>",
+        "<wait>sed -i 's/ENABLE_SSH_PORTFW=off/ENABLE_SSH_PORTFW=on/g' /var/ipfire/remote/settings<enter>",
+        "<wait>sed -i 's/ENABLE_SSH_KEYS=off/ENABLE_SSH_KEYS=on/g' /var/ipfire/remote/settings<enter>",
+        "<wait>touch /var/ipfire/remote/enablessh<enter>",
+        "<wait>chown nobody:nobody /var/ipfire/remote/enablessh<enter>",
+        "<wait>sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config<enter>",
+        "<wait>sed -i 's/Port 22/Port 222/g' /etc/ssh/sshd_config<enter>",
+        "<wait>/etc/rc.d/init.d/sshd restart<enter>",
+        "<wait10s>/etc/init.d/sshd restart<enter>",
+        "<wait10s>"
+      ],
+
+      "export_opts": [
+        "--manifest",
+        "--vsys",
+        "0",
+        "--description",
+        "SOCBED Internet Router",
+        "--version",
+        "fresh"
+      ],
+      "output_directory": "{{user `vm_output`}}",
+      "keep_registered": "true",
+      "skip_export": "true",
+      
+      "shutdown_command": "echo 'packer' | shutdown -h -P now",
+
+      "vboxmanage_post": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--groups",
+          "/SOCBED"
+        ],
+        [
+          "snapshot",
+          "{{.Name}}",
+          "take",
+          "fresh"
+        ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "expect_disconnect": "true",
+      "script": "post_install/internetrouter_setup.sh",
+      "type": "shell"
+    },
+    {
+      "extra_arguments": [
+        "-i",
+        "../ansible/hosts"
+      ],
+      "playbook_file": "../ansible/internetrouter_playbook.yml",
+      "type": "ansible"
+    }
+  ]
+}
+

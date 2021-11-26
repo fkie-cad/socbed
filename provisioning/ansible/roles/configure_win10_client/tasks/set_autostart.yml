@@ -1,0 +1,7 @@
+- name: Create a shortcut to the userbehavior-script inside the autostart-folder (for all users)
+  win_shortcut:
+    src: C:\BREACH\run_userbehavior.py
+    dest: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\run_userbehavior.lnk
+    directory: C:\BREACH
+    state: present
+

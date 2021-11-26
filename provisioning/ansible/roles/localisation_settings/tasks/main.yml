@@ -1,0 +1,10 @@
+---
+#
+# Override all other localisation settings
+#
+
+- name: Override localisation settings
+  copy:
+    dest: /etc/profile.d/spark.sh
+    content: 'export LC_ALL=C'
+

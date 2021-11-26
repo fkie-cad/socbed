@@ -1,0 +1,15 @@
+input {
+  syslog {
+    port => [5514]
+    type => "syslog"
+  }
+}
+
+output {
+  kafka {
+    codec => json
+    topic_id => "syslog_raw"
+    bootstrap_servers => "{{ kafka_broker_ip }}:9092"
+  }
+}
+

@@ -1,0 +1,43 @@
+---
+#
+# Install Logstash
+#
+
+# package name for logstash as following structure: 1:{{ logstash_version }}-1
+- name: Install Logstash {{ logstash_version }}
+  apt:
+    name: "logstash={{ logstash_version }}"
+    update_cache: yes
+    state: present
+
+- name: Add all Logstash configs to /etc/logstash/conf.d (but only those defined in /etc/logstash/pipelines.yml" are used)
+  template:
+    backup: yes
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - {src: "syslog_processed_KafkaToElasticsearch.conf.j2", dest: "/etc/logstash/conf.d/syslog_processed_KafkaToElasticsearch.conf"}
+    - {src: "syslog_raw_SyslogToKafka.conf.j2", dest: "/etc/logstash/conf.d/syslog_raw_SyslogToKafka.conf"}
+    - {src: "SyslogToElasticsearch.conf.j2", dest: "/etc/logstash/conf.d/SyslogToElasticsearch.conf"}
+    - {src: "tcp_test_plugin.conf.j2", dest: "/etc/logstash/conf.d/tcp_test_plugin.conf"}
+    - {src: "wineventlogToElasticsearch.conf.j2", dest: "/etc/logstash/conf.d/wineventlogToElasticsearch.conf"}
+    - {src: "wineventlog_raw_BeatToKafka.conf.j2", dest: "/etc/logstash/conf.d/wineventlog_raw_BeatToKafka.conf"}
+    - {src: "wineventlog_processed_KafkaToElasticsearch.conf.j2", dest: "/etc/logstash/conf.d/wineventlog_processed_KafkaToElasticsearch.conf"}
+
+- name: Add pipeline configuration /etc/logstash/pipelines.yml
+  template:
+    src: "pipelines.yml.j2"
+    dest: "/etc/logstash/pipelines.yml"
+    owner: root
+    group: root
+    mode: 0777
+
+- name: Enable Logstash service with systemd
+  systemd:
+    name: logstash
+    state: started
+    enabled: yes
+    daemon_reload: yes

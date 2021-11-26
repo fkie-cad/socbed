@@ -1,0 +1,34 @@
+---
+- name: Switch off timedatectl (to use ntp instead)
+  shell: "timedatectl set-ntp 0"
+
+- name: Install NTP
+  apt:
+    name: ntp
+    update_cache: yes
+    state: present
+
+- name: Disable default NTP servers
+  replace:
+    path: /etc/ntp.conf
+    regexp: '^(server|pool)(.*)$'
+    replace: '#\1\2'
+
+- name: "Add authoritative NTP server {{ authoritative_ntp_server }}"
+  lineinfile:
+    path: /etc/ntp.conf
+    line: "server {{ authoritative_ntp_server }} iburst"
+    state: present
+
+- name: Enable ntpstats
+  replace:
+    path: /etc/ntp.conf
+    regexp: '#statsdir /var/log/ntpstats/'
+    replace: 'statsdir /var/log/ntpstats/'
+
+- name: Restart ntp service
+  service:
+    name: ntp
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

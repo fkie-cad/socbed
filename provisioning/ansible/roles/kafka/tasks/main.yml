@@ -1,0 +1,119 @@
+---
+#
+# Install Kafka
+#
+
+# ToDo: Kafka user group
+
+- name: Download Kafka Tarball
+  get_url:
+    url: "{{ kafka_url }}"
+    dest: "{{ kafka_bin_tmp_archive }}"
+
+- name: "Extract Kafka Tarball and move Kafka to install directory {{ kafka_dir }}"
+  unarchive: 
+    src: "{{ kafka_bin_tmp_archive }}"
+    remote_src: yes
+    dest: "{{ kafka_install_dir }}"
+
+- name: "Rename Kafka folder to {{ kafka_install_dir }}kafka"
+  shell: "mv {{ kafka_install_dir }}{{ kafka_version }} {{ kafka_install_dir }}/kafka"
+
+- name: "Create Zookeeper data dir {{ kafka_zookeeper_data_dir }}"
+  file:
+    path: "{{ kafka_zookeeper_data_dir }}"
+    state: directory
+
+- name: Update "log.dirs" in Kafka server.properties config
+  lineinfile:
+    destfile: "{{ kafka_dir }}config/zookeeper.properties"
+    regexp: 'dataDir=/tmp/zookeeper'
+    line: 'dataDir={{ kafka_zookeeper_data_dir }}'
+
+- name: "Create Kafka log data dir {{ kafka_log_data_dir }}"
+  file:
+    path: "{{ kafka_log_data_dir }}"
+    state: directory
+
+- name: Update "log.dirs" in Kafka server.properties config
+  lineinfile:
+    destfile: "{{ kafka_dir }}config/server.properties"
+    regexp: 'log.dirs=/tmp/kafka-logs'
+    line: 'log.dirs={{ kafka_log_data_dir }}'
+
+- name: Update "listeners" in Kafka server.properties config
+  lineinfile:
+    destfile: "{{ kafka_dir }}config/server.properties"
+    regexp: '#listeners=PLAINTEXT://:9092'
+    line: 'listeners=PLAINTEXT://0.0.0.0:{{ kafka_port }}'
+
+# see http://kafka.apache.org/documentation/#brokerconfigs
+# if this is not set, the value for 'listeners' is used
+# 0.0.0.0 meta-address is not possible! 
+- name: Update "advertised.listeners" in Kafka server.properties config
+  lineinfile:
+    destfile: "{{ kafka_dir }}config/server.properties"
+    regexp: '#advertised.listeners=PLAINTEXT://your.host.name:9092'
+    line: 'advertised.listeners=PLAINTEXT://{{ kafka_advertised_listeners }}:{{ kafka_port }}'
+
+- name: Update "num.partitions" in Kafka server.properties config
+  lineinfile:
+    destfile: "{{ kafka_dir }}config/server.properties"
+    regexp: 'num.partitions'
+    line: 'num.partitions=20'
+
+- name: Add Systemd config for Zookeeper
+  template:
+    src: zookeeper.service
+    dest: /etc/systemd/system/zookeeper.service
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add Systemd config for Kafka
+  template:
+    src: kafka.service
+    dest: /etc/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Enable Zookeeper service with systemd
+  systemd:
+    name: zookeeper
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: "Wait until Zookeeper port {{ zookeeper_port }} is open on the host"
+  wait_for:
+    port: "{{ zookeeper_port }}"
+    timeout: 30
+
+- name: Enable Kakfa service with systemd
+  systemd:
+    name: kafka
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: "Wait until Kafka port {{ kafka_port }} is open on the host"
+  wait_for:
+    port: "{{ kafka_port }}"
+    timeout: 10
+
+- name: Create Topics (for each 20 partitions)
+  shell: "bin/kafka-topics.sh --create --zookeeper localhost:{{ zookeeper_port }} --replication-factor 1 --partitions 20 --topic {{ item }}"
+  args:
+    chdir: "{{ kafka_dir }}"
+  with_items:
+    - '{{ topic_syslog_raw }}'
+    - '{{ topic_syslog_processed }}'
+    - '{{ topic_wineventlog_raw }}'
+    - '{{ topic_wineventlog_processed }}'
+  ignore_errors: yes
+
+- name: Add Kafka bin dir to system-wide $PATH.
+  copy:
+    dest: /etc/profile.d/kafka.sh
+    content: 'PATH=$PATH:/usr/share/kafka/bin'

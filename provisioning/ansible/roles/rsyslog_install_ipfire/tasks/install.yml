@@ -1,0 +1,22 @@
+---
+
+- name: Copy and extract files to machine
+  unarchive:
+    src: files/{{ packet }}
+    dest: /opt/pakfire/tmp
+
+- name: Install
+  command: ./install.sh
+  args:
+    chdir: /opt/pakfire/tmp
+
+- name: Remove installation files
+  file:
+    path: /opt/pakfire/tmp/{{ item }}
+    state: absent
+  with_items:
+    - install.sh
+    - update.sh
+    - uninstall.sh
+    - files.tar.xz
+    - ROOTFILES

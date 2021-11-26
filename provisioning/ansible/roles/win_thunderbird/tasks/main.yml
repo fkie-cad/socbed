@@ -1,0 +1,9 @@
+---
+
+- name: Install Thunderbird
+  win_chocolatey:
+    name: thunderbird
+    state: present
+    version: 38.7.0
+    architecture: x86
+    pinned: yes

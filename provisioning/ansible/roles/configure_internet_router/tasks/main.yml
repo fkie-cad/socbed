@@ -1,0 +1,5 @@
+- include: configure_etc_hosts.yml
+- include: configure_etc_unbound_hosts.yml
+- include: configure_hosts.yml
+- include: configure_ntp.yml
+- include: create_symbolic_link_for_syslog.yml

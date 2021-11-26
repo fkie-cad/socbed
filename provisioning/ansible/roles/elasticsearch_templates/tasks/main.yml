@@ -1,0 +1,19 @@
+---
+
+- name: Wait for Elasticsearch to be ready
+  wait_for:
+    host: "{{ logserver_ip }}"
+    port: "{{ elasticsearch_port }}"
+
+- name: Add Elasticsearch index template
+  uri:
+    method: PUT
+    url: "http://{{ logserver_ip }}:{{ elasticsearch_port }}/_template/winlogbeat"
+    body_format: json
+    body: "{{ lookup('file', 'winlogbeat.json') }}"
+    return_content: yes
+  register: index_template_result
+
+#- name: Debug Elasticsearch index template
+#  debug:
+#    var: index_template_result

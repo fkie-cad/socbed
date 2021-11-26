@@ -1,0 +1,3 @@
+- name: Disable Firewall
+  win_firewall:
+    state: disabled

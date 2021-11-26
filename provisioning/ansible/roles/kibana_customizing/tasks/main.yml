@@ -1,0 +1,26 @@
+---
+- name: "Check Kibana port {{ kibana_port }} is open on the host"
+  wait_for:
+    port: "{{ kibana_port }}"
+    timeout: 60
+
+- name: "Check Elastisearch port {{ elasticsearch_port }} is open on the host"
+  wait_for:
+    port: "{{ elasticsearch_port }}"
+    timeout: 60
+
+- name: Create Kibana templates
+  uri:
+    url: http://192.168.56.12:5601/api/saved_objects/index-pattern/{{ item }}
+    method: POST
+    body: {"attributes":{"title":"{{ item }}","timeFieldName":"@timestamp"}}
+    body_format: json
+    status_code: 200
+    timeout: 10
+    headers:
+      kbn-xsrf: anything
+  with_items:
+    - dmzserver-*
+    - internalserver-*
+    - companyrouter-*
+    - winlogbeat-*       

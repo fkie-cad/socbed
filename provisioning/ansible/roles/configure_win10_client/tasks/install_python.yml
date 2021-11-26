@@ -1,0 +1,7 @@
+---
+- name: Install Python 3.7.3
+  win_chocolatey:
+    name: python3
+    state: present
+    version: 3.7.3
+    pinned: yes

@@ -1,0 +1,26 @@
+# This file is where you define your pipelines. You can define multiple.
+# For more information on multiple pipelines, see the documentation:
+#   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
+
+- pipeline.id: tcp_test_plugin
+  path.config: "/etc/logstash/conf.d/tcp_test_plugin.conf"
+{% if process_syslog_data == false %}
+- pipeline.id: SyslogToElasticsearch
+  path.config: "/etc/logstash/conf.d/SyslogToElasticsearch.conf"
+{% endif %}
+{% if process_syslog_data == true %}
+- pipeline.id: syslog_raw_SyslogToKafka
+  path.config: "/etc/logstash/conf.d/syslog_raw_SyslogToKafka.conf"
+- pipeline.id: syslog_processed_KafkaToElasticsearch
+  path.config: "/etc/logstash/conf.d/syslog_processed_KafkaToElasticsearch.conf"
+{% endif %}
+{% if process_win_event_log_data == false %}
+- pipeline.id: WineventlogToElasticsearch
+  path.config: "/etc/logstash/conf.d/wineventlogToElasticsearch.conf"
+{% endif %}
+{% if process_win_event_log_data == true %}
+- pipeline.id: wineventlog_raw_BeatToKafka
+  path.config: "/etc/logstash/conf.d/wineventlog_raw_BeatToKafka.conf"
+- pipeline.id: wineventlog_processed_KafkaToElasticsearch
+  path.config: "/etc/logstash/conf.d/wineventlog_processed_KafkaToElasticsearch.conf"
+{% endif %}

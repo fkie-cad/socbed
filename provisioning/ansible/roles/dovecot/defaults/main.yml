@@ -1,0 +1,8 @@
+---
+dovecot_sql_conf_path: "/etc/dovecot/dovecot-sql.conf.ext"
+dovecot_conf_path: "/etc/dovecot/dovecot.conf"
+dovecot_auth_conf_path: "/etc/dovecot/conf.d/10-auth.conf"
+dovecot_mail_conf_path: "/etc/dovecot/conf.d/10-mail.conf"
+dovecot_master_conf_path: "/etc/dovecot/conf.d/10-master.conf"
+dovecot_ssl_conf_path: "/etc/dovecot/conf.d/10-ssl.conf"
+dovecot_lda_conf_path: "/etc/dovecot/conf.d/15-lda.conf"

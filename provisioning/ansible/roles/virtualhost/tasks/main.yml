@@ -1,0 +1,75 @@
+---
+#
+# Installs the virtualhost
+#
+- name: "Install Apache"
+  apt:
+    name: apache2
+    update_cache: yes
+    state: present # can also be set to latest
+
+- name: "Create virtualhost directories"
+  file:
+    path: "{{vhost_logs_dir}}"
+    state: directory
+
+- name: "Touch error_log"
+  file:
+    path: "{{vhost_logs_dir}}/error_log"
+    state: touch
+
+- name: "Touch access_log"
+  file:
+    path: "{{vhost_logs_dir}}/access_log"
+    state: touch
+
+- name: "Write additional IP to the network interfaces"
+  blockinfile:
+    path: "/etc/systemd/network/eth0-static.network"
+    create: yes
+    block: |
+      [Address]
+      Label=eth0:1
+      Address=172.18.1.1/16
+
+- name: "Restart the systemd-networkd service"
+  service:
+    name: systemd-networkd
+    enabled: yes
+    state: restarted
+
+- name: "Add delay before apache2 service startup"
+  lineinfile:
+    path: "/usr/lib/systemd/system/apache2.service"
+    insertafter: '\[Service\]'
+    line: "ExecStartPre=/bin/sleep 20"
+    state: present
+
+- name: "Write config file for the Virtualhost at {{ sites_available_default_conf }}"
+  copy:
+    dest: "{{ sites_available_default_conf }}"
+    content: |
+      <VirtualHost 172.18.1.1:80>
+          DocumentRoot /var/www/vhost.com
+          ErrorLog /var/www/vhost.com/logs/error_log
+      </VirtualHost>
+
+- name: "Write config file for the Virtualhost at {{ sites_enabled_default_conf }}"
+  copy:
+    dest: "{{ sites_enabled_default_conf }}"
+    content: |
+      <VirtualHost 172.18.1.1:80>
+          DocumentRoot /var/www/vhost.com
+          ErrorLog /var/www/vhost.com/logs/error_log
+      </VirtualHost>
+
+- name: "Edit ports.conf file"
+  copy:
+    dest: "{{ ports_conf }}"
+    content: "Listen 172.18.1.1:80"
+
+- name: "Restart apache2"
+  service:
+    name: apache2
+    enabled: yes
+    state: restarted

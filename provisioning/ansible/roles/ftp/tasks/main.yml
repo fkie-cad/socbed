@@ -1,0 +1,22 @@
+---
+#
+# Ensures correct sources entry present in /etc/apt/sources.list
+# Installs ftp package
+#
+
+- name: Ensure sources list entry for kali-rolling
+  lineinfile:
+    path: "/etc/apt/sources.list"
+    state: present
+    insertbefore: BOF
+    line: "deb http://http.kali.org/kali kali-rolling main non-free contrib"
+
+- name: Add apt key
+  apt_key:
+    keyserver: hkp://keys.gnupg.net
+    id: 7D8D0BF6
+
+- name: Install ftp
+  apt:
+    name: ftp
+    update_cache: yes

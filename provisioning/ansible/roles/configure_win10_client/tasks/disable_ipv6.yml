@@ -1,0 +1,6 @@
+- name: Disable IPv6 for adapters "Ethernet" and "Ethernet 2"
+  win_shell: Disable-NetAdapterBinding -Name "{{ item }}" -ComponentID ms_tcpip6
+  loop:
+    - "Ethernet"
+    - "Ethernet 2"
+ 

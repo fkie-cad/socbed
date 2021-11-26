@@ -1,0 +1,30 @@
+---
+#
+# Install Spark
+#
+
+- name: Download Spark Tarball
+  get_url:
+    url: "{{ spark_url }}"
+    dest: "{{ spark_bin_tmp_archive }}"
+
+- name: "Extract Spark Tarball and move Spark to install directory {{ spark_dir }}"
+  unarchive:  
+    src: "{{ spark_bin_tmp_archive }}"
+    remote_src: yes
+    dest: "{{ spark_install_dir }}"
+
+- name: "Rename Spark folder to {{ spark_install_dir }}/spark"
+  shell: "mv {{ spark_install_dir }}{{ spark_version }} {{ spark_install_dir }}/spark"
+
+- name: Add Spark bin dir to system-wide $PATH.
+  copy:
+    dest: /etc/profile.d/spark.sh
+    content: 'PATH=$PATH:{{ spark_dir }}bin'
+
+# Use https://spark.apache.org/docs/latest/streaming-kafka-0-8-integration.html#approach-2-direct-approach-no-receivers
+# https://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-8-assembly_2.11/2.3.0/
+- name: Add KafkaDirectStream Connector to {{ spark_dir }}
+  get_url:
+    url: "https://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-8-assembly_2.11/2.3.0/spark-streaming-kafka-0-8-assembly_2.11-2.3.0.jar"
+    dest: "{{ spark_dir }}jars/"

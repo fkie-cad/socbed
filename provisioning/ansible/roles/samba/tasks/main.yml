@@ -1,0 +1,137 @@
+---
+#
+# Install samba
+#
+- name: Install samba
+  apt:
+    name: ['samba', 'krb5-user', 'krb5-config', 'winbind', 'libpam-winbind', 'libnss-winbind']
+    update_cache: yes
+    state: present
+
+- name: Install pexpect
+  apt:
+    name: python3-pexpect
+    state: present
+
+- name: Stop all samba services (while configuring)
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop:
+    - 'samba-ad-dc'
+    - 'smbd'
+    - 'nmbd'
+    - 'winbind'
+
+- name: Move existing smb.conf
+  command: "mv {{ samba_conf_path }} /etc/samba/smb.conf.initial"
+
+- name: "Provision {{ realm }} domain"
+  expect:
+    command: "samba-tool domain provision --use-rfc2307 --interactive"
+    echo: yes
+    responses:
+      "Realm": "{{ realm }}"
+      "Domain": ""
+      "Server Role": ""
+      "DNS backend": ""
+      "DNS forwarder IP address": ""
+      "Administrator password": "Qwerty1234"
+      "Retype password": "Qwerty1234"
+
+- name: Set complexity off for domain password settings
+  command: "samba-tool domain passwordsettings set --complexity=off"
+
+- name: Set min password length 0 for domain
+  command: "samba-tool domain passwordsettings set --min-pwd-length=0"
+
+- name: Set administrator password
+  expect:
+    command: "samba-tool user setpassword administrator"
+    responses:
+      "New Password": "{{ administrator_password }}"
+
+- name: Move default krb5.conf
+  command: "mv /etc/krb5.conf /etc/krb5.conf.initial"
+
+- name: Use a symlink of Samba's newly generated Kerberos file
+  command: "ln -s /var/lib/samba/private/krb5.conf /etc/"
+
+- name: Start and enable samba services
+  systemd:
+    name: "samba-ad-dc"
+    state: started
+    enabled: yes
+
+# TODO: Make regexes more generic
+- name: Edit dns-nameservers in /etc/network/interfaces
+  replace:
+    path: /etc/network/interfaces
+    regexp: "	dns-nameservers 172.16.0.1"
+    replace : "	dns-nameservers 127.0.0.1 172.16.0.1 \n	dns-search breach.local"
+
+- name: Reboot the machine
+  reboot:
+    connect_timeout: 600
+    reboot_timeout: 600
+
+- name: Disable expiry for user Administrator
+  command: "samba-tool user setexpiry Administrator --noexpiry"
+
+- name: Disable expiry for user krbtgt
+  command: "samba-tool user setexpiry krbtgt --noexpiry"
+
+- name: Disable expiry for user Guest
+  command: "samba-tool user setexpiry Guest --noexpiry"
+
+- name: Copy bash script to create 100 samba users
+  copy:
+    src: "../files/useraccounts/create_samba_accounts.sh"
+    dest: "/tmp/create_samba_accounts.sh"
+    mode: 0755
+
+- name: Execute bash script to create 100 samba users
+  command: "/tmp/create_samba_accounts.sh"
+
+# TODO: Samba network discovery doesn't work.
+# The files can be accessed by navigating to //INTERNALSERVER in Network,
+# but the INTERNALSERVER should automatically show up instead. Debug?
+
+- name: Creates directory for breach share
+  file:
+    path: "{{ share_path }}"
+    state: directory
+    mode: 0755
+
+- name: "Add {{ share_path }} as a share"
+  ini_file:
+    path: "{{ samba_conf_path }}"
+    state: present
+    section: "breach-shared"
+    option: "	path"
+    value: "{{ share_path }}"
+
+- name: "Set read only = yes for {{ share_path }} in samba conf"
+  ini_file:
+    path: "{{ samba_conf_path }}"
+    state: present
+    section: "breach-shared"
+    option: "	read only"
+    value: "Yes"
+
+- name: "Ensure interfaces = lo enp0s3 in samba conf [global] section"
+  ini_file:
+    path: "{{ samba_conf_path }}"
+    section: "global"
+    state: present
+    option: "	interfaces"
+    value: "lo enp0s3"
+
+- name: Restrict samba to enp0s3 interface
+  ini_file:
+    path: "{{ samba_conf_path }}"
+    section: "global"
+    state: present
+    option: "	bind interfaces only" # added tab in the name to align it in the conf
+    value: "yes"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+printf "Starting Company Router build. Please allow up to 20 minutes.\n"
+./tools/cleanup_failed_session  > /dev/null 2>&1
+
+vboxmanage startvm "Internet Router" --type headless
+export ANSIBLE_HOST_KEY_CHECKING=False
+cd ./provisioning/packer/
+
+if [ -n "$1" ] && [ $1 == "runner" ]; then
+export PACKER_CACHE_DIR=/usr/share/runner-dependencies
+packer build -force -var 'vm_output=/usr/share/runner-dependencies/companyrouter' companyrouter.json
+else
+packer build -force companyrouter.json
+fi
+
+if [ $? != 0 ]; then
+	printf "Packer exited with non-zero return code.\nResetting all previously built machines to their old snapshots...\n"
+	../../tools/cleanup_failed_session  > /dev/null 2>&1
+	exit 1
+fi
+
+cd ../..
+./tools/cleanup_failed_session  > /dev/null 2>&1
+printf "Task finished.\n\n"

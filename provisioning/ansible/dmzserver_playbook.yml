@@ -1,0 +1,47 @@
+---
+- hosts: dmzserver
+  become: true
+  gather_facts: true
+
+  vars:
+    logserver_ip: 172.16.0.3
+    ansible_python_interpreter: "/usr/bin/python3"
+    auditbeat_version: 7.3.2
+    authoritative_ntp_server: 172.18.0.1
+
+  tasks:
+    - name: "Add 172.17.0.2 dmzserver line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '172.17.0.2	dmzserver'
+        state: present
+
+    - name: "Remove 127.0.1.1 dmzserver line in /etc/hosts"
+      lineinfile:
+        path: "/etc/hosts"
+        line: '127.0.1.1	dmzserver'
+        state: absent
+
+  roles:
+    - basic_packages
+    - basic_tools
+    - auditbeat
+    - ntp
+    - rsyslog_ISO8601
+    - rsyslog_forwarding
+    - mysql
+    - postfix
+    - dovecot
+    - dvwa
+
+  post_tasks:
+    - name: Set up the DVWA database
+      script: ../ansible/misc/setup_dvwa_database
+    
+# NOTES:
+#
+# To check if dovecot+mysql+postfix are configured and working properly, run
+# $ echo "Subject: test" | sendmail -v client2@localdomain
+# should populate /var/vmail/localdomain/client2
+# can be checked by
+# $ cat /var/vmail/localdomain/client2/mail/new/*

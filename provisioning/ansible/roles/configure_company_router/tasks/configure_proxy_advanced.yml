@@ -1,0 +1,46 @@
+- name: Copy /var/ipfire/proxy/advanced/settings
+  copy:
+    src: files/proxy_advanced_settings
+    dest: /var/ipfire/proxy/advanced/settings
+
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /var/ipfire/proxy/advanced/acls
+    - /var/ipfire/proxy/advanced/ident
+    - /var/ipfire/proxy/advanced/radius
+
+- name: Copy /var/ipfire/proxy/advanced/acls/ports_safe.acl
+  copy:
+    src: files/proxy_advanced_acls_ports_safe.acl
+    dest: /var/ipfire/proxy/advanced/acls/ports_safe.acl
+
+- name: Copy /var/ipfire/proxy/advanced/acls/ports_ssl.acl
+  copy:
+    src: files/proxy_advanced_acls_ports_ssl.acl
+    dest: /var/ipfire/proxy/advanced/acls/ports_ssl.acl
+
+- name: Copy /var/ipfire/proxy/advanced/acls/src_subnets.acl
+  copy:
+    src: files/proxy_advanced_acls_src_subnets.acl
+    dest: /var/ipfire/proxy/advanced/acls/src_subnets.acl
+
+- name: Create files
+  file:
+    path: "{{ item }}"
+    state: touch
+  with_items:
+    - /var/ipfire/proxy/advanced/ident/hosts
+    - /var/ipfire/proxy/advanced/ident/identauth.allowusers
+    - /var/ipfire/proxy/advanced/ident/identauth.denyusers
+    - /var/ipfire/proxy/advanced/radius/radauth.allowusers
+    - /var/ipfire/proxy/advanced/radius/radauth.denyusers
+    - /var/ipfire/proxy/advanced/acls/dst_noproxy_ip.acl
+    - /var/ipfire/proxy/advanced/acls/dst_noproxy_url.acl
+
+
+
+
+

@@ -1,0 +1,14 @@
+input {
+  syslog {
+    type => syslog_raw
+    port => [5514]
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["172.16.0.3:9200"]
+    index => "syslog-%{logsource}-%{+YYYY.MM.dd}"
+  }
+}
+

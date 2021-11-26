@@ -1,0 +1,5 @@
+- name: Edit line in /etc/syslog.conf
+  lineinfile:
+    path: /etc/syslog.conf
+    regexp: '@hostname\.domain'
+    line: '@@logserver.breach.local'

@@ -1,0 +1,2 @@
+ENABLE_FILTER=on
+FILTER=[.](gif|jpeg|jpg|png|css|js)$

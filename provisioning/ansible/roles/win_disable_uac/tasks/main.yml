@@ -1,0 +1,23 @@
+---
+# Disable and turn off User Access Control for the Client
+# Refer: https://www.mydigitallife.net/how-to-disable-and-turn-off-uac-in-windows-7/
+
+- name: Suppress UAC consent prompt dialog
+  win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: ConsentPromptBehaviorAdmin
+    value: 0
+    type: dword
+
+- name: Set EnableLUA registry value to 0
+  win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: EnableLUA
+    value: 0
+    type: dword
+    state: present
+  register: uac_result
+
+- name: reboot after disabling UAC
+  win_reboot:
+  when: uac_result is changed

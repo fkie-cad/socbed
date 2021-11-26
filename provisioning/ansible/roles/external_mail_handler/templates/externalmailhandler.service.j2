@@ -1,0 +1,11 @@
+[Unit]
+Description=SOCBED External Mail Handler
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={{ exec_cmd }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

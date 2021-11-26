@@ -1,0 +1,15 @@
+[Unit]
+Description=Kafka Service
+Requires=network.target
+After=network.target zookeeper.service
+
+[Service]
+Type=simple
+Environment="JAVA_HOME={{ java_dir }}"
+ExecStart={{ kafka_dir }}bin/kafka-server-start.sh {{ kafka_dir }}config/server.properties
+ExecStop={{ kafka_dir }}bin/kafka-server-stop.sh 
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
