@@ -1,4 +1,4 @@
-name: SOCBED System Tests - DEV
+name: Nightly Build with System Tests (Development Branch)
 
 on:
   schedule:
