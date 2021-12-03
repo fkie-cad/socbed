@@ -11,8 +11,8 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 cd ./provisioning/packer/
 
 if [ -n "$1" ] && [ $1 == "runner" ]; then
-export PACKER_CACHE_DIR=/usr/share/runner-dependencies
-packer build -force -var 'vm_output=/usr/share/runner-dependencies/dmzserver' dmzserver.json
+export PACKER_CACHE_DIR=/usr/share/runner-dependencies/packer_cache
+packer build -force -var 'vm_output=/usr/share/runner-dependencies/virtual_machines/dmzserver' dmzserver.json
 else
 packer build -force dmzserver.json
 fi

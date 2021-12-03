@@ -1,0 +1,22 @@
+name: Weekly cache-clear
+
+on:
+  schedule:
+    - cron: "0 1 * * SUN" # At 01:00 on Sunday
+  workflow_dispatch:
+  
+jobs:
+  delete-cache:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Delete cached iso files
+        run: rm -rf /usr/share/runner-dependencies/packer_cache/*
+        
+      - name: Delete any remaining VM artifacts
+        run: rm -rf /usr/share/runner-dependencies/virtual_machines/*
+        
+      - name: Delete any remaining venv artifacts
+        run: rm -rf /usr/share/runner-dependencies/socbed_env || true
+        
