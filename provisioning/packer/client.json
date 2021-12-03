@@ -115,8 +115,8 @@
   ],
   "variables": {
     "floppy_files_path": "./floppy_files/",
-    "iso_checksum": "e47890d75a6e18211f6790d9d4864a17",
-    "iso_url": "/usr/share/runner-dependencies/Win10.iso",
+    "iso_checksum": "823c3cb59ff0fd43272f12bb2e3a089d",
+    "iso_url": "/usr/share/runner-dependencies/windows_isos/Win10_21H2_English_x64.iso",
     "vm_description": "SOCBED: Client",
     "vm_version": "fresh",
     "vm_output": "./exports/client"

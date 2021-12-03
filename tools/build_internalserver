@@ -13,8 +13,8 @@ echo "Sleep for 180 seconds to ensure the elasticsearch-service (Log Server) is 
 sleep 180
 
 if [ -n "$1" ] && [ $1 == "runner" ]; then
-export PACKER_CACHE_DIR=/usr/share/runner-dependencies
-packer build -force -var 'vm_output=/usr/share/runner-dependencies/internalserver' internalserver.json
+export PACKER_CACHE_DIR=/usr/share/runner-dependencies/packer_cache
+packer build -force -var 'vm_output=/usr/share/runner-dependencies/virtual_machines/internalserver' internalserver.json
 else
 packer build -force internalserver.json
 fi
