@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 echo "Starting default VM session at `date`..."
 vmconsole -c start_session
-echo "Waiting for five minutes for the VMs to be ready..."
+echo "Waiting for ten minutes for the VMs to be ready..."
 sleep 600
 echo "Running ten random attack chains..."
 generateattackchains -i 10 -s 12345 > sample_attack_chains

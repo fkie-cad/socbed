@@ -100,12 +100,12 @@ jobs:
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
       
-      - name: Run system tests ("not longtest")
+      - name: Run stable system tests
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: tox -- -m "systest and not longtest"
+          command: tox -- -m "systest and not unstable"
    
   delete-machines:
     runs-on: [self-hosted, linux]

@@ -12,10 +12,10 @@ The testbed can also be used to generate realistic log/traffic datasets for prod
 
 ## System Requirements
 
-* Physical host with Linux or macOS (running VirtualBox in a virtual machine might be possible as well but was not tested)
+* Physical host with Linux or macOS. Note: Running SOCBED (and therefore VirtualBox) in a virtual machine might work as well but was not tested.
 * RAM: 16 GB minimum, 32 GB recommended
 * CPU: Quad-core with hardware support for virtualization
-* HDD: 50 GB free, SSD is mandatory
+* HDD: 50 GB free, SSD strongly recommended
 
 More resources are required depending on the desired number of simulated clients.
 The numbers above are valid for small simulations with 1-10 clients.
@@ -56,16 +56,9 @@ pip install --editable .
 ```
 
 Next, build all SOCBED virtual machines via ansible and packer while within the virtual environment. Before doing so, you need to:
-- Download a Windows 10 64-bit ISO image from Microsoft and place it in the `provisioning/packer/` directory. We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
-- Change permissions with:
-    ```sh
-    sudo chmod 744 ./provisioning/packer/<filename>.iso
-    ```
-- Calculate the md5 checksum:
-    ```sh
-    md5sum ./provisioning/packer/<filename>.iso
-    ```
-- Update the `iso_url` and `iso_checksum` values in `provisioning/packer/client.json` accordingly.
+- Download a Windows 10 64-bit ISO image from Microsoft. We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
+- Calculate the md5 checksum of this ISO file using `md5sum <filename>.iso`.
+- Open the file `provisioning/packer/client.json` and change the values of the fields `iso_url` and `iso_checksum` accordingly.
 
 The script below will execute everything required to build and configure each respective machine, including snapshotting.
 It will download the remaining ISO files, automatically boot the machines and provision the necessary versions of software dependencies with no human interaction needed.
@@ -97,12 +90,15 @@ Run all unit tests from the repository root directory:
 tox -- -m "not systest"
 ```
 
-If they succeed, run the essential system tests:
-```sh
-tox -- -m "systest and not longtest"
-```
+If they succeed, run all stable system tests:
 
-Attention: System tests will start and stop the virtual machines several times and  can take a while to complete!
+Attention: System tests will start and stop the virtual machines several times and can take a while to complete!
+Do not use SOCBED VMs or apps (`attackconsole`, `vmconsole`) while system tests are running.
+
+```sh
+tox -- -m "systest and not unstable"
+```
+(Unstable systests sometimes fail despite correct SOCBED functionality, we're working on it.)
 
 ## Example
 
@@ -157,7 +153,7 @@ By default, the Client logs in automatically as user `setup` in order to change 
 To avoid this, you can press and hold the Shift key when Windows starts up.
 
 There is also an SSH server running on the Client (only accessible via the management network).
-Login via SSH is only possible with username `breach` and password `breach`.
+Login via SSH is only possible with username `ssh` and password `breach`.
 
 The following table shows all available web interfaces and their logins:
 
