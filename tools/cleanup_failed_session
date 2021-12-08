@@ -15,7 +15,7 @@ CLONED_VMS=`vboxmanage list vms | grep 'Clone'| sed -e 's/["a-zA-Z0-9 ]*//'`
 echo "Powering off any VMs that are still running..."
 IFS=$'\n'
 for RUNNINGVM in ${RUNNING_VMS[@]}; do
-	if ! vboxmanage showvminfo "$RUNNINGVM" | grep -q "BREACH"; then
+	if ! vboxmanage showvminfo "$RUNNINGVM" | grep -q "SOCBED"; then
 		continue
 	fi
 	vboxmanage controlvm $RUNNINGVM poweroff
