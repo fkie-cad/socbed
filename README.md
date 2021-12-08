@@ -90,12 +90,15 @@ Run all unit tests from the repository root directory:
 tox -- -m "not systest"
 ```
 
-If they succeed, run the essential system tests:
-```sh
-tox -- -m "systest and not longtest"
-```
+If they succeed, run all stable system tests:
 
-Attention: System tests will start and stop the virtual machines several times and  can take a while to complete!
+Attention: System tests will start and stop the virtual machines several times and can take a while to complete!
+Do not use SOCBED VMs or apps (`attackconsole`, `vmconsole`) while system tests are running.
+
+```sh
+tox -- -m "systest and not unstable"
+```
+(Unstable systests sometimes fail despite correct SOCBED functionality, we're working on it.)
 
 ## Example
 

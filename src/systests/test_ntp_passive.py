@@ -29,7 +29,7 @@ from attacks.ssh import BREACHSSHClient, SSHTargets
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
-pytestmark = [pytest.mark.systest, pytest.mark.longtest]
+pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
 
 @pytest.fixture(scope="module")
