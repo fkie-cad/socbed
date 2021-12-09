@@ -31,3 +31,4 @@
     - spearphishing
     - generate_malware
     - ssh_config
+    - dosfstools
