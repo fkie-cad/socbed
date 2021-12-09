@@ -3,6 +3,11 @@
 printf "Starting build. Please allow up to 120 minutes.\n"
 ./tools/cleanup_failed_session  > /dev/null 2>&1
 
+printf "Building userbehavior.pex file.\n"
+cd ./src/userbehavior
+../../../bin/pex . -c userbehavior -o ../../provisioning/ansible/roles/configure_win10_client/files/win10_assets/userbehavior.pex --disable-cache
+cd ../../
+
 vboxmanage startvm "Internet Router" --type headless
 vboxmanage startvm "Company Router" --type headless
 vboxmanage startvm "Log Server" --type headless

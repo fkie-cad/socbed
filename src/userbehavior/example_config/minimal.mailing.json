@@ -1,0 +1,7 @@
+{
+  "mailer": {
+    "implementation": "NullMailer"
+  },
+  "profile": {
+  }
+}

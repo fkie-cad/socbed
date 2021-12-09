@@ -25,6 +25,11 @@
     src: files/win10_assets/run_userbehavior.py
     dest: C:\BREACH\run_userbehavior.py
 
+- name: Upload userbehavior.pex to the client
+  win_copy:
+    src: files/win10_assets/userbehavior.pex
+    dest: C:\BREACH\userbehavior.pex
+
 - name: Allow all users the write permission for C:\BREACH folder (for logs)
   win_acl:
     path: C:\BREACH
@@ -33,8 +38,3 @@
     type: allow
     state: present
 
-#- name: Create a shortcut for run_userbehavior in the Startup folder (for all users)
-#  win_shortcut:
-#    src: C:\BREACH\run_userbehavior.py
-#    dest: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\run_userbehavior.lnk'
-#    directory: C:\BREACH

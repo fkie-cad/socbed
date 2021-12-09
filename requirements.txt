@@ -1,8 +1,10 @@
 ansible==2.8.5
 colorama==0.4.1
 paramiko==2.7.2
+pex==2.0.0
 pytest==5.2.0
 pyvmomi==6.7.1.2018.12
 pywinrm==0.4.1
+selenium
 tox==3.7.0
 veryprettytable==0.8.1
