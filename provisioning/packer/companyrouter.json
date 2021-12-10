@@ -9,6 +9,7 @@
   },
   "builders": [
     {
+      "memory": "1536",
       "name": "Company-Router (IP-Fire)",
       "type": "virtualbox-iso",
       "guest_os_type": "Linux_64",
