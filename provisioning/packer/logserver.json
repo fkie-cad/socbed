@@ -54,7 +54,7 @@
         "http://old-releases.ubuntu.com/releases/16.04.5/ubuntu-16.04.6-server-amd64.iso"
       ],
       "keep_registered": "true",
-      "memory": "4096",
+      "memory": "3072",
       "output_directory": "{{user `vm_output`}}",
       "pause_before_connecting": "1m",
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
