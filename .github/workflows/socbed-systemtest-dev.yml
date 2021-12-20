@@ -27,6 +27,7 @@ jobs:
   build-machines:
     runs-on: [self-hosted, linux]
     needs: [prepare-environment]
+    timeout-minutes: 480
     steps:
       - uses: actions/checkout@v2
         with:
@@ -80,7 +81,7 @@ jobs:
       - name: Build Client
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 120
+          timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_client runner
         
