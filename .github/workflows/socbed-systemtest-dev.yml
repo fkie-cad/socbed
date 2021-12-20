@@ -80,7 +80,7 @@ jobs:
       - name: Build Client
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 120
+          timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_client runner
         
