@@ -66,8 +66,6 @@ The following packages are required for the tasks executed by the runner (WIP: I
 
 - Configure the management network interface:
     ```sh
-    # become the gitlab-runner user to configure virtualbox
-    sudo su - gitlab-runner
     vboxmanage hostonlyif create # should create vboxnet0, else adapt following lines
     vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
     vboxmanage dhcpserver modify --ifname vboxnet0 --disable
