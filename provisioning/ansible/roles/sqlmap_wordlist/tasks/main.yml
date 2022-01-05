@@ -4,7 +4,7 @@
 #
 - name: "Copy the re-encoded wordlist zip file"
   copy:
-    src: "../../../../Attacker/sqlmap/wordlist.re-encoded_to_utf-8.zip"
+    src: "../files/wordlist.re-encoded_to_utf-8.zip"
     dest: "{{ sqlmap_wl_location }}{{ sqlmap_wl_zip_name }}"
   
 - name: "Extract re-encoded wordlist into {{ sqlmap_wl_location }}"
