@@ -1,0 +1,22 @@
+---
+
+#
+# Install NodeJS
+#
+
+- name: Installing NodeJS repository key
+  apt_key: url=https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+
+- name: Add official NodeJS repo
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_6.x {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: true
+
+- name: Install NodeJS (requirement for Elasticdump)
+  apt:
+    name: nodejs
+    update_cache: yes
+    state: present
+
+
