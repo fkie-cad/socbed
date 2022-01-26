@@ -78,7 +78,7 @@ The following packages are required for the tasks executed by the runner:
     sudo mkdir /usr/share/runner-dependencies/packer_cache
     sudo mkdir /usr/share/runner-dependencies/virtual_machines
     
-    sudo mv /path/to/your/Windows.iso /usr/share/runner-dependecies/Win10.iso
+    sudo mv /path/to/your/Windows.iso /usr/share/runner-dependecies/packer_cache/Win10.iso
     
     sudo chmod -R 777 /usr/share/runner-dependencies/
     # necessary, otherwise the runner process will be unable to provision VMs
