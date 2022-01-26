@@ -69,7 +69,6 @@ The following packages are required for the tasks executed by the runner:
     vboxmanage hostonlyif create # should create vboxnet0, else adapt following lines
     vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
     vboxmanage dhcpserver modify --ifname vboxnet0 --disable
-    exit
     ```
     
 - Create the `/usr/share/runner-dependencies`-directory and its subfolders, place the provided Windows10 Pro .iso-file in the iso-directory (Windows version used for testing: `Microsoft Windows 10 Pro 10.0.19041 Build 19041`) and change permissions for the entire directory:
