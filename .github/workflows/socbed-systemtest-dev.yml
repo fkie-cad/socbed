@@ -103,15 +103,12 @@ jobs:
       - name: Activate virtual environment
         run: source /usr/share/runner-dependencies/socbed_env/bin/activate
       
-      - name: Ensure all machines are powered off
-        run: ./tools/cleanup_failed_session
-      
-      - name: Run stable system tests
+      - name: Ensure all machines are powered off and run stable system tests
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: tox -- -m "systest and not unstable"
+          command: ./tools/cleanup_failed_session && tox -- -m "systest and not unstable"
    
   delete-machines:
     runs-on: [self-hosted, linux]
