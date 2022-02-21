@@ -4,13 +4,13 @@
     {
       "boot_command": [
         "<wait><esc><wait>",
-        "/install.amd/vmlinuz ",
-        "initrd=/install.amd/initrd.gz ",
-        "auto-install/enable=true ",
-        "debconf/priority=critical ",
-        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ",
-        "netcfg/choose_interface=enp0s8 ",
-        "netcfg/disable_autoconfig=true ",
+        "/install.amd/vmlinuz ", "<wait5s>",
+        "initrd=/install.amd/initrd.gz ", "<wait5s>",
+        "auto-install/enable=true ", "<wait5s>",
+        "debconf/priority=critical ", "<wait5s>",
+        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ", "<wait5s>",
+        "netcfg/choose_interface=enp0s8 ", "<wait5s>",
+        "netcfg/disable_autoconfig=true ", "<wait5s>",
         "netcfg/get_ipaddress=192.168.56.31 ",
         "netcfg/get_netmask=255.255.255.0 ",
         "netcfg/get_gateway=192.168.56.1 ",
@@ -38,9 +38,9 @@
       "guest_os_type": "Debian_64",
       "headless": "true",
       "http_directory": "http",
-      "iso_checksum": "sha1:fc46ccdbccda8723aae257f190182b4ac41e91bd",
+      "iso_checksum": "sha1:cd1cbae6eb009267b08c94c77c4078898a9d6c2c",
       "iso_urls": [
-        "https://cdimage.kali.org/kali-2021.1/kali-linux-2021.1-installer-amd64.iso"
+        "https://cdimage.kali.org/kali-2021.4/kali-linux-2021.4-installer-amd64.iso"
       ],
       "keep_registered": "true",
       "memory": "1024",

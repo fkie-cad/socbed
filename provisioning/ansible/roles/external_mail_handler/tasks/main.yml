@@ -11,7 +11,7 @@
 
 - name: "Copy the script to fixed destination"
   copy:
-    src: "../../../../Attacker/externalmailhandler/{{ script }}"
+    src: "../files/{{ script }}"
     dest: "{{ script_path }}"
 
 - name: "Create log directory {{ log_dir }}"

@@ -22,6 +22,9 @@ jobs:
         
       - name: Install requirements in virtual environment (without using cached packages)
         run: pip3 install -r requirements.txt --no-cache-dir
+        
+      - name: Install socbed
+        run: pip install --editable .
   
   build-machines:
     runs-on: [self-hosted, linux]
@@ -57,7 +60,7 @@ jobs:
       - name: Build Log Server
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 60
+          timeout_minutes: 120
           max_attempts: 3
           command: ./tools/build_logserver runner
         
@@ -104,7 +107,7 @@ jobs:
       - name: Run stable system tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 30
+          timeout_minutes: 60
           max_attempts: 3
           command: tox -- -m "systest and not unstable"
    
