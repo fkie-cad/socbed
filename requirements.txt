@@ -1,4 +1,4 @@
-ansible==2.8.5
+ansible==5.1.0
 colorama==0.4.1
 paramiko==2.7.2
 pytest==5.2.0

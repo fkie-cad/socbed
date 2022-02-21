@@ -60,7 +60,7 @@ jobs:
       - name: Build Log Server
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 60
+          timeout_minutes: 120
           max_attempts: 3
           command: ./tools/build_logserver runner
         
