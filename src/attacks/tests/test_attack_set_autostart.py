@@ -56,5 +56,5 @@ class TestSetAutostartAttack:
 
     def test_no_exception_good_output(self, attack: SetAutostartAttack):
         indicator = "The operation completed successfully."
-        attack.exec_commands_on_target = lambda _: attack.printer.print(indicator)
+        attack.exec_command_on_target = lambda _: attack.printer.print(indicator)
         attack.run()

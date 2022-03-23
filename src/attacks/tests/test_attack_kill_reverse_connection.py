@@ -37,11 +37,11 @@ class TestKillReverseConnectionAttack():
         assert KillReverseConnectionAttack.info.name == "disinfect_client"
 
     def test_raise_exception_bad_output(self, attack: KillReverseConnectionAttack):
-        attack.exec_commands_on_target = lambda _: attack.printer.print("Failure.")
+        attack.exec_command_on_target = lambda _: attack.printer.print("Failure.")
         with pytest.raises(AttackException):
             attack.run()
 
     def test_no_exception_good_output(self, attack: KillReverseConnectionAttack):
         indicator = "Successful wmic execution"
-        attack.exec_commands_on_target = lambda _: attack.printer.print(indicator)
+        attack.exec_command_on_target = lambda _: attack.printer.print(indicator)
         attack.run()
