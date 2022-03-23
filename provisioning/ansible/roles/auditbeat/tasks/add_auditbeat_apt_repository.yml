@@ -1,8 +1,11 @@
 ---
 - name: Add Elastic apt key
   apt_key:
-    url: "https://packages.elastic.co/GPG-KEY-elasticsearch"
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
     state: present
+  retries: 2
+  register: result
+  until: result is succeeded
 
 - name: Add Elastic repo
   apt_repository:
