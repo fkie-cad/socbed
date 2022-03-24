@@ -2,6 +2,9 @@
   get_url:
     url: "https://artifacts.elastic.co/downloads/beats/packetbeat/{{ packetbeat_name }}.tar.gz"
     dest: "/tmp"
+  retries: 2
+  register: result
+  until: result is succeeded
     
 - name: Unpack packetbeat files to /opt/
   unarchive:
