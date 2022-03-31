@@ -19,7 +19,6 @@ import json
 import os
 import re
 import time
-import urllib.request
 from http.client import HTTPConnection, CannotSendRequest
 from collections import namedtuple
 
