@@ -150,6 +150,10 @@ class SubAttackConsole(Cmd):
         return [option + " " for option in self.attack_option_descriptions.keys() if
                 option.startswith(text)]
 
+    def do_reset(self, _arg):
+            self.attack.options._set_options_to_none()
+            self.attack.options._set_defaults()
+
     def do_run(self, arg):
         attack_name = self.attack.info.name
         log_dict = LogDict(event="run_attack", attack=attack_name)
