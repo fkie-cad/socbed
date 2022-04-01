@@ -91,7 +91,7 @@ class TestUserbehavior:
     def query_elasticsearch(self, es_query, timeout_counter, conn=-1):
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
         try_until_counter_reached(
-            lambda: self.wait_for_kibana(),
+            lambda: self.check_elastic_status(),
             timeout_counter,
             assertion_func=lambda response: b"\"status\":\"yellow\"" in response.content
         )
@@ -111,6 +111,6 @@ class TestUserbehavior:
         timestamp = json.loads(response)["hits"]["hits"][0]["_source"][es_query.timestamp_key]
         return self.is_iso8601_timestamp(timestamp)
 
-    def wait_for_kibana(self):
+    def check_elastic_status(self):
         response = requests.get(f"http://{self.log_server.hostname}:9200/_cluster/health")
         return response
