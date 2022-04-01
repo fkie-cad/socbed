@@ -31,7 +31,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest, pytest.mark.new]
+pytestmark = [pytest.mark.systest]
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +52,6 @@ class TestUserbehavior:
     log_server = SSHTargets.log_server
 
     def test_browsing(self, timeout_counter):
-        # time.sleep(120)
         elasticsearch_query_values = namedtuple(
             "elasticsearch_query_values", "value search_keyword timestamp_key")
         called_website = "www.general-anzeiger-bonn.de"
@@ -91,7 +90,11 @@ class TestUserbehavior:
 
     def query_elasticsearch(self, es_query, timeout_counter, conn=-1):
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
-        self.wait_for_kibana()
+        try_until_counter_reached(
+            lambda: self.wait_for_kibana(),
+            timeout_counter,
+            assertion_func=lambda response: b"\"status\":\"yellow\"" in response.content
+        )
         conn = HTTPConnection(f"{self.log_server.hostname}:9200")
         search_query = json.dumps(
             {"query": {"constant_score": {"filter": {"term": {
@@ -108,14 +111,6 @@ class TestUserbehavior:
         timestamp = json.loads(response)["hits"]["hits"][0]["_source"][es_query.timestamp_key]
         return self.is_iso8601_timestamp(timestamp)
 
-    def wait_for_kibana(self, host_up=False, ret_code=400):
-        while not host_up:
-            time.sleep(5)
-            # this is a potential security risk
-            host_up = True if os.system("ping -q -c 1 " + self.log_server.hostname) == 0 else False
-        while ret_code != 200:
-            try:
-                ret_code = requests.head(f"http://{self.log_server.hostname}:9200/").status_code
-            except requests.ConnectionError:
-                time.sleep(5)
-        time.sleep(20)
+    def wait_for_kibana(self):
+        response = requests.get(f"http://{self.log_server.hostname}:9200/_cluster/health")
+        return response
