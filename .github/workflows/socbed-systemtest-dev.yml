@@ -110,7 +110,7 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 60
-          max_attempts: 3
+          max_attempts: 5
           command: tox -- -m "systest and not unstable"
    
   delete-machines:
