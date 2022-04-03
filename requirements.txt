@@ -1,6 +1,6 @@
 ansible==5.1.0
 colorama==0.4.1
-paramiko==2.7.2
+paramiko==2.10.1
 pytest==5.2.0
 pyvmomi==6.7.1.2018.12
 pywinrm==0.4.1
