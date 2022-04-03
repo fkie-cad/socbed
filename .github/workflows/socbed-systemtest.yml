@@ -107,8 +107,9 @@ jobs:
       - name: Run stable system tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 60
-          max_attempts: 3
+          timeout_minutes: 45
+          max_attempts: 5
+          on_retry_command: ./tools/cleanup_failed_session
           command: tox -- -m "systest and not unstable"
    
   delete-machines:
