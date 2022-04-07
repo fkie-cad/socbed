@@ -16,10 +16,9 @@
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import os
 import re
 import time
-from http.client import HTTPConnection, CannotSendRequest
+from http.client import HTTPConnection
 from collections import namedtuple
 
 import pytest
@@ -31,7 +30,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest]
+pytestmark = [pytest.mark.systest, pytest.mark.new]
 
 
 @pytest.fixture(scope="module")
@@ -60,9 +59,9 @@ class TestUserbehavior:
 
     def check_remote_log_format(self, es_query, timeout_counter):
         try_until_counter_reached(
-            lambda: self.query_elasticsearch(es_query, timeout_counter),
+            lambda: self.query_elasticsearch(es_query),
             timeout_counter,
-            exception=IndexError,
+            exception=(IndexError, OSError, KeyError),
             assertion_func=lambda x: self.check_elasticsearch_response(x, es_query))
 
     def is_iso8601_timestamp(self, timestamp):
@@ -88,22 +87,14 @@ class TestUserbehavior:
             self.is_iso8601_timestamp(invalid_timestamp)
             for invalid_timestamp in invalid_timestamps)
 
-    def query_elasticsearch(self, es_query, timeout_counter, conn=-1):
+    def query_elasticsearch(self, es_query):
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
-        try_until_counter_reached(
-            lambda: self.check_elastic_status(),
-            timeout_counter,
-            assertion_func=lambda response: b"\"status\":\"yellow\"" in response.content
-        )
         conn = HTTPConnection(f"{self.log_server.hostname}:9200")
         search_query = json.dumps(
             {"query": {"constant_score": {"filter": {"term": {
                 es_query.search_keyword: es_query.value}}}}})
-        try_until_counter_reached(
-            lambda: conn.request(
-                method="POST", url="/_search", body=str(search_query), headers=headers),
-            timeout_counter,
-            exception=(TimeoutError, ConnectionRefusedError, CannotSendRequest))
+        conn.request(
+                method="POST", url="/_search", body=str(search_query), headers=headers)
         return str(conn.getresponse().read(), 'utf-8')
 
     def check_elasticsearch_response(self, response, es_query):
