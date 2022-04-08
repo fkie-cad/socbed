@@ -1,6 +1,6 @@
 # OpenSSH installation variables
 openssh_temporary_dir: "C:\\Temp"
-openssh_download_url: "https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.1.0.0p1-Beta/OpenSSH-Win64.zip"
+openssh_download_url: "https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.0.0.0p1-Beta/OpenSSH-Win64.zip"
 openssh_extract_dir: "C:\\OpenSSH"
 openssh_archive_name: "OpenSSH-Win64"
 

@@ -34,7 +34,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest]
+pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
 
 @pytest.fixture(scope="module")

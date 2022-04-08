@@ -22,7 +22,6 @@ from http.client import HTTPConnection
 from collections import namedtuple
 
 import pytest
-import requests
 
 from attacks.ssh import SSHTargets
 from systests.helpers import try_until_counter_reached
@@ -30,7 +29,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest, pytest.mark.new]
+pytestmark = [pytest.mark.systest]
 
 
 @pytest.fixture(scope="module")
@@ -101,7 +100,3 @@ class TestUserbehavior:
         print(response)
         timestamp = json.loads(response)["hits"]["hits"][0]["_source"][es_query.timestamp_key]
         return self.is_iso8601_timestamp(timestamp)
-
-    def check_elastic_status(self):
-        response = requests.get(f"http://{self.log_server.hostname}:9200/_cluster/health")
-        return response
