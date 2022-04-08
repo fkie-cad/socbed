@@ -36,6 +36,7 @@ from vmcontrol.vmmcontroller import VBoxController
 MAX_RUNTIME = 10 * 60  # Ten minutes
 pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
+
 @pytest.fixture(scope="module")
 def session():
     sh = SessionHandler(VBoxController())
@@ -47,6 +48,7 @@ def session():
 @pytest.fixture(scope="module")
 def timeout_counter():
     return time.perf_counter() + MAX_RUNTIME
+
 
 @pytest.mark.usefixtures("session", "timeout_counter")
 class TestLogging:
