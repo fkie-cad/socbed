@@ -60,9 +60,10 @@ def timeout_counter():
 @pytest.mark.usefixtures("session")
 class TestAttack:
     attacks = [
-        # Misc attacks: These attacks are all self-contained, their order does not matter.
+        # Dependent misc attacks: Attacks need to be executed in this order
         DownloadMalwareAttack(),
         ExecuteMalwareAttack(),
+        # Independent misc attacks: Attacks are self-contained, their order does not matter.
         FlashdriveExfiltrationAttack(),
         SetAutostartAttack(),
         SQLMapAttack(),
