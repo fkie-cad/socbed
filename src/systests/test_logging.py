@@ -34,7 +34,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest, pytest.mark.unstable]
+pytestmark = [pytest.mark.systest, pytest.mark.logging]
 
 
 @pytest.fixture(scope="module")
@@ -113,9 +113,9 @@ class TestLogging:
 
     def check_remote_log_format(self, es_query, timeout_counter):
         try_until_counter_reached(
-            lambda: self.query_elasticsearch(es_query, timeout_counter),
+            lambda: self.query_elasticsearch(es_query),
             timeout_counter,
-            exception=IndexError,
+            exception=(IndexError, OSError, KeyError),
             assertion_func=lambda x: self.check_elasticsearch_response(x, es_query))
 
     def exec_command_and_get_output_list(self, machine, command, timeout_counter):
@@ -150,17 +150,14 @@ class TestLogging:
             self.is_iso8601_timestamp(invalid_timestamp)
             for invalid_timestamp in invalid_timestamps)
 
-    def query_elasticsearch(self, es_query, timeout_counter):
+    def query_elasticsearch(self, es_query):
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
         conn = HTTPConnection(f"{self.log_server.hostname}:9200")
         search_query = json.dumps(
             {"query": {"constant_score": {"filter": {"term": {
                 es_query.search_keyword: es_query.token}}}}})
-        try_until_counter_reached(
-            lambda: conn.request(
-                method="POST", url="/_search", body=str(search_query), headers=headers),
-            timeout_counter,
-            exception=(TimeoutError, ConnectionRefusedError, CannotSendRequest))
+        conn.request(
+            method="POST", url="/_search", body=str(search_query), headers=headers)
         return str(conn.getresponse().read(), 'utf-8')
 
     def check_elasticsearch_response(self, response, es_query):
