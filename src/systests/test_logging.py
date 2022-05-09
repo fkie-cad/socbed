@@ -34,7 +34,7 @@ from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
 MAX_RUNTIME = 10 * 60  # Ten minutes
-pytestmark = [pytest.mark.systest, pytest.mark.unstable]
+pytestmark = [pytest.mark.systest]
 
 
 @pytest.fixture(scope="module")
@@ -79,7 +79,7 @@ class TestLogging:
             es_query = elasticsearch_query_values(self.unique_token(), "message", "@timestamp")
             self.generate_windows_log(machine, es_query.token, timeout_counter)
         else:
-            es_query = elasticsearch_query_values(self.unique_token(), "message", "timestamp")
+            es_query = elasticsearch_query_values(self.unique_token(), "message", "timestamp8601")
             self.generate_linux_log(machine, es_query.token, timeout_counter)
             self.check_local_log_format(machine, es_query.token, timeout_counter)
         if machine in self.forwarding_machines:
@@ -115,7 +115,7 @@ class TestLogging:
         try_until_counter_reached(
             lambda: self.query_elasticsearch(es_query, timeout_counter),
             timeout_counter,
-            exception=IndexError,
+            exception=(IndexError, TimeoutError, ConnectionRefusedError, CannotSendRequest),
             assertion_func=lambda x: self.check_elasticsearch_response(x, es_query))
 
     def exec_command_and_get_output_list(self, machine, command, timeout_counter):
@@ -132,8 +132,7 @@ class TestLogging:
             r"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\d\d\d\d[+-]\d\d:\d\d")
         iso8601_b = re.compile(
             r"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ")
-        return (iso8601_a.match(timestamp) is not None
-                or iso8601_b.match(timestamp) is not None)
+        return (iso8601_a.match(timestamp) is not None) or (iso8601_b.match(timestamp) is not None)
 
     def test_is_iso8601_timestamp(self):
         valid_timestamps = [
@@ -156,11 +155,8 @@ class TestLogging:
         search_query = json.dumps(
             {"query": {"constant_score": {"filter": {"term": {
                 es_query.search_keyword: es_query.token}}}}})
-        try_until_counter_reached(
-            lambda: conn.request(
-                method="POST", url="/_search", body=str(search_query), headers=headers),
-            timeout_counter,
-            exception=(TimeoutError, ConnectionRefusedError, CannotSendRequest))
+        conn.request(
+            method="POST", url="/_search", body=str(search_query), headers=headers)
         return str(conn.getresponse().read(), 'utf-8')
 
     def check_elasticsearch_response(self, response, es_query):
