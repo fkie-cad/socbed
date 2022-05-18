@@ -113,7 +113,7 @@ class TestLogging:
 
     def check_remote_log_format(self, es_query, timeout_counter):
         try_until_counter_reached(
-            lambda: self.query_elasticsearch(es_query, timeout_counter),
+            lambda: self.query_elasticsearch(es_query),
             timeout_counter,
             exception=(IndexError, TimeoutError, ConnectionRefusedError, CannotSendRequest),
             assertion_func=lambda x: self.check_elasticsearch_response(x, es_query))
@@ -149,7 +149,7 @@ class TestLogging:
             self.is_iso8601_timestamp(invalid_timestamp)
             for invalid_timestamp in invalid_timestamps)
 
-    def query_elasticsearch(self, es_query, timeout_counter):
+    def query_elasticsearch(self, es_query):
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
         conn = HTTPConnection(f"{self.log_server.hostname}:9200")
         search_query = json.dumps(

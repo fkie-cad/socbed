@@ -96,7 +96,7 @@
     {
       "expect_disconnect": "true",
       "script": "./post_install/attacker_setup.sh",
-      "timeout": "2m",
+      "timeout": "5m",
       "type": "shell"
     },
     {
@@ -104,7 +104,7 @@
         "-i",
         "../ansible/hosts"
       ],
-      "pause_before": "2m",
+      "pause_before": "5m",
       "playbook_file": "../ansible/attacker_playbook.yml",
       "type": "ansible"
     }
