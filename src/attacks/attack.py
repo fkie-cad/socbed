@@ -73,8 +73,10 @@ class Attack:
     def wrap_ssh_exceptions(self):
         try:
             yield
-        except (paramiko.SSHException, socket.error, socket.timeout) as e:
-            raise AttackException(e)
+        except socket.timeout:
+            print(f"Timeout after {self.ssh_client.channel_timeout}s")
+        except (paramiko.SSHException, socket.error) as err:
+            raise AttackException(err) from err
 
     def exec_command_on_target(self, command):
         self.exec_commands_on_target([command])
