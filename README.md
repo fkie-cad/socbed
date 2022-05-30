@@ -62,9 +62,9 @@ pip install --editable .
 ```
 
 Before building SOCBED, you need to manually download Windows 10 and adapt a provisioning script:
-- Download a Windows 10 64-bit ISO image from Microsoft. We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
+- Download a Windows 10 64-bit ISO image from Microsoft (see [here](https://www.microsoft.com/en-us/software-download/windows10ISO)). We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
 - Calculate the MD5 hash of this ISO file using `md5sum <filename>.iso`.
-- Open the file `provisioning/packer/client.json` and change the values of the fields `iso_url` and `iso_checksum` accordingly.
+- Open the file `provisioning/packer/client.json` and change the values of the fields `iso_url` and `iso_checksum` under `variables` (at the bottom of the file) accordingly.
 
 The script below will execute everything required to build and configure each respective machine, including snapshotting.
 It will download the remaining ISO files, automatically boot the machines and provision the necessary versions of software dependencies with no interaction needed.
