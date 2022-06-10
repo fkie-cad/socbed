@@ -5,7 +5,8 @@
     "ssh_host_addr": "192.168.56.30",
     "vm_description": "SOCBED: Internet Router",
     "vm_version": "fresh",
-    "vm_output": "./exports/InternetRouter"
+    "vm_output": "./exports/InternetRouter",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   },
   "builders": [
     {
@@ -38,7 +39,7 @@
           "--nic3",
           "hostonly",
           "--hostonlyadapter3",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ]
       ],
       "boot_wait": "10s",

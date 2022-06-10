@@ -78,7 +78,7 @@
           "--nic2",
           "hostonly",
           "--hostonlyadapter2",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ],
         [
           "modifyvm",
@@ -125,7 +125,8 @@
     "ssh_host_addr": "192.168.56.11",
     "vm_description": "SOCBED: Internal Server",
     "vm_version": "fresh",
-    "vm_output": "./exports/internalserver"
+    "vm_output": "./exports/internalserver",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
 

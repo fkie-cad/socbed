@@ -66,7 +66,7 @@
           "--nic2",
           "hostonly",
           "--hostonlyadapter2",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ],
         [
           "modifyvm",
@@ -114,7 +114,8 @@
     "ssh_host_addr": "192.168.56.31",
     "vm_description": "SOCBED: Attacker",
     "vm_version": "fresh",
-    "vm_output": "./exports/attacker"
+    "vm_output": "./exports/attacker",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
 

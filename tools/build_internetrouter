@@ -3,13 +3,16 @@
 printf "Starting Internet Router build. Please allow up to 20 minutes.\n"
 ./tools/cleanup_failed_session  > /dev/null 2>&1
 
+source ./tools/helper
+get_hostonlyif
+
 export ANSIBLE_HOST_KEY_CHECKING=False
 cd ./provisioning/packer/
 
 if [ -n "$1" ] && [ $1 == "runner" ]; then
-export PACKER_CACHE_DIR=/usr/share/runner-dependencies/packer_cache
-packer build -force -var 'vm_output=/usr/share/runner-dependencies/virtual_machines/internetrouter' internetrouter.json
-else
+  export PACKER_CACHE_DIR=/usr/share/runner-dependencies/packer_cache
+  packer build -force -var 'vm_output=/usr/share/runner-dependencies/virtual_machines/internetrouter' internetrouter.json
+  else
 packer build -force internetrouter.json
 fi
 
