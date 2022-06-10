@@ -35,6 +35,46 @@ class MockStdin:
         self.lines.append(line)
 
 
+class MockChannelFile:
+    def __init__(self, content, channel):
+        self.lines = []
+        self.file_content = content
+        print(self.file_content)
+        self.channel = channel
+
+    def __iter__(self):
+        return iter(self.file_content)
+
+    def read(self, _):
+        res = self.file_content.pop(0).encode()
+        if len(self.file_content) < 1:
+            self.channel.buffer_full = False
+            self.channel.exited = True
+        return res
+
+
+class MockTransport:
+    def __init__(self):
+        self.remote_version = "SSH-2.0-OpenSSH_7.4p1 Debian-5"
+
+
+class MockChannel:
+    def __init__(self, exit_code=0):
+        self.buffer_full = True
+        self.exited = False
+        self.exit_code = exit_code
+        self._transport = MockTransport()
+
+    def exit_status_ready(self):
+        return self.exited
+
+    def recv_ready(self):
+        return self.buffer_full
+
+    def recv_exit_status(self):
+        return self.exit_code
+
+
 class TestBREACHSSHClient:
     def test_breachsshclient(self):
         ssh_target_1 = SSHTarget(hostname="myhost", port=1337, username="john", password="doe")
@@ -55,10 +95,14 @@ class TestBREACHSSHClient:
 
     def test_print_output(self):
         mock_printer = MockPrinter()
-        output = [" This is a test \n", "\tof the print_output function\t\n"]
+        output = MockChannelFile(
+            list(" This is a test \n\tof the print_output function\t\n"), MockChannel()
+        )
+
         ssh_client = BREACHSSHClient()
+        ssh_client._transport = MockTransport()
         ssh_client.print_output(output, mock_printer)
-        assert mock_printer.lines == [" This is a test ", "\tof the print_output function\t"]
+        assert mock_printer.lines == list(" This is a test \n\tof the print_output function\t\n")
 
     def test_write_lines(self):
         mock_stdin = MockStdin()

@@ -31,7 +31,7 @@ class TestConsolePrinter:
         msg = "Hello World"
         ConsolePrinter().print(msg=msg)
         out, err = capsys.readouterr()
-        assert out == msg + "\n"
+        assert out == msg
 
 
 class TestFilePrinter:

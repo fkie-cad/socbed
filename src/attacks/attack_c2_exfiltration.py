@@ -59,7 +59,7 @@ class C2ExfiltrationAttack(Attack):
     def _handle_output(self):
         for line in self.handler.stdout:
             self._respond(line)
-            self.print(line.strip("\n"))
+            self.print(line)
 
     def _respond(self, line):
         if "Meterpreter session 1 opened" in line:
