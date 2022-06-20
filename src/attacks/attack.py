@@ -76,8 +76,10 @@ class Attack:
         signal(SIGINT, self.interrupt_handler)
         try:
             yield
-        except (paramiko.SSHException, socket.error, socket.timeout) as e:
-            raise AttackException(e)
+        except socket.timeout:
+            print(f"Timeout after {self.ssh_client.channel_timeout}s")
+        except (paramiko.SSHException, socket.error) as err:
+            raise AttackException(err) from err
         finally:
             signal(SIGINT, default_int_handler)
 
