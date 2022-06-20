@@ -49,8 +49,8 @@ class KillReverseConnectionAttack(Attack):
     		]
     	for process in things_to_kill:
     		cmd = (
-    			'cmd /c "wmic process where '
-            	f'\"Description like \'{process}\'\" call terminate" '
+    			'wmic process where '
+            	f'\"Description like \'{process}\'\" call terminate '
             	'&& echo Successful wmic execution\"')
     		with self.check_printed("Successful wmic execution"):
     			self.exec_command_on_target(cmd)

@@ -54,7 +54,7 @@ class HashdumpAttack(Attack):
         try:
             for line in self.handler.stdout:
                 self._respond(line)
-                self.print(line.strip("\n"))
+                self.print(line)
         except UnicodeDecodeError as e:
             self.print("UnicodeDecodeError: {}".format(e))
             self.handler.shutdown()

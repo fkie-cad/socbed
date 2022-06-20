@@ -39,7 +39,7 @@
           "--nic2",
           "hostonly",
           "--hostonlyadapter2",
-          "vboxnet0",
+          "{{user `vm_hostonlyif`}}",
           "--macaddress2",
           "005056000101",
           "--nic3",
@@ -119,7 +119,8 @@
     "iso_url": "/usr/share/runner-dependencies/windows_isos/Win10_21H2_English_x64.iso",
     "vm_description": "SOCBED: Client",
     "vm_version": "fresh",
-    "vm_output": "./exports/client"
+    "vm_output": "./exports/client",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
 

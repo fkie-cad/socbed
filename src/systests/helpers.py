@@ -17,6 +17,7 @@
 
 
 import time
+import re
 
 
 def try_until_counter_reached(
@@ -25,11 +26,16 @@ def try_until_counter_reached(
     first_time = True
     ret = None
     success = False
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     while (first_time and at_least_once) or (time.perf_counter() < counter):
         if not first_time:
             time.sleep(sleep_time)
         try:
             ret = func()
+            if isinstance(ret, list) and all(len(char)<2 for char in ret):
+                ret = [ansi_escape.sub("", line) for line in "".join(ret).split("\n")]
+            elif isinstance(ret, list) and any(len(char)>1 for char in ret):
+                ret = [ansi_escape.sub("", line) for line in ret]
             assert assertion_func(ret)
             success = True
         except AssertionError:

@@ -73,4 +73,4 @@ class TestClientManagementIPs:
             lambda: ssh_client.exec_command_on_target(command, list_printer),
             timeout_counter,
             exception=(TimeoutError, ConnectionResetError, SSHException, socket.error))
-        return list_printer.printed
+        return "".join(list_printer.printed).split("\n")

@@ -25,7 +25,7 @@ class TestReverseConnectionHandler:
     def test_msf_command(self):
         msf_command = self.handler._msf_command()
         expected_msf_command = (
-            "msfconsole --exec-command "
+            "msfconsole --quiet --exec-command "
             "\""
             "use exploit/multi/handler;"
             "set payload windows/x64/meterpreter/reverse_http;"

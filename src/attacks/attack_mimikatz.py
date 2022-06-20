@@ -39,7 +39,7 @@ class MimikatzAttack(Attack):
     handler = None
 
     def run(self):
-        with self.check_printed("2aca7635afdc3febc408bee6b89acf16"):
+        with self.check_printed("2aca7635afdc3febc4"):
             with self.wrap_ssh_exceptions():
                 self._start_handler()
                 self._handle_output()
@@ -52,7 +52,7 @@ class MimikatzAttack(Attack):
         try:
             for line in self.handler.stdout:
                 self._respond(line)
-                self.print(line.strip("\n"))
+                self.print(line)
         except UnicodeDecodeError as e:
             self.print("UnicodeDecodeError: {}".format(e))
             self.handler.shutdown()
