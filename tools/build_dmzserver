@@ -3,6 +3,9 @@
 printf "Starting DMZ Server build. Please allow up to 40 minutes.\n"
 ./tools/cleanup_failed_session  > /dev/null 2>&1
 
+source ./tools/helper
+get_hostonlyif
+
 vboxmanage startvm "Internet Router" --type headless
 vboxmanage startvm "Company Router" --type headless
 vboxmanage startvm "Log Server" --type headless
