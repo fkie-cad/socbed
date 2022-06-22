@@ -39,7 +39,6 @@ class MockChannelFile:
     def __init__(self, content, channel):
         self.lines = []
         self.file_content = content
-        print(self.file_content)
         self.channel = channel
 
     def __iter__(self):
@@ -109,3 +108,11 @@ class TestBREACHSSHClient:
         lines = ["Hallo", "Welt"]
         BREACHSSHClient.write_lines(mock_stdin, lines)
         assert mock_stdin.lines == ["Hallo\n", "Welt\n"]
+
+    def test_set_envs(self):
+        ssh_client = BREACHSSHClient(SSHTarget())
+        ssh_client._transport = MockTransport()
+        assert (
+            ssh_client.set_envs("sudo touch file.txt") == "sudo PYTHONUNBUFFERED=1 touch file.txt"
+        )
+        assert ssh_client.set_envs("touch file.txt") == "PYTHONUNBUFFERED=1 touch file.txt"

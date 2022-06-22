@@ -45,6 +45,7 @@ class BREACHSSHClient(paramiko.SSHClient):
     channel_timeout = 300
     connect_timeout = 60
     stdin = None
+    env_str = "PYTHONUNBUFFERED=1"
 
     def __init__(self, target=None):
         super().__init__()
@@ -56,17 +57,21 @@ class BREACHSSHClient(paramiko.SSHClient):
 
     def exec_command_on_target(self, command, printer):
         self.connect_to_target()
+        command = self.set_envs(command)
         stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
         self.stdin = stdin
         self.print_output(stdout, printer)
+        self.print_output(stderr, printer)
         self.close()
 
     def exec_commands_on_target(self, commands, printer):
         self.connect_to_target()
         for command in commands:
+            command = self.set_envs(command)
             stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
             self.stdin = stdin
             self.print_output(stdout, printer)
+            self.print_output(stderr, printer)
         self.close()
 
     def connect_to_target(self):
@@ -74,6 +79,13 @@ class BREACHSSHClient(paramiko.SSHClient):
         super().connect(target.hostname, target.port, target.username, target.password,
                         look_for_keys=False, allow_agent=False, timeout=self.connect_timeout,
                         banner_timeout=self.connect_timeout, auth_timeout=self.connect_timeout)
+
+    def set_envs(self, command):
+        if "windows" in self._transport.remote_version.lower():
+            return command
+        if command.startswith("sudo"):
+            return command.replace("sudo", f"sudo {self.env_str}")
+        return f"{self.env_str} {command}"
 
     def print_output(self, msg_file, printer):
         if "windows" in self._transport.remote_version.lower():

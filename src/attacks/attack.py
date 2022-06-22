@@ -84,7 +84,8 @@ class Attack:
             signal(SIGINT, default_int_handler)
 
     def exec_command_on_target(self, command):
-        self.exec_commands_on_target([command])
+        with self.wrap_ssh_exceptions():
+            self.ssh_client.exec_command_on_target(command, self.printer)
 
     def exec_commands_on_target(self, commands):
         with self.wrap_ssh_exceptions():
