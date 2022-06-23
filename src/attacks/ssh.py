@@ -21,6 +21,7 @@ import re
 from types import SimpleNamespace
 
 import paramiko
+from attacks.util import print_command
 
 class SSHTarget(SimpleNamespace):
     name = ""
@@ -57,6 +58,7 @@ class BREACHSSHClient(paramiko.SSHClient):
 
     def exec_command_on_target(self, command, printer):
         self.connect_to_target()
+        print_command(command)
         command = self.set_envs(command)
         stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
         self.stdin = stdin
@@ -67,6 +69,7 @@ class BREACHSSHClient(paramiko.SSHClient):
     def exec_commands_on_target(self, commands, printer):
         self.connect_to_target()
         for command in commands:
+            print_command(command)
             command = self.set_envs(command)
             stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
             self.stdin = stdin
