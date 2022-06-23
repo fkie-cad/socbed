@@ -61,7 +61,8 @@ class TestAttack:
         attack.print(msg=msg)
         assert p.last_msg == msg
 
-    def test_timeout_exception(self, capfd):
+    @patch("attacks.attack.Attack.interrupt_handler")
+    def test_timeout_exception(self, _mock, capfd):
         attack = Attack()
         with attack.wrap_ssh_exceptions():
             raise socket.timeout
