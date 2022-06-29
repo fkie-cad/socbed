@@ -108,6 +108,7 @@ class Attack:
 
     @contextmanager
     def check_printed(self, indicator):
+        # Removes all ANSI escape sequences to prevent unintended string mismatches when checking for success
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         lp = ListPrinter()
         old_printer = self.printer

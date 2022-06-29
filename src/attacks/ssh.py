@@ -99,6 +99,7 @@ class BREACHSSHClient(paramiko.SSHClient):
 
     @staticmethod
     def print_windows_output(msg_file, printer):
+        # Removes certain ANSI escape codes (J, m, H) to prevent the printed console output from being malformed
         ansi_escape = re.compile(r'\x1b\[(?:[0-?]*[JmH])')
         while not msg_file.channel.exit_status_ready() or msg_file.channel.recv_ready():
             printer.print(ansi_escape.sub("", msg_file.readline()))
