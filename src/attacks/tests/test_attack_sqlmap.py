@@ -32,7 +32,7 @@ def attack():
 class TestSQLMapAttack:
     def test_sqlmap_command(self, attack: SQLMapAttack):
         assert attack._sqlmap_command() == (
-            "echo \"http://172.18.0.2/dvwa/vulnerabilities/sqli/?id=&Submit=Submit\" | "
+            "export COLUMNS=80; echo \"http://172.18.0.2/dvwa/vulnerabilities/sqli/?id=&Submit=Submit\" | "
             "sqlmap --purge --batch --dump")
 
     def test_raise_exception_bad_output(self, attack: SQLMapAttack):
@@ -42,5 +42,5 @@ class TestSQLMapAttack:
 
     def test_no_exception_good_output(self, attack: SQLMapAttack):
         indicator = "table 'dvwa.users' dumped to CSV file"
-        attack.exec_commands_on_target = lambda _: attack.printer.print(indicator)
+        attack.exec_command_on_target = lambda _: attack.printer.print(indicator)
         attack.run()

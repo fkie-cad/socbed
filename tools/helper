@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+function get_hostonlyif() {
+  # Sets env variable used by packer (aka which vboxnet to use)
+  export HOSTONLYIF=$(vboxmanage list hostonlyifs | grep --before-context=3 "192.168.56.1" | grep --only-matching '\bvbox\w*\b')
+  if [[ -z "$HOSTONLYIF" ]]; then
+    printf "ERROR: No host-only interface with IP 192.168.56.1 found.\n"
+    printf "Please refer to the SOCBED README for correct setup. Exiting...\n"
+    exit 1
+  fi
+}

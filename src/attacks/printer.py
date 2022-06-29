@@ -24,7 +24,7 @@ class Printer:
 class ConsolePrinter(Printer):
     def print(self, msg):
         super().print(msg=msg)
-        print(msg)
+        print(msg, end="")
 
 
 class FilePrinter(Printer):
