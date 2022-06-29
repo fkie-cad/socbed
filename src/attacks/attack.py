@@ -103,7 +103,7 @@ class Attack:
             print("\rStopping...")
             self.ssh_client.stdin.channel.send("\x03")
         else:
-            print("Can not cancel command")
+            print("Cannot cancel command")
 
 
     @contextmanager
