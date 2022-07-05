@@ -78,7 +78,7 @@
           "--nic2",
           "hostonly",
           "--hostonlyadapter2",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ],
         [
           "modifyvm",
@@ -125,7 +125,8 @@
     "ssh_host_addr": "192.168.56.20",
     "vm_description": "SOCBED: DMZ Server",
     "vm_version": "fresh",
-    "vm_output": "./exports/dmzserver"
+    "vm_output": "./exports/dmzserver",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
 

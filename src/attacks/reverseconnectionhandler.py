@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
 
+import time
 
 class ReverseConnectionHandler:
     handler_timeout = 330
@@ -31,7 +32,7 @@ class ReverseConnectionHandler:
     def start(self):
         self.ssh_client.connect_to_target()
         self.stdin, self.stdout, self.stderr = self.ssh_client.exec_command(
-            self._msf_command(), timeout=self.channel_timeout)
+            self._msf_command(), timeout=self.channel_timeout, get_pty=True)
 
     def _msf_command(self):
         return (
@@ -48,4 +49,5 @@ class ReverseConnectionHandler:
 
     def shutdown(self):
         self.stdin.write("exit -y\n")
+        time.sleep(1)
         self.ssh_client.close()

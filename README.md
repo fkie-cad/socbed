@@ -3,26 +3,32 @@
 
 # SOCBED
 
-SOCBED is a self-contained open-source cyberattack experimentation testbed that simulates a small company's network including benign user behavior, various cyber attacks, and a central collection of log data.
+SOCBED is a Self-contained Open-source Cyberattack experimentation testBED that uses virtual machines to simulate a small company's network including benign user activity, various cyberattacks, and a central collection of log data.
 
-## Motivation
+SOCBED can be used for generating realistic log or network traffic datasets for product or method evaluations.
+Other use cases include research and training in intrusion detection, log management, digital forensics, or awareness.
 
-Use cases of SOCBED include research and training in the following areas: security incident response, digital forensics, log management, intrusion detection, and awareness.
-The testbed can also be used to generate realistic log/traffic datasets for product or method evaluations.
+The virtual machines are built and configured from scratch using provisioning scripts.
+All necessary operating system images and software are downloaded automatically during the build process, except for a Windows 10 ISO image, which has to be downloaded manually first.
+
+After the build process is finished, SOCBED sessions can be started, controlled, and terminated using the apps `vmconsole` and `attackconsole` (see below).
+
+![socbed_architecture](./docs/Architecture.png)
 
 ## System Requirements
 
-* Physical host with Linux or macOS (running VirtualBox in a virtual machine might be possible as well but was not tested)
+* Physical host with Linux or macOS. Note: Running SOCBED (and therefore VirtualBox) in a virtual machine might work as well but was not tested.
 * RAM: 16 GB minimum, 32 GB recommended
 * CPU: Quad-core with hardware support for virtualization
-* HDD: 50 GB free, SSD is mandatory
+* HDD: 50 GB free, SSD strongly recommended
 
 More resources are required depending on the desired number of simulated clients.
-The numbers above are valid for small simulations with 1-10 clients.
+The numbers above are valid for small simulations with 1-3 clients.
 
 ## Installation
 
-Installation instructions for SOCBED on a fresh *Ubuntu 20.04.2.0 LTS* system:
+The installation instructions below were tested on a fresh Ubuntu 20.04 LTS system.
+Please adhere strictly to the instructions as different software versions might not work as expected.
 
 ```sh
 # Install VirtualBox and configure the management network interface
@@ -55,20 +61,13 @@ pip install -r requirements.txt
 pip install --editable .
 ```
 
-Next, build all SOCBED virtual machines via ansible and packer while within the virtual environment. Before doing so, you need to:
-- Download a Windows 10 64-bit ISO image from Microsoft and place it in the `provisioning/packer/` directory. We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
-- Change permissions with:
-    ```sh
-    sudo chmod 744 ./provisioning/packer/<filename>.iso
-    ```
-- Calculate the md5 checksum:
-    ```sh
-    md5sum ./provisioning/packer/<filename>.iso
-    ```
-- Update the `iso_url` and `iso_checksum` values in `provisioning/packer/client.json` accordingly.
+Before building SOCBED, you need to manually download Windows 10 and adapt a provisioning script:
+- Download a Windows 10 64-bit ISO image from Microsoft (see [here](https://www.microsoft.com/en-us/software-download/windows10ISO)). We are currently using version 21H2 (November 2021) in English for testing, but other versions should work as well.
+- Calculate the MD5 hash of this ISO file using `md5sum <filename>.iso`.
+- Open the file `provisioning/packer/client.json` and change the values of the fields `iso_url` and `iso_checksum` under `variables` (at the bottom of the file) accordingly.
 
 The script below will execute everything required to build and configure each respective machine, including snapshotting.
-It will download the remaining ISO files, automatically boot the machines and provision the necessary versions of software dependencies with no human interaction needed.
+It will download the remaining ISO files, automatically boot the machines and provision the necessary versions of software dependencies with no interaction needed.
 Be aware that this will take multiple (3-5) hours to complete, depending on your hardware and Internet speed.
 
 ```sh
@@ -78,18 +77,13 @@ Be aware that this will take multiple (3-5) hours to complete, depending on your
 In case of an error, simply restart the script, it will recognize previously built machines and continue where it left off.
 Note that the order in which the machines are built is not arbitrary, and deleting and rebuilding e.g. the Log Server after all machines have been built will result in loss of critical functionality.
 
-After these steps, you can run the commands `vmconsole`, `attackconsole`, or `generateattackchains` within the virtual environment and work with the framework (see example below).
-When finished, you can leave the virtual environment with the command
-```sh
-deactivate
-```
+After these steps, you can run the commands `vmconsole`, `attackconsole`, or `generateattackchains` within the virtual environment and work with the testbed (see example below).
 
 ## Testing
 
-Install tox and pytest in your virtual environment if you haven't done it yet:
+Activate the virtual environment if you haven't done it yet:
 ```sh
-source ~/.virtualenvs/socbed/bin/activate # Activate virtual environment
-pip install -r requirements.txt
+source ~/.virtualenvs/socbed/bin/activate
 ```
 
 Run all unit tests from the repository root directory:
@@ -97,16 +91,19 @@ Run all unit tests from the repository root directory:
 tox -- -m "not systest"
 ```
 
-If they succeed, run the essential system tests:
-```sh
-tox -- -m "systest and not longtest"
-```
+If they succeed, you can run all stable system tests.
 
-Attention: System tests will start and stop the virtual machines several times and  can take a while to complete!
+Attention: System tests will start and stop the virtual machines several times and can take up to an hour to complete!
+Do not use SOCBED VMs or apps (`attackconsole`, `vmconsole`) while system tests are running.
+
+```sh
+tox -- -m "systest and not unstable"
+```
+(Unstable systests sometimes fail despite correct SOCBED functionality. We're working on it.)
 
 ## Example
 
-This example shows how to run some attacks when the framework was installed as described above.
+This first example shows how to manually start a session and run some attacks.
 
 ```sh
 # Activate virtual environment
@@ -114,6 +111,9 @@ source ~/.virtualenvs/socbed/bin/activate
 
 # Start the virtual machines
 vmconsole -c start_session
+
+# Please allow ~5 minutes for the VMs to start. The Windows clients
+# will reboot twice to change their hostname and join the domain.
 
 # Start the attackconsole and run some commands
 attackconsole
@@ -136,10 +136,18 @@ vmconsole -c close_session
 deactivate
 ```
 
+Alternatively, simulations can be completely scripted.
+There is an example script in the repository:
+
+```sh
+source ~/.virtualenvs/socbed/bin/activate
+./run_sample_simulation
+```
+
 ## Cleaning up failed sessions
 
 In case sessions crash for some reason, you might end up with several Client clones and several automatically generated snapshots named `Backup*`.
-To clean up the mess, run the script `tools/cleanup_failed_session` to reset all SOCBED machines to their original state and remove all superfluous clones and snapshots.
+To clean up the mess, run the script `tools/cleanup_failed_session` to reset all SOCBED VMs to their original state and remove all superfluous clones and snapshots.
 
 ## Login information
 
@@ -147,17 +155,12 @@ For all Linux machines, the Linux username is either `root` (Internet Router, Co
 SSH access is allowed via all network interfaces.
 Attention: The SSH Server on the Company Router and the Internet Router is running on the non-standard port 222!
 
+There is also an SSH server running on the Client (only accessible via the management network).
+Login is only possible with username `ssh` and password `breach`.
+
 The Samba domain controller running on the Internal Server has 101 user accounts:
 The domain administrator with username `administrator` and password `breach` and 100 user accounts named `client1` through `client100`, all with password `breach`.
 The domain name is `BREACH`.
-
-There is also a local administrator account on the Client with username `breach`.
-During automated simulations, this account is not used, but it's handy for installation, testing, and demonstration purposes.
-By default, the Client logs in automatically as user `setup` in order to change its IP address and computer name, and then join the domain (that's why every client restarts twice).
-To avoid this, you can press and hold the Shift key when Windows starts up.
-
-There is also an SSH server running on the Client (only accessible via the management network).
-Login via SSH is only possible with username `breach` and password `breach`.
 
 The following table shows all available web interfaces and their logins:
 
@@ -170,13 +173,21 @@ The following table shows all available web interfaces and their logins:
 
 ## Documentation
 
-Further documentation, including a network plan of the virtual machines, can be found in the [docs](docs/) directory.
+For more information, please see our ACSAC'21 paper:
+
+Uetz, R., Hemminghaus, C., Hackländer, L., Schlipper, P., & Henze, M. (2021). Reproducible and Adaptable Log Data Generation for Sound Cybersecurity Experiments [Conference paper]. Annual Computer Security Applications Conference. https://doi.org/10.1145/3485832.3488020, https://arxiv.org/abs/2111.07847.
+
+Further documentation can be found in the [docs](docs/) directory.
 
 ## Contributors
 
 SOCBED was created by [Fraunhofer FKIE](https://www.fkie.fraunhofer.de/)'s department of Cyber Analysis & Defense (CA&D) as part of the [BMBF](https://www.bmbf.de/)-funded project [PA-SIEM](https://www.forschung-it-sicherheit-kommunikationssysteme.de/projekte/pa-siem).
-For more information, please contact Rafael Uetz (firstname.lastname@fkie.fraunhofer.de).
+
+We welcome contributions and suggestions!
+If you would like to contribute, please let us know.
 
 ## License
 
 The files in this repository are licensed under the GNU General Public License Version 3. See [LICENSE](LICENSE) for details.
+
+If you are using SOCBED for your academic work, please cite the paper mentioned above.

@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -17,6 +17,8 @@
 
 
 import pytest
+import socket
+from unittest.mock import patch
 
 from attacks.attack import AttackInfo, AttackOptions, Attack
 
@@ -58,6 +60,14 @@ class TestAttack:
         msg = "Hello World"
         attack.print(msg=msg)
         assert p.last_msg == msg
+
+    def test_timeout_exception(self, capfd):
+        attack = Attack()
+        with attack.wrap_ssh_exceptions():
+            raise socket.timeout
+        out = capfd.readouterr()[0].split("\n")
+        assert out[0] == "Timeout after 300s"
+        assert not out[1]
 
 
 class TestAttackInfo:

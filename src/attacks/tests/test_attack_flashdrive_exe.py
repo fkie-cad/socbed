@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -43,7 +43,7 @@ class TestFlashdriveEXEAttack:
         expected_image_commands = [
             "rm -f /root/evil_image_file.img",
             "dd if=/dev/zero of=/root/evil_image_file.img bs=1024 count=0 seek=$[1024*32]",
-            "mkfs.msdos /root/evil_image_file.img",
+            "mkfs.fat /root/evil_image_file.img",
             "mkdir /media/evil_image/",
             "mount -o loop /root/evil_image_file.img /media/evil_image/",
             "mv /root/Bank-of-Nuthington.exe /media/evil_image/",

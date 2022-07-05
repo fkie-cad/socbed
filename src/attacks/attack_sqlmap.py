@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -16,6 +16,7 @@
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
 
 
+from shutil import get_terminal_size
 from attacks import Attack, AttackInfo, AttackOptions
 
 
@@ -37,4 +38,5 @@ class SQLMapAttack(Attack):
             self.exec_command_on_target(self._sqlmap_command())
 
     def _sqlmap_command(self):
-        return f"echo \"{self.options.url}\" | sqlmap --purge --batch --dump"
+        columns = get_terminal_size().columns
+        return f"export COLUMNS={columns}; echo \"{self.options.url}\" | sqlmap --purge --batch --dump"

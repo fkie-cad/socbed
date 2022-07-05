@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -28,7 +28,7 @@ from systests.test_ntp_passive import Time, MachineProperties, machines_using_nt
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
-pytestmark = [pytest.mark.systest, pytest.mark.longtest]
+pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
 
 @pytest.fixture(scope="module")

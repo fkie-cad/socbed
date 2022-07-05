@@ -8,6 +8,9 @@ cd ./src/userbehavior
 ../../../bin/pex . -c userbehavior -o ../../provisioning/ansible/roles/configure_win10_client/files/win10_assets/userbehavior.pex --disable-cache
 cd ../../
 
+source ./tools/helper
+get_hostonlyif
+
 vboxmanage startvm "Internet Router" --type headless
 vboxmanage startvm "Company Router" --type headless
 vboxmanage startvm "Log Server" --type headless

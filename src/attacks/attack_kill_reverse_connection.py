@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -49,8 +49,8 @@ class KillReverseConnectionAttack(Attack):
     		]
     	for process in things_to_kill:
     		cmd = (
-    			'cmd /c "wmic process where '
-            	f'\"Description like \'{process}\'\" call terminate" '
+    			'wmic process where '
+            	f'\"Description like \'{process}\'\" call terminate '
             	'&& echo Successful wmic execution\"')
     		with self.check_printed("Successful wmic execution"):
     			self.exec_command_on_target(cmd)

@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -17,10 +17,10 @@
 
 
 import copy
+import re
 from types import SimpleNamespace
 
 import paramiko
-
 
 class SSHTarget(SimpleNamespace):
     name = ""
@@ -44,6 +44,8 @@ class BREACHSSHClient(paramiko.SSHClient):
     default_target = SSHTargets.attacker
     channel_timeout = 300
     connect_timeout = 60
+    stdin = None
+    env_str = "PYTHONUNBUFFERED=1"
 
     def __init__(self, target=None):
         super().__init__()
@@ -55,15 +57,21 @@ class BREACHSSHClient(paramiko.SSHClient):
 
     def exec_command_on_target(self, command, printer):
         self.connect_to_target()
-        stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout)
+        command = self.set_envs(command)
+        stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
+        self.stdin = stdin
         self.print_output(stdout, printer)
+        self.print_output(stderr, printer)
         self.close()
 
     def exec_commands_on_target(self, commands, printer):
         self.connect_to_target()
         for command in commands:
-            stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout)
+            command = self.set_envs(command)
+            stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
+            self.stdin = stdin
             self.print_output(stdout, printer)
+            self.print_output(stderr, printer)
         self.close()
 
     def connect_to_target(self):
@@ -72,10 +80,29 @@ class BREACHSSHClient(paramiko.SSHClient):
                         look_for_keys=False, allow_agent=False, timeout=self.connect_timeout,
                         banner_timeout=self.connect_timeout, auth_timeout=self.connect_timeout)
 
+    def set_envs(self, command):
+        if "windows" in self._transport.remote_version.lower():
+            return command
+        if command.startswith("sudo"):
+            return command.replace("sudo", f"sudo {self.env_str}")
+        return f"{self.env_str} {command}"
+
+    def print_output(self, msg_file, printer):
+        if "windows" in self._transport.remote_version.lower():
+            self.print_windows_output(msg_file, printer)
+        else:
+            while not msg_file.channel.exit_status_ready() or msg_file.channel.recv_ready():
+                try:
+                    printer.print(msg_file.read(1).decode())
+                except UnicodeDecodeError:
+                    pass
+
     @staticmethod
-    def print_output(stdout, printer):
-        for line in stdout:
-            printer.print(line.strip("\n"))
+    def print_windows_output(msg_file, printer):
+        # Removes certain ANSI escape codes (J, m, H) to prevent the printed console output from being malformed
+        ansi_escape = re.compile(r'\x1b\[(?:[0-?]*[JmH])')
+        while not msg_file.channel.exit_status_ready() or msg_file.channel.recv_ready():
+            printer.print(ansi_escape.sub("", msg_file.readline()))
 
     @staticmethod
     def write_lines(stdin, lines):

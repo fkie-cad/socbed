@@ -8,7 +8,7 @@
         "initrd=/install.amd/initrd.gz ",
         "auto-install/enable=true ",
         "debconf/priority=critical ",
-        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ",
+        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ", "<wait5s>",
         "netcfg/choose_interface=enp0s8 ",
         "netcfg/disable_autoconfig=true ",
         "netcfg/get_ipaddress=192.168.56.31 ",
@@ -21,7 +21,7 @@
         "console-setup/ask_detect=false ",
         "<enter>"
       ],
-      "boot_keygroup_interval": "500ms",
+      "boot_keygroup_interval": "5000ms",
       "boot_wait": "5s",
       "disk_size": "16384",
       "export_opts": [
@@ -38,9 +38,9 @@
       "guest_os_type": "Debian_64",
       "headless": "true",
       "http_directory": "http",
-      "iso_checksum": "sha1:fc46ccdbccda8723aae257f190182b4ac41e91bd",
+      "iso_checksum": "sha1:cd1cbae6eb009267b08c94c77c4078898a9d6c2c",
       "iso_urls": [
-        "https://cdimage.kali.org/kali-2021.1/kali-linux-2021.1-installer-amd64.iso"
+        "https://cdimage.kali.org/kali-2021.4/kali-linux-2021.4-installer-amd64.iso"
       ],
       "keep_registered": "true",
       "memory": "1024",
@@ -66,7 +66,7 @@
           "--nic2",
           "hostonly",
           "--hostonlyadapter2",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ],
         [
           "modifyvm",
@@ -96,7 +96,7 @@
     {
       "expect_disconnect": "true",
       "script": "./post_install/attacker_setup.sh",
-      "timeout": "2m",
+      "timeout": "5m",
       "type": "shell"
     },
     {
@@ -104,7 +104,7 @@
         "-i",
         "../ansible/hosts"
       ],
-      "pause_before": "2m",
+      "pause_before": "5m",
       "playbook_file": "../ansible/attacker_playbook.yml",
       "type": "ansible"
     }
@@ -114,7 +114,8 @@
     "ssh_host_addr": "192.168.56.31",
     "vm_description": "SOCBED: Attacker",
     "vm_version": "fresh",
-    "vm_output": "./exports/attacker"
+    "vm_output": "./exports/attacker",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
 

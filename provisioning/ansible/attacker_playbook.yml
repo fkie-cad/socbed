@@ -27,7 +27,7 @@
     - sqlmap_wordlist
     - rsyslog_ISO8601
     - virtualhost
-    - browser_exploit_server
     - spearphishing
     - generate_malware
     - ssh_config
+    - dosfstools

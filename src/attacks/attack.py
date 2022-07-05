@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -16,9 +16,11 @@
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
 
 
+import re
 import socket
 from contextlib import contextmanager
 from types import SimpleNamespace
+from signal import SIGINT, default_int_handler, signal
 
 import paramiko
 from attacks.printer import Printer, ListPrinter, MultiPrinter
@@ -71,13 +73,19 @@ class Attack:
 
     @contextmanager
     def wrap_ssh_exceptions(self):
+        signal(SIGINT, self.interrupt_handler)
         try:
             yield
-        except (paramiko.SSHException, socket.error, socket.timeout) as e:
-            raise AttackException(e)
+        except socket.timeout:
+            print(f"Timeout after {self.ssh_client.channel_timeout}s")
+        except (paramiko.SSHException, socket.error) as err:
+            raise AttackException(err) from err
+        finally:
+            signal(SIGINT, default_int_handler)
 
     def exec_command_on_target(self, command):
-        self.exec_commands_on_target([command])
+        with self.wrap_ssh_exceptions():
+            self.ssh_client.exec_command_on_target(command, self.printer)
 
     def exec_commands_on_target(self, commands):
         with self.wrap_ssh_exceptions():
@@ -87,13 +95,26 @@ class Attack:
         with self.wrap_ssh_exceptions():
             self.ssh_client.connect_to_target()
 
+    def interrupt_handler(self, _signum, _frame):
+        if hasattr(self, "handler"):
+            print("\rStopping...")
+            self.handler.shutdown()
+        elif hasattr(self.ssh_client, "stdin"):
+            print("\rStopping...")
+            self.ssh_client.stdin.channel.send("\x03")
+        else:
+            print("Cannot cancel command")
+
+
     @contextmanager
     def check_printed(self, indicator):
+        # Removes all ANSI escape sequences to prevent unintended string mismatches when checking for success
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         lp = ListPrinter()
         old_printer = self.printer
         self.printer = MultiPrinter(printers=[lp, old_printer])
         yield
         self.printer = old_printer
-        if not any(indicator in line for line in lp.printed):
+        if not any(indicator in ansi_escape.sub("", line) for line in "".join(lp.printed).split("\n")):
             raise AttackException(
                 "Attack failed: Indicator \"{}\" not found in output".format(indicator))

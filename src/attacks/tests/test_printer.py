@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -31,7 +31,7 @@ class TestConsolePrinter:
         msg = "Hello World"
         ConsolePrinter().print(msg=msg)
         out, err = capsys.readouterr()
-        assert out == msg + "\n"
+        assert out == msg
 
 
 class TestFilePrinter:

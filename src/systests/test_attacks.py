@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -27,10 +27,10 @@ from attacks.attack_download_malware import DownloadMalwareAttack
 from attacks.attack_download_malware_meterpreter import DownloadMalwareMeterpreterAttack
 from attacks.attack_email_exe import EmailEXEAttack
 from attacks.attack_execute_malware import ExecuteMalwareAttack
-from attacks.attack_flashdrive_exfiltration import FlashdriveExfiltrationAttack
 from attacks.attack_flashdrive_exe import FlashdriveEXEAttack
-from attacks.attack_kill_reverse_connection import KillReverseConnectionAttack
+from attacks.attack_flashdrive_exfiltration import FlashdriveExfiltrationAttack
 from attacks.attack_hashdump import HashdumpAttack
+from attacks.attack_kill_reverse_connection import KillReverseConnectionAttack
 from attacks.attack_mimikatz import MimikatzAttack
 from attacks.attack_set_autostart import SetAutostartAttack
 from attacks.attack_sqlmap import SQLMapAttack
@@ -60,9 +60,10 @@ def timeout_counter():
 @pytest.mark.usefixtures("session")
 class TestAttack:
     attacks = [
-        # Misc attacks: These attacks are all self-contained, their order does not matter.
+        # Dependent misc attacks: Attacks need to be executed in this order
         DownloadMalwareAttack(),
         ExecuteMalwareAttack(),
+        # Independent misc attacks: Attacks are self-contained, their order does not matter.
         FlashdriveExfiltrationAttack(),
         SetAutostartAttack(),
         SQLMapAttack(),
@@ -74,17 +75,13 @@ class TestAttack:
         # Then a sequence of an infection attack and a c2 attack is run. As we currently have more
         # c2 than infection attacks, some infection attacks are run more than once.
         # The order within a category (infect or c2) does not matter, we use alphabetical here.
-        
-        # FlashdriveEXEAttack() currently fails due to Windows being unable to open
-        # the inserted "flashdrive" (some kind of format error)
-        
         KillReverseConnectionAttack(), EmailEXEAttack(), ChangeWallpaperAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), DownloadMalwareMeterpreterAttack(),
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), DownloadMalwareMeterpreterAttack(),
         KillReverseConnectionAttack(), EmailEXEAttack(), C2ExfiltrationAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), HashdumpAttack(),
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), HashdumpAttack(),
         KillReverseConnectionAttack(), EmailEXEAttack(), TakeScreenshotAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), MimikatzAttack()
-	]
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), MimikatzAttack()
+    ]
 
     @pytest.mark.parametrize("attack", attacks, ids=lambda a: type(a).__name__)
     def test_attack(self, attack, timeout_counter):

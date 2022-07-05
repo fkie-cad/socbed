@@ -5,10 +5,12 @@
     "ssh_host_addr": "192.168.56.10",
     "vm_description": "SOCBED: Company Router",
     "vm_version": "fresh",
-    "vm_output": "./exports/companyrouter"
+    "vm_output": "./exports/companyrouter",
+    "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   },
   "builders": [
     {
+      "memory": "1536",
       "name": "Company-Router (IP-Fire)",
       "type": "virtualbox-iso",
       "guest_os_type": "Linux_64",
@@ -44,7 +46,7 @@
           "--nic4",
           "hostonly",
           "--hostonlyadapter4",
-          "vboxnet0"
+          "{{user `vm_hostonlyif`}}"
         ]
       ],
       "boot_wait": "10s",

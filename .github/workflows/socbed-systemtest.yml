@@ -22,10 +22,14 @@ jobs:
         
       - name: Install requirements in virtual environment (without using cached packages)
         run: pip3 install -r requirements.txt --no-cache-dir
+        
+      - name: Install socbed
+        run: pip install --editable .
   
   build-machines:
     runs-on: [self-hosted, linux]
     needs: [prepare-environment]
+    timeout-minutes: 480
     steps:
       - uses: actions/checkout@v2
       
@@ -49,14 +53,14 @@ jobs:
       - name: Build Attacker
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 120
+          timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_attacker runner
         
       - name: Build Log Server
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 60
+          timeout_minutes: 120
           max_attempts: 3
           command: ./tools/build_logserver runner
         
@@ -77,7 +81,7 @@ jobs:
       - name: Build Client
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 120
+          timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_client runner
         
@@ -100,12 +104,13 @@ jobs:
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
       
-      - name: Run system tests ("not longtest")
+      - name: Run stable system tests
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 30
-          max_attempts: 3
-          command: tox -- -m "systest and not longtest"
+          timeout_minutes: 45
+          max_attempts: 5
+          on_retry_command: ./tools/cleanup_failed_session
+          command: tox -- -m "systest and not unstable"
    
   delete-machines:
     runs-on: [self-hosted, linux]

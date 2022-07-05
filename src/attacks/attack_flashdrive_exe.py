@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -59,7 +59,7 @@ class FlashdriveEXEAttack(Attack):
         return [
             "rm -f {}".format(image),
             "dd if=/dev/zero of={} bs=1024 count=0 seek=$[1024*32]".format(image),
-            "mkfs.msdos {}".format(image),
+            "mkfs.fat {}".format(image),
             "mkdir {}".format(media),
             "mount -o loop {} {}".format(image, media),
             "mv /root/Bank-of-Nuthington.exe {}".format(media),

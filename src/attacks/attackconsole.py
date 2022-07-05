@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -140,15 +140,22 @@ class SubAttackConsole(Cmd):
         print(v)
 
     def do_set(self, arg):
-        option, value = shlex.split(arg)[:2]
-        if option in self.attack_option_descriptions.keys():
-            self.attack.options.__setattr__(option, value)
+        if len(shlex.split(arg)) == 2:
+            option, value = shlex.split(arg)[:2]
+            if option in self.attack_option_descriptions.keys():
+                self.attack.options.__setattr__(option, value)
+            else:
+                print(f"*** Unknown option: {option}")
         else:
-            print("*** Unknown option: {option}".format(option=option))
+            print("*** Invalid number of option arguments\n*** Usage: set <option> <value>")
 
     def complete_set(self, text, line, begidx, endidx):
         return [option + " " for option in self.attack_option_descriptions.keys() if
                 option.startswith(text)]
+
+    def do_reset(self, _arg):
+            self.attack.options._set_options_to_none()
+            self.attack.options._set_defaults()
 
     def do_run(self, arg):
         attack_name = self.attack.info.name
@@ -293,7 +300,11 @@ def main(argv=None):
     args = parse_args(argv=argv)
     setup_logging(level=logging.INFO, log_file=args.log_file, log_to_console=args.verbose)
     console = AttackConsole()
-    console.cmdloop(intro=IntroGenerator().generate())
+    try:
+        console.cmdloop(intro=IntroGenerator().generate())
+    except KeyboardInterrupt:
+        print("\n*** Keyboard Interrupt, closing attackconsole.")
+        console.do_exit(argv)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Copyright 2016-2021 Fraunhofer FKIE
+# Copyright 2016-2022 Fraunhofer FKIE
 #
 # This file is part of SOCBED.
 #
@@ -54,7 +54,7 @@ class HashdumpAttack(Attack):
         try:
             for line in self.handler.stdout:
                 self._respond(line)
-                self.print(line.strip("\n"))
+                self.print(line)
         except UnicodeDecodeError as e:
             self.print("UnicodeDecodeError: {}".format(e))
             self.handler.shutdown()
