@@ -2,12 +2,12 @@
 
 ## Synopsis
 
-This package is developed as part of The SOCBED Framework.
+This package is developed as part of SOCBED.
 It simulates the interaction of a user with programs and with the filesystem.
 Simulated interactions include browsing, mailing and manipulating files.
 The main purpose of this package is to provide legitimate and realistic log data for all these interaction.
 
-At this stage, the userbehavior mainly works in The SOCBED Framework, but is meant to be used independently in the future.
+At this stage, the userbehavior mainly works in SOCBED, but is meant to be used independently in the future.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ pip install selenium pytest
 
 ## Running
 
-Running the userbehavior is only possible in The SOCBED Framework at this stage.
+Running the userbehavior is only possible in SOCBED at this stage.
 
 To run it:
 ```
