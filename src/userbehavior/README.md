@@ -2,12 +2,12 @@
 
 ## Synopsis
 
-This package is developed as part of The BREACH Framework.
+This package is developed as part of The SOCBED Framework.
 It simulates the interaction of a user with programs and with the filesystem.
 Simulated interactions include browsing, mailing and manipulating files.
 The main purpose of this package is to provide legitimate and realistic log data for all these interaction.
 
-At this stage, the userbehavior mainly works in The BREACH Framework, but is meant to be used independently in the future.
+At this stage, the userbehavior mainly works in The SOCBED Framework, but is meant to be used independently in the future.
 
 ## Requirements
 
@@ -20,11 +20,6 @@ The following packages are needed:
 
 ## Installation
 
-Clone this repository:
-```
-git clone https://git.cs.uni-bonn.de/hemming/userbehavior.git
-```
-
 Install required packages:
 ```
 pip install selenium pytest
@@ -34,7 +29,7 @@ pip install selenium pytest
 
 ## Running
 
-Running the userbehavior is only possible in The BREACH Framework at this stage.
+Running the userbehavior is only possible in The SOCBED Framework at this stage.
 
 To run it:
 ```
