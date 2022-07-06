@@ -10,6 +10,13 @@ class Colors:
     bold: str = "\x1b[1m"
 
 
+def print_command(command: str) -> None:
+    print(
+        f"{Colors.bold}{Colors.lgreen}Running => "
+        f"{Colors.endc}{Colors.lblue}{command}{Colors.endc}\n"
+    )
+
+
 def print_error(msg: str) -> None:
     print(f"{Colors.lred}Error: {msg}{Colors.endc}")
 
