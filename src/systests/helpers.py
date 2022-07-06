@@ -26,6 +26,7 @@ def try_until_counter_reached(
     first_time = True
     ret = None
     success = False
+    # Removes all ANSI escape sequences to prevent unintended string mismatches when checking for success
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     while (first_time and at_least_once) or (time.perf_counter() < counter):
         if not first_time:

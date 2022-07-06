@@ -78,7 +78,9 @@ class Attack:
             yield
         except socket.timeout:
             print(f"Timeout after {self.ssh_client.channel_timeout}s")
+            self.interrupt_handler(None, None)
         except (paramiko.SSHException, socket.error) as err:
+            self.interrupt_handler(None, None)
             raise AttackException(err) from err
         finally:
             signal(SIGINT, default_int_handler)
@@ -103,11 +105,12 @@ class Attack:
             print("\rStopping...")
             self.ssh_client.stdin.channel.send("\x03")
         else:
-            print("Can not cancel command")
+            print("Cannot cancel command")
 
 
     @contextmanager
     def check_printed(self, indicator):
+        # Removes all ANSI escape sequences to prevent unintended string mismatches when checking for success
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         lp = ListPrinter()
         old_printer = self.printer

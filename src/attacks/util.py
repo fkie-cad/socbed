@@ -15,3 +15,23 @@ def print_command(command: str) -> None:
         f"{Colors.bold}{Colors.lgreen}Running => "
         f"{Colors.endc}{Colors.lblue}{command}{Colors.endc}\n"
     )
+
+
+def print_error(msg: str) -> None:
+    print(f"{Colors.lred}Error: {msg}{Colors.endc}")
+
+
+def print_warning(msg: str) -> None:
+    print(f"{Colors.lyellow}Warning: {msg}{Colors.endc}")
+
+
+def str_to_bool(val: Union[str, bool], default: bool = False) -> bool:
+    val = str(val).lower()
+    if val in {"y", "yes", "t", "true", "on", "1"}:
+        return True
+    elif val in {"n", "no", "f", "false", "off", "0"}:
+        return False
+
+    print_error(f"No valid Boolean value: {val}")
+    print_warning(f"Default to: {default}")
+    return default

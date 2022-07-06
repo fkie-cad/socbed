@@ -12,8 +12,8 @@ cd ./provisioning/packer/
 if [ -n "$1" ] && [ $1 == "runner" ]; then
   export PACKER_CACHE_DIR=/usr/share/runner-dependencies/packer_cache
   packer build -force -var 'vm_output=/usr/share/runner-dependencies/virtual_machines/internetrouter' internetrouter.json
-  else
-packer build -force internetrouter.json
+else
+  packer build -force internetrouter.json
 fi
 
 if [ $? != 0 ]; then
