@@ -101,7 +101,7 @@ class Attack:
         if hasattr(self, "handler"):
             print("\rStopping...")
             self.handler.shutdown()
-        elif hasattr(self.ssh_client, "stdin"):
+        elif hasattr(self.ssh_client.stdin, "channel"):
             print("\rStopping...")
             self.ssh_client.stdin.channel.send("\x03")
         else:
