@@ -1,0 +1,7 @@
+{
+  "browser": {
+    "implementation": "NullBrowser"
+  },
+  "profile": {
+  }
+}

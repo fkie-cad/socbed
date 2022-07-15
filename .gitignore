@@ -63,5 +63,9 @@ exports/
 # Generated Malware
 provisioning/ansible/roles/generate_malware/files/
 
+# Generated userbehavior
+provisioning/ansible/roles/configure_win10_client/files/win10_assets/userbehavior.log
+provisioning/ansible/roles/configure_win10_client/files/win10_assets/userbehavior.pex
+
 # ISO files
 *.iso

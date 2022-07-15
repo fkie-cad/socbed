@@ -1,0 +1,25 @@
+{
+  "mailer": {
+    "implementation": "NullMailer"
+  },
+  "profile": {
+    "distributions": {
+      "Send Mail": {
+        "weighted_list": [
+          [
+            true,
+            20
+          ],
+          [
+            false,
+            1
+          ]
+        ],
+        "template": "WeightedDistribution"
+      }
+    },
+    "mail_address": "test@localdomain",
+    "seed": null,
+    "known_mail_addresses": []
+  }
+}

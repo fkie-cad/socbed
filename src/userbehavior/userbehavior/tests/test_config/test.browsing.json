@@ -1,0 +1,104 @@
+{
+  "browser": {
+    "implementation": "NullBrowser"
+  },
+  "profile": {
+    "websites": [
+      "http://heise.de",
+      "http://www.general-anzeiger-bonn.de",
+      "http://www.ebay.de",
+      "http://www.bild.de",
+      "http://www.spiegel.de",
+      "http://www.otto.de",
+      "http://www.gutefrage.net",
+      "http://www.kicker.de",
+      "http://www.uni-bonn.de",
+      "http://www.fraunhofer.de",
+      "http://www.python.org"
+    ],
+    "search_terms": [
+      "Sonnenfinsternis",
+      "Flugzeugabsturz",
+      "Dschungelcamp",
+      "Paris",
+      "iPhone 6s",
+      "Griechenland",
+      "Charlie Hebdo",
+      "Helmut Schmidt",
+      "Windows 10",
+      "Hallo Welt",
+      "Game of Thrones",
+      "Marathon",
+      "Barack Obama",
+      "\u00d6sterreich",
+      "Fraunhofer Gesellschaft",
+      "Renault Clio",
+      "Dresden",
+      "Tag der Arbeit",
+      "Feiertage Deutschland",
+      "Volkswagen",
+      "Katzen",
+      "IT Sicherheit",
+      "SIEM"
+    ],
+    "seed": null,
+    "distributions": {
+      "Session Duration": {
+        "template": "LognormalDistribution",
+        "max_value": 172,
+        "mean": 3.15,
+        "sigma": 1.45,
+        "min_value": 0
+      },
+      "Session Pause": {
+        "template": "WeightedDistribution",
+        "weighted_list": [
+          [
+            0.5,
+            0.24
+          ],
+          [
+            1.5,
+            0.17
+          ],
+          [
+            2.5,
+            0.07
+          ],
+          [
+            3.5,
+            0.045
+          ],
+          [
+            4.5,
+            0.03
+          ],
+          [
+            5.5,
+            0.02
+          ]
+        ]
+      },
+      "Stay Time": {
+        "template": "LognormalDistribution",
+        "max_value": 600,
+        "mean": 2.5,
+        "sigma": 2.75,
+        "min_value": 0
+      },
+      "Search": {
+        "template": "WeightedDistribution",
+        "weighted_list": [
+          [
+            true,
+            1
+          ],
+          [
+            false,
+            1
+          ]
+        ]
+      }
+    }
+  }
+}

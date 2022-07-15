@@ -1,0 +1,38 @@
+{
+  "mailer": {
+    "implementation": "RealMailer",
+    "imap_server": {
+      "host": "my.example.de",
+      "port": 993,
+      "user": "user",
+      "password": "pwd"
+    },
+    "smtp_server": {
+      "host": "my.example.de",
+      "port": 25
+    }
+  },
+  "profile": {
+    "seed": null,
+    "mail_address": "me@example.de",
+    "known_mail_addresses": [
+      "add1@example.de",
+      "add2@example.de"
+    ],
+    "distributions": {
+      "Send Mail": {
+        "template": "WeightedDistribution",
+        "weighted_list": [
+          [
+            true,
+            20
+          ],
+          [
+            false,
+            1
+          ]
+        ]
+      }
+    }
+  }
+}

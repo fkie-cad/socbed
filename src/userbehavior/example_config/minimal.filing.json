@@ -1,0 +1,7 @@
+{
+  "filer": {
+    "implementation": "NullFiler"
+  },
+  "profile": {
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "filer": {
+    "implementation": "FolderFiler",
+    "folder": "tmp_folder"
+  },
+  "profile": {
+    "seed": null,
+    "filename_truncs": [
+      "AFile",
+      "BFile",
+      "CFile"
+    ],
+    "distributions": {
+      "Next Action": {
+        "weighted_list": [
+          [
+            "create",
+            2
+          ],
+          [
+            "read",
+            5
+          ],
+          [
+            "delete",
+            1
+          ],
+          [
+            "append",
+            10
+          ],
+          [
+            "move",
+            1
+          ],
+          [
+            "copy",
+            2
+          ]
+        ],
+        "template": "WeightedDistribution"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "usb_device": {
+    "implementation": "NullUsbDevice"
+  },
+  "profile": {
+  }
+}
