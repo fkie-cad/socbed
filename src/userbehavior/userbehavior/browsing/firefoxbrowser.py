@@ -100,20 +100,20 @@ class FirefoxBrowser(Browser):
 
     def _current_tag_elements(self, tag_name):
         try:
-            return self._driver.find_elements_by_tag_name(tag_name)
+            return self._driver.find_elements("tag name", tag_name)
         except NoSuchElementException:
             logger.debug("No {tag}-tag elements found".format(tag=tag_name))
             return list()
 
     def _current_id_element(self, id):
         try:
-            return self._driver.find_element_by_id(id)
+            return self._driver.find_element("id", id)
         except NoSuchElementException:
             raise SeleniumException("No {id}-id element found".format(id=id))
 
     def _current_class_elements(self, class_name):
         try:
-            return self._driver.find_elements_by_class_name(class_name)
+            return self._driver.find_elements("class name", class_name)
         except NoSuchElementException:
             logger.debug("No {class_}-class elements found".format(class_=class_name))
 
@@ -130,12 +130,12 @@ class FirefoxBrowser(Browser):
 
         def has_a_tag_and_href(element):
             try:
-                return element.find_element_by_tag_name("a").get_attribute("href") is not None
+                return element.find_element("tag name", "a").get_attribute("href") is not None
             except NoSuchElementException:
                 return False
 
         url_results = [
-            result.find_element_by_tag_name("a").get_attribute("href")
+            result.find_element("tag name", "a").get_attribute("href")
             for result in class_results
             if has_a_tag_and_href(result)]
         return url_results
@@ -156,7 +156,7 @@ class FirefoxBrowser(Browser):
         except TimeoutException as e:
             logger.info("Loading url: Timeout - try to abort loading")
             try:
-                self._driver.find_element_by_tag_name("html") \
+                self._driver.find_element("tag name", "html") \
                     .send_keys(Keys.ESCAPE)
             except WebDriverException as e:
                 raise BrowserException(
