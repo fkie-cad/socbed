@@ -5,7 +5,8 @@
     name: firefox
     state: present
     architecture: x86
-    version: 38.0.5
+#    version: 38.0.5
+    version: 102.0.1
     pinned: yes
 
 - name: Copy override.ini

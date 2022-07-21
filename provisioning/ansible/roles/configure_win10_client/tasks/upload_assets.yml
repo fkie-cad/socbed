@@ -25,10 +25,10 @@
     src: files/win10_assets/run_userbehavior.py
     dest: C:\BREACH\run_userbehavior.py
 
-- name: Upload userbehavior.pex to the client
+- name: Upload geckodriver 0.31.0 to the client
   win_copy:
-    src: files/win10_assets/userbehavior.pex
-    dest: C:\BREACH\userbehavior.pex
+    src: files/win10_assets/geckodriver.exe
+    dest: C:\Python37
 
 - name: Allow all users the write permission for C:\BREACH folder (for logs)
   win_acl:
