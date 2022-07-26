@@ -17,13 +17,16 @@
 
 import json
 import re
+import socket
 import time
 from http.client import HTTPConnection
 from collections import namedtuple
+from paramiko import SSHException
 
 import pytest
 
-from attacks.ssh import SSHTargets
+from attacks.printer import ListPrinter
+from attacks.ssh import BREACHSSHClient, SSHTarget, SSHTargets
 from systests.helpers import try_until_counter_reached
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
@@ -47,6 +50,7 @@ def timeout_counter():
 
 @pytest.mark.usefixtures("session", "timeout_counter")
 class TestUserbehavior:
+    client_ids = [1, 2, 3]
     log_server = SSHTargets.log_server
 
     def test_browsing(self, timeout_counter):
@@ -100,3 +104,24 @@ class TestUserbehavior:
         print(response)
         timestamp = json.loads(response)["hits"]["hits"][0]["_source"][es_query.timestamp_key]
         return self.is_iso8601_timestamp(timestamp)
+
+    @pytest.mark.parametrize("client_id", client_ids, ids=lambda x: "Client {}".format(x))
+    def test_client_userbehavior_is_running(self, client_id, timeout_counter):
+        command = "powershell -c \"Get-WmiObject Win32_process\""
+        success_indicator = "CommandLine                : python C:\\BREACH\\userbehavior\\run.py\r\n"
+        try_until_counter_reached(
+            lambda: self.exec_command_and_get_output_list(client_id, command, timeout_counter),
+            timeout_counter,
+            assertion_func=lambda x: (success_indicator in x)
+        )
+
+    def exec_command_and_get_output_list(self, client_id, command, timeout_counter):
+        client_ip = "192.168.56.{}".format(100 + client_id)
+        client = SSHTarget(hostname=client_ip, username="ssh")
+        ssh_client = BREACHSSHClient(target=client)
+        list_printer = ListPrinter()
+        try_until_counter_reached(
+            lambda: ssh_client.exec_command_on_target(command, list_printer),
+            timeout_counter,
+            exception=(TimeoutError, ConnectionResetError, SSHException, socket.error))
+        return list_printer.printed

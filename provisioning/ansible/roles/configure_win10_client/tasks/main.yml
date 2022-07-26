@@ -6,6 +6,7 @@
 - include: update_pip.yml
 - include: install_pip_selenium.yml
 - include: upload_assets.yml
+- include: upload_userbehavior_src.yml
 - include: install_firefox.yml
 - include: disable_automatic_updates.yml
 - include: run_init_tbf_client_on_boot.yml
