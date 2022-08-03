@@ -31,8 +31,6 @@ The installation instructions below were tested on a fresh Ubuntu 20.04 LTS syst
 Please adhere strictly to the instructions as different software versions might not work as expected.
 
 ```sh
-Remove me.
-
 # Install VirtualBox and configure the management network interface
 sudo apt install virtualbox virtualbox-ext-pack
 vboxmanage hostonlyif create # should create vboxnet0, else adapt following lines
