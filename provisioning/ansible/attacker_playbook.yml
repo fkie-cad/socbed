@@ -19,6 +19,18 @@
         line: '127.0.1.1	attacker'
         state: absent
 
+  tasks:
+    - name: Clone grc
+      git:
+        repo: https://github.com/garabik/grc.git
+        dest: /root/grc
+        clone: yes
+        version: devel
+    - name: Install grc
+      shell:
+        chdir: /root/grc
+        cmd: ./install.sh
+        creates: /usr/local/bin/grc
 
   roles:
     - ntp_kali

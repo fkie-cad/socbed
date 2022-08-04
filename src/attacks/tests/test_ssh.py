@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
-
+from unittest.mock import patch
 
 from attacks.ssh import SSHTarget, BREACHSSHClient
 
@@ -75,8 +75,10 @@ class MockChannel:
 
 
 class TestBREACHSSHClient:
+    default_target = SSHTarget(hostname="myhost", port=1337, username="john", password="doe")
+
     def test_breachsshclient(self):
-        ssh_target_1 = SSHTarget(hostname="myhost", port=1337, username="john", password="doe")
+        ssh_target_1 = self.default_target
         ssh_client_1 = BREACHSSHClient(ssh_target_1)
         assert ssh_client_1 is not None
         assert ssh_client_1.target.hostname == "myhost"
@@ -109,10 +111,31 @@ class TestBREACHSSHClient:
         BREACHSSHClient.write_lines(mock_stdin, lines)
         assert mock_stdin.lines == ["Hallo\n", "Welt\n"]
 
-    def test_set_envs(self):
-        ssh_client = BREACHSSHClient(SSHTarget())
+    @patch(
+        "attacks.ssh.BREACHSSHClient.exec_command",
+        return_value=[MockChannelFile(None, MockChannel())],
+    )
+    def test_wrap_command(self, _mock):
+        command = "echo '1234'"
+        sudo_command = "sudo echo '1234'"
+        ssh_client = BREACHSSHClient(self.default_target)
         ssh_client._transport = MockTransport()
+
+        assert ssh_client.wrap_command(command) == f"PYTHONUNBUFFERED=1 grc --colour=on {command}"
         assert (
-            ssh_client.set_envs("sudo touch file.txt") == "sudo PYTHONUNBUFFERED=1 touch file.txt"
+            ssh_client.wrap_command(sudo_command)
+            == f"sudo PYTHONUNBUFFERED=1 grc --colour=on {command}"
         )
-        assert ssh_client.set_envs("touch file.txt") == "PYTHONUNBUFFERED=1 touch file.txt"
+
+    @patch(
+        "attacks.ssh.BREACHSSHClient.exec_command",
+        return_value=[MockChannelFile(None, MockChannel(1))],
+    )
+    def test_wrap_command_no_grc(self, _mock):
+        command = "echo '1234'"
+        sudo_command = "sudo echo '1234'"
+        ssh_client = BREACHSSHClient(self.default_target)
+        ssh_client._transport = MockTransport()
+
+        assert ssh_client.wrap_command(command) == f"PYTHONUNBUFFERED=1 {command}"
+        assert ssh_client.wrap_command(sudo_command) == f"sudo PYTHONUNBUFFERED=1 {command}"
