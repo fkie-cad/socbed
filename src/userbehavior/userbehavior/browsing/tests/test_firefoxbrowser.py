@@ -16,11 +16,23 @@ class DriverStub:
         self.current_id_element = None
         self.current_url = ""
 
-    def find_elements_by_tag_name(self, tag_name):
-        return self.current_tag_elements
+    #def find_elements_by_tag_name(self, tag_name):
+    #    return self.current_tag_elements
 
-    def find_element_by_id(self, id):
-        return self.current_id_element
+    #def find_element_by_id(self, id):
+    #    return self.current_id_element
+
+    def find_element(self, name, value):
+        if name == "id":
+            return self.current_id_element
+        elif name == "tag name":
+            return self.current_tag_elements
+
+    def find_elements(self, name, value):
+        if name == "id":
+            return self.current_id_element
+        elif name == "tag name":
+            return self.current_tag_elements
 
     def get(self, url):
         pass
