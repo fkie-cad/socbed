@@ -150,6 +150,13 @@ class SubAttackConsole(Cmd):
             print("*** Invalid number of option arguments\n*** Usage: set <option> <value>")
 
     def complete_set(self, text, line, begidx, endidx):
+        opt = line.split(" ")[1].strip()
+        if opt in self.attack_option_descriptions.keys():
+            return [
+                option
+                for option in self.attack.options.__getattribute__(f"{opt}_choices")
+                if option.startswith(text)
+            ]
         return [option + " " for option in self.attack_option_descriptions.keys() if
                 option.startswith(text)]
 
