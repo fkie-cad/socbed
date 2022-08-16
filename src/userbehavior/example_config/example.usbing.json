@@ -1,0 +1,9 @@
+{
+  "usb_device": {
+    "implementation": "NullUsbDevice"
+  },
+  "profile": {
+    "seed": null,
+    "distributions": {}
+  }
+}
