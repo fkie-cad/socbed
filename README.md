@@ -18,6 +18,7 @@ After the build process is finished, SOCBED sessions can be started, controlled,
 ## System Requirements
 
 * Physical host with Linux or macOS. Note: Running SOCBED (and therefore VirtualBox) in a virtual machine might work as well but was not tested.
+* Python v3.8 or newer
 * RAM: 16 GB minimum, 32 GB recommended
 * CPU: Quad-core with hardware support for virtualization
 * HDD: 50 GB free, SSD strongly recommended
