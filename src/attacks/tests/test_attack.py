@@ -18,7 +18,7 @@
 
 import pytest
 import socket
-from unittest.mock import patch
+from unittest.mock import patch, Mock, PropertyMock
 
 from attacks.attack import AttackInfo, AttackOptions, Attack
 
@@ -61,7 +61,7 @@ class TestAttack:
         attack.print(msg=msg)
         assert p.last_msg == msg
 
-    @patch("attacks.attack.Attack.interrupt_handler")
+    @patch("attacks.attack.Attack.handle_interrupt")
     def test_timeout_exception(self, _mock, capfd):
         attack = Attack()
         with attack.wrap_ssh_exceptions():
@@ -69,6 +69,19 @@ class TestAttack:
         out = capfd.readouterr()[0].split("\n")
         assert out[0] == "Timeout after 300s"
         assert not out[1]
+
+    def test_handle_interrupt(self):
+        mock = Mock()
+
+        attack = Attack()
+        setattr(attack, "handler", mock)
+        attack.handle_interrupt()
+        mock.shutdown.assert_called()
+
+        attack = Attack()
+        setattr(attack, "ssh_client", mock)
+        attack.handle_interrupt()
+        mock.stdin.channel.send.assert_called_with("\x03")
 
 
 class TestAttackInfo:
