@@ -61,7 +61,7 @@ def setup_logging():
 
 class Main:
     client_dir = "C:\\BREACH"
-    userbehavior_pex_file = "userbehavior.pex"
+    userbehavior_python_file = "userbehavior\\run.py"
 
     def run(self, argv=None):
         logger.info("Userbehavior script for client started!")
@@ -69,9 +69,9 @@ class Main:
             self.run_userbehavior()
 
     def run_userbehavior(self):
-        pex_path = os.path.join(self.client_dir, self.userbehavior_pex_file)
-        call_vector = ["python", pex_path, "--use-breach-setup"]
-        logger.info("Running userbehavior at " + str(pex_path))
+        python_path = os.path.join(self.client_dir, self.userbehavior_python_file)
+        call_vector = ["python", python_path, "--use-breach-setup"]
+        logger.info("Running userbehavior at " + str(python_path))
         self.execute_userbehavior(call_vector)
 
     @staticmethod
