@@ -6,9 +6,9 @@ from attacks.util import print_error, print_warning
 
 
 class Speed(IntEnum):
-    FAST = 5
-    MEDIUM = 3
-    SLOW = 1
+    FAST = 5 # nmap timing template insane
+    MEDIUM = 3 # nmap timing template normal
+    SLOW = 1 # nmap timing template sneaky
 
 
 class NmapAttackOptions(AttackOptions):
