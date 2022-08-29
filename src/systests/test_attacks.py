@@ -76,11 +76,11 @@ class TestAttack:
         # c2 than infection attacks, some infection attacks are run more than once.
         # The order within a category (infect or c2) does not matter, we use alphabetical here.
         KillReverseConnectionAttack(), EmailEXEAttack(), ChangeWallpaperAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), DownloadMalwareMeterpreterAttack(),
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), DownloadMalwareMeterpreterAttack(),
         KillReverseConnectionAttack(), EmailEXEAttack(), C2ExfiltrationAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), HashdumpAttack(),
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), HashdumpAttack(),
         KillReverseConnectionAttack(), EmailEXEAttack(), TakeScreenshotAttack(),
-        KillReverseConnectionAttack(), EmailEXEAttack(), MimikatzAttack()
+        KillReverseConnectionAttack(), FlashdriveEXEAttack(), MimikatzAttack()
     ]
 
     @pytest.mark.parametrize("attack", attacks, ids=lambda a: type(a).__name__)
