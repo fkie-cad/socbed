@@ -42,6 +42,6 @@ class TestMockUsbDevice:
             mud.mount()
         files = mud.get_files()
         assert isinstance(files, list)
-        assert any(file.endswith("test.pdf") for file in files)
+        assert any(file.endswith("test.exe") for file in files)
         for file in files:
             assert os.path.isfile(file)

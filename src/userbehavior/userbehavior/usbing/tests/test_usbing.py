@@ -108,10 +108,10 @@ class TestUsbing:
         u.run()
         assert u.loop_until_has_ended.called
 
-    def test_save_pdfs_to_tmp_folder(self, u: Usbing):
+    def test_save_exes_to_tmp_folder(self, u: Usbing):
         u.usb_device = MockUsbDevice()
         u.mount_usb_device()
-        u.save_pdfs_from_mounted_device()
+        u.save_exes_from_mounted_device()
         assert len(u.saved_files) > 0
         for file in u.saved_files:
-            assert file.endswith(".pdf")
+            assert file.endswith(".exe")

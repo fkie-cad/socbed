@@ -46,5 +46,5 @@ class MockUsbDevice(UsbDevice):
             self._mounted = False
 
     def _fill_with_files(self):
-        shutil.copy(os.path.join(self._mock_payload_dir, "test.pdf"), self._mount_point)
+        shutil.copy(os.path.join(self._mock_payload_dir, "test.exe"), self._mount_point)
         shutil.copy(os.path.join(self._mock_payload_dir, "test.jpg"), self._mount_point)
