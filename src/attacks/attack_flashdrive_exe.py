@@ -57,13 +57,13 @@ class FlashdriveEXEAttack(Attack):
         image = self.image_path
         media = self.media_path
         return [
-            "rm -f {}".format(image),
-            "dd if=/dev/zero of={} bs=1024 count=0 seek=$[1024*32]".format(image),
-            "mkfs.fat {}".format(image),
-            "mkdir {}".format(media),
-            "mount -o loop {} {}".format(image, media),
-            "mv /root/Bank-of-Nuthington.exe {}".format(media),
-            "umount {}".format(image)]
+            f"rm -f {image}",
+            f"dd if=/dev/zero of={image} bs=1024 count=0 seek=$[1024*32]",
+            f"mkfs.fat {image}",
+            f"mkdir {media}",
+            f"mount -o loop {image} {media}",
+            f"mv /root/Bank-of-Nuthington.exe {media}",
+            f"umount {image}"]
 
     def _upload_image_to_client_command(self):
         image_path = self.image_path
