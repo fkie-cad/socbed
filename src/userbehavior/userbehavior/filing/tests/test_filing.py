@@ -10,7 +10,7 @@ from userbehavior.misc.util import Factory
 
 from userbehavior.filing.filer import Filer, NullFiler
 
-long_test = pytest.mark.long_test
+pytestmark = pytest.mark.longtest
 
 
 class TestFilingConfig:
