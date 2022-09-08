@@ -41,16 +41,14 @@ class KillReverseConnectionAttack(Attack):
         self.ssh_client.target.username = "ssh"
 
     def _reset_reverse_connection(self):
-    	things_to_kill = [
-    		"plugin-container.exe",
-    		"firefox.exe",
-    		"meterpreter_bin_tcp.exe",
-    		"%%Bank-of-Nuthington.exe",
-    		]
-    	for process in things_to_kill:
-    		cmd = (
-    			'wmic process where '
-            	f'\"Description like \'{process}\'\" call terminate '
-            	'&& echo Successful wmic execution\"')
-    		with self.check_printed("Successful wmic execution"):
-    			self.exec_command_on_target(cmd)
+        things_to_kill = [
+            "meterpreter_bind_tcp.exe",
+            "%%Bank-of-Nuthington.exe"
+        ]
+        for process in things_to_kill:
+            cmd = (
+                'wmic process where '
+                f'\"Description like \'{process}\'\" call terminate '
+                '&& echo Successful wmic execution\"')
+            with self.check_printed("Successful wmic execution"):
+                self.exec_command_on_target(cmd)
