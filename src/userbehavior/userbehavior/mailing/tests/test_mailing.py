@@ -11,7 +11,7 @@ from userbehavior.mailing.mailingprofile import MailingProfile, MailingProfileCo
 from userbehavior.mailing.tests.mocks import MockMailer, ExceptionRaisingMailer
 from userbehavior.misc.util import Mail, Factory
 
-long_test = pytest.mark.long_test
+pytestmark = pytest.mark.longtest
 
 
 class TestMailingConfig:

@@ -32,7 +32,7 @@ def attack():
     return attack
 
 
-class TestKillReverseConnectionAttack():
+class TestKillReverseConnectionAttack:
     def test_info(self):
         assert KillReverseConnectionAttack.info.name == "disinfect_client"
 
@@ -42,6 +42,6 @@ class TestKillReverseConnectionAttack():
             attack.run()
 
     def test_no_exception_good_output(self, attack: KillReverseConnectionAttack):
-        indicator = "Successful wmic execution"
-        attack.exec_command_on_target = lambda _: attack.printer.print(indicator)
+        indicator = "Method execution successful"
+        attack.exec_commands_on_target = lambda _: attack.printer.print(indicator)
         attack.run()
