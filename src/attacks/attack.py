@@ -79,7 +79,7 @@ class Attack:
         except socket.timeout:
             print(f"Timeout after {self.ssh_client.channel_timeout}s")
             self.handle_interrupt()
-        except (paramiko.SSHException, socket.error) as err:
+        except (paramiko.SSHException, socket.error, OSError) as err:
             self.handle_interrupt()
             raise AttackException(err) from err
         finally:
