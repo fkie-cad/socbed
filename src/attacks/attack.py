@@ -73,15 +73,18 @@ class Attack:
 
     @contextmanager
     def wrap_ssh_exceptions(self):
+        # SIGINT = signal sent when pressing ctrl+C
         signal(SIGINT, self.handle_interrupt)
         try:
             yield
-        except socket.timeout:
+        except socket.timeout as err:
             print(f"Timeout after {self.ssh_client.channel_timeout}s")
             self.handle_interrupt()
-        except (paramiko.SSHException, socket.error, OSError) as err:
-            self.handle_interrupt()
             raise AttackException(err) from err
+        except (paramiko.SSHException, socket.error) as err:
+            raise AttackException(err) from err
+            # this code is unreachable
+            self.handle_interrupt()
         finally:
             signal(SIGINT, default_int_handler)
 
