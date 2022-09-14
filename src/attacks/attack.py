@@ -73,20 +73,13 @@ class Attack:
 
     @contextmanager
     def wrap_ssh_exceptions(self):
-        # SIGINT = signal sent when pressing ctrl+C
-        signal(SIGINT, self.handle_interrupt)
         try:
             yield
         except socket.timeout as err:
             print(f"Timeout after {self.ssh_client.channel_timeout}s")
-            self.handle_interrupt()
             raise AttackException(err) from err
         except (paramiko.SSHException, socket.error) as err:
             raise AttackException(err) from err
-            # this code is unreachable
-            self.handle_interrupt()
-        finally:
-            signal(SIGINT, default_int_handler)
 
     def exec_command_on_target(self, command):
         with self.wrap_ssh_exceptions():
@@ -102,10 +95,10 @@ class Attack:
 
     def handle_interrupt(self):
         if hasattr(self, "handler"):
-            print("\rStopping...")
+            print("\rKeyboard Interrupt, stopping...")
             self.handler.shutdown()
         elif hasattr(self.ssh_client.stdin, "channel"):
-            print("\rStopping...")
+            print("\rKeyboard Interrupt, stopping...")
             self.ssh_client.stdin.channel.send("\x03")
         else:
             print("Cannot cancel command")

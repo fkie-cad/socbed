@@ -168,6 +168,8 @@ class SubAttackConsole(Cmd):
             print("*** Exception: {e}".format(e=e))
             log_dict.update(event="attack_failed", failed_with=str(e).replace("\n", " "))
             self.logger.info("Attack failed", log_dict=log_dict)
+        except KeyboardInterrupt:
+            self.attack.handle_interrupt()
         else:
             log_dict.update(event="attack_succeeded")
             self.logger.info("Attack succeeded", log_dict=log_dict)
