@@ -14,12 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
+import traceback
+
 from contextlib import redirect_stdout
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, MagicMock
 
 import io
 import pytest
 
+import attacks
 from attacks.attack import Attack, AttackOptions, AttackInfo, AttackException
 from attacks.attackconsole import AttackConsole, SubAttackConsole, parse_args
 
@@ -74,6 +77,12 @@ class TestSubAttackConsole:
     def test_run(self, ac: SubAttackConsole):
         ac.onecmd("run")
         assert ac.attack.run.called
+
+    @patch("attacks.Attack.handle_interrupt")
+    def test_keyboard_interrupt_is_caught(self, ac: SubAttackConsole):
+        FakeAttack.run = Mock(side_effect=lambda: _raise(KeyboardInterrupt))
+        ac.onecmd("run")
+        assert True  # No Exception is thrown
 
     def test_run_attack_exception_is_caught(self, ac: SubAttackConsole):
         FakeAttack.run = Mock(side_effect=lambda: _raise(AttackException()))
@@ -159,7 +168,7 @@ class TestTBFConsole:
         out = f.getvalue()
         assert "use fake_attack" in out
 
-    def test_no_print_if_stdin_is_a_tty(self,  tbfc: AttackConsoleForTesting):
+    def test_no_print_if_stdin_is_a_tty(self, tbfc: AttackConsoleForTesting):
         tbfc._stdin_is_a_tty = Mock(return_value=True)
         tbfc.cmdqueue = ["use fake_attack", "exit"]
         f = io.StringIO()
