@@ -18,7 +18,7 @@
 
 import pytest
 import socket
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 from attacks.attack import AttackInfo, AttackOptions, Attack, AttackException
 
