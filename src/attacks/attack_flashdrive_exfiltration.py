@@ -44,7 +44,8 @@ class FlashdriveExfiltrationAttack(Attack):
         self.ssh_client.target.username = "ssh"
 
     def _copy_files_to_flashdrive_commands(self):
+        directory = self.options.rdir
         return [
             "imdisk -a -s 64M -m L: -p \"/fs:ntfs /q /y\"",
-            "xcopy /E \"{dir}\" L:".format(dir=self.options.rdir),
+            f"xcopy /E \"{directory}\" L:",
             "imdisk -D -m L:"]
