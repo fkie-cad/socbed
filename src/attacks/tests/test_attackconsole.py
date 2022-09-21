@@ -78,7 +78,7 @@ class TestSubAttackConsole:
         ac.onecmd("run")
         assert ac.attack.run.called
 
-    @patch("attacks.Attack.handle_interrupt")
+    @patch("attacks.Attack.handle_keyboard_interrupt")
     def test_keyboard_interrupt_is_caught(self, ac: SubAttackConsole):
         FakeAttack.run = Mock(side_effect=lambda: _raise(KeyboardInterrupt))
         ac.onecmd("run")

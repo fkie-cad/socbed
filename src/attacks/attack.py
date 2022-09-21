@@ -93,7 +93,7 @@ class Attack:
         with self.wrap_ssh_exceptions():
             self.ssh_client.connect_to_target()
 
-    def handle_interrupt(self):
+    def handle_keyboard_interrupt(self):
         if hasattr(self, "handler"):
             print("\rKeyboard Interrupt, stopping...")
             self.handler.shutdown()

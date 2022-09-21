@@ -70,17 +70,17 @@ class TestAttack:
         assert out[0] == "Timeout after 300s"
         assert not out[1]
 
-    def test_handle_interrupt(self):
+    def test_handle_keyboard_interrupt(self):
         mock = Mock()
 
         attack = Attack()
         setattr(attack, "handler", mock)
-        attack.handle_interrupt()
+        attack.handle_keyboard_interrupt()
         mock.shutdown.assert_called()
 
         attack = Attack()
         setattr(attack, "ssh_client", mock)
-        attack.handle_interrupt()
+        attack.handle_keyboard_interrupt()
         mock.stdin.channel.send.assert_called_with("\x03")
 
 
