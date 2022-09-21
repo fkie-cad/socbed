@@ -23,6 +23,7 @@ from types import SimpleNamespace
 import paramiko
 from attacks.util import print_command
 
+
 class SSHTarget(SimpleNamespace):
     name = ""
     hostname = ""

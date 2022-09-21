@@ -76,4 +76,3 @@ class MimikatzAttack(Attack):
             "load kiwi",
             "creds_all",
             "background"])
-

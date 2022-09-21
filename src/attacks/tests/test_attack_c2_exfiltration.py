@@ -32,7 +32,7 @@ def attack():
     return attack
 
 
-class TestC2ExfiltrationAttack():
+class TestC2ExfiltrationAttack:
     def test_raise_exception_bad_output(self, attack: C2ExfiltrationAttack):
         attack.ssh_client.exec_command = Mock(return_value=(Mock(), ["Bad output"], []))
         with pytest.raises(AttackException):

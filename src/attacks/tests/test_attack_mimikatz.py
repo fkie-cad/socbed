@@ -32,7 +32,7 @@ def attack():
     return attack
 
 
-class TestMimikatzAttack():
+class TestMimikatzAttack:
     def test_raise_exception_bad_output(self, attack: MimikatzAttack):
         attack.ssh_client.exec_command = Mock(return_value=(Mock(), ["Bad output"], []))
         with pytest.raises(AttackException):
@@ -42,4 +42,3 @@ class TestMimikatzAttack():
         indicator = "2aca7635afdc3febc408bee6b89acf16"
         attack.ssh_client.exec_command = Mock(return_value=(Mock(), [indicator], []))
         attack.run()
-

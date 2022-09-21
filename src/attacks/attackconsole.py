@@ -154,8 +154,8 @@ class SubAttackConsole(Cmd):
                 option.startswith(text)]
 
     def do_reset(self, _arg):
-            self.attack.options._set_options_to_none()
-            self.attack.options._set_defaults()
+        self.attack.options._set_options_to_none()
+        self.attack.options._set_defaults()
 
     def do_run(self, arg):
         attack_name = self.attack.info.name
