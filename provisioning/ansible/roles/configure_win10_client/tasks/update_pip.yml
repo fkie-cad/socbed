@@ -1,0 +1,2 @@
+- name: Update pip to version 22.1.2
+  win_command: "python -m pip install pip==22.1.2"

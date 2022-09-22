@@ -1,0 +1,2 @@
+- name: Installing pip selenium version 4.3.0
+  win_command: "pip install selenium==4.3.0"

@@ -73,15 +73,13 @@ class Attack:
 
     @contextmanager
     def wrap_ssh_exceptions(self):
-        signal(SIGINT, self.interrupt_handler)
         try:
             yield
-        except socket.timeout:
+        except socket.timeout as err:
             print(f"Timeout after {self.ssh_client.channel_timeout}s")
+            raise AttackException(err) from err
         except (paramiko.SSHException, socket.error) as err:
             raise AttackException(err) from err
-        finally:
-            signal(SIGINT, default_int_handler)
 
     def exec_command_on_target(self, command):
         with self.wrap_ssh_exceptions():
@@ -95,16 +93,15 @@ class Attack:
         with self.wrap_ssh_exceptions():
             self.ssh_client.connect_to_target()
 
-    def interrupt_handler(self, _signum, _frame):
+    def handle_keyboard_interrupt(self):
         if hasattr(self, "handler"):
-            print("\rStopping...")
+            print("\rKeyboard Interrupt, stopping...")
             self.handler.shutdown()
-        elif hasattr(self.ssh_client, "stdin"):
-            print("\rStopping...")
+        elif hasattr(self.ssh_client.stdin, "channel"):
+            print("\rKeyboard Interrupt, stopping...")
             self.ssh_client.stdin.channel.send("\x03")
         else:
             print("Cannot cancel command")
-
 
     @contextmanager
     def check_printed(self, indicator):
@@ -117,4 +114,4 @@ class Attack:
         self.printer = old_printer
         if not any(indicator in ansi_escape.sub("", line) for line in "".join(lp.printed).split("\n")):
             raise AttackException(
-                "Attack failed: Indicator \"{}\" not found in output".format(indicator))
+                f"Attack failed: Indicator \"{indicator}\" not found in output")

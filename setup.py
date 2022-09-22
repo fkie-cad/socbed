@@ -30,6 +30,7 @@ setup(
         "paramiko",
         "pyvmomi",
         "veryprettytable",
+        "selenium"
     ],
     entry_points={
         'console_scripts': [

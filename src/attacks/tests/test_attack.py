@@ -18,9 +18,9 @@
 
 import pytest
 import socket
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
-from attacks.attack import AttackInfo, AttackOptions, Attack
+from attacks.attack import AttackInfo, AttackOptions, Attack, AttackException
 
 
 class PrinterSpy:
@@ -63,11 +63,25 @@ class TestAttack:
 
     def test_timeout_exception(self, capfd):
         attack = Attack()
-        with attack.wrap_ssh_exceptions():
-            raise socket.timeout
+        with pytest.raises(AttackException):
+            with attack.wrap_ssh_exceptions():
+                raise socket.timeout
         out = capfd.readouterr()[0].split("\n")
         assert out[0] == "Timeout after 300s"
         assert not out[1]
+
+    def test_handle_keyboard_interrupt(self):
+        mock = Mock()
+
+        attack = Attack()
+        setattr(attack, "handler", mock)
+        attack.handle_keyboard_interrupt()
+        mock.shutdown.assert_called()
+
+        attack = Attack()
+        setattr(attack, "ssh_client", mock)
+        attack.handle_keyboard_interrupt()
+        mock.stdin.channel.send.assert_called_with("\x03")
 
 
 class TestAttackInfo:

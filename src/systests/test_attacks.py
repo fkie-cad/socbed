@@ -40,7 +40,7 @@ from systests.helpers import try_until_counter_reached
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
-MAX_RUNTIME = 10 * 60  # Ten minutes
+MAX_RUNTIME = 12 * 60  # Twelve minutes
 pytestmark = pytest.mark.systest
 
 
