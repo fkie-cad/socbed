@@ -23,6 +23,7 @@ import pytest
 from attacks import AttackException
 from attacks.attack_sqlmap import SQLMapAttack
 
+
 @pytest.fixture()
 def attack():
     SQLMapAttack.ssh_client_class = Mock

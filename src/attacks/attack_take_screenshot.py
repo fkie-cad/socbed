@@ -67,6 +67,6 @@ class TakeScreenshotAttack(Attack):
             self.handler.shutdown()
 
     def _collect_files(self):
-        self.ssh_client.write_lines(self.handler.stdin, [
-            "screenshot -p {file}".format(file=self.screenshot_file),
-            "background"])
+        file = self.screenshot_file
+        self.ssh_client.write_lines(self.handler.stdin, ["screenshot -p {file}",
+                                                         "background"])

@@ -54,7 +54,7 @@ class MimikatzAttack(Attack):
                 self._respond(line)
                 self.print(line)
         except UnicodeDecodeError as e:
-            self.print("UnicodeDecodeError: {}".format(e))
+            self.print(f"UnicodeDecodeError: {e}")
             self.handler.shutdown()
 
     def _respond(self, line):
@@ -76,4 +76,3 @@ class MimikatzAttack(Attack):
             "load kiwi",
             "creds_all",
             "background"])
-

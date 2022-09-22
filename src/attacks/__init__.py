@@ -29,7 +29,8 @@ attack_module_names = [
     file.split(".py")[0] for file in os.listdir(module_dir)
     if file.startswith("attack_") and file.endswith(".py")]
 
-attack_modules = [import_module("." + str(attack_module_name), package=package) for attack_module_name in attack_module_names]
+attack_modules = [import_module("." + str(attack_module_name), package=package)
+                  for attack_module_name in attack_module_names]
 
 attack_subclasses = set()
 for attack_module in attack_modules:

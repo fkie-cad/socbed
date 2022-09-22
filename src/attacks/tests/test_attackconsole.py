@@ -14,15 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
-import traceback
+
 
 from contextlib import redirect_stdout
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import io
 import pytest
 
-import attacks
 from attacks.attack import Attack, AttackOptions, AttackInfo, AttackException
 from attacks.attackconsole import AttackConsole, SubAttackConsole, parse_args
 

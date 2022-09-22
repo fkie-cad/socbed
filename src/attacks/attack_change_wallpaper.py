@@ -62,6 +62,6 @@ class ChangeWallpaperAttack(Attack):
             self.handler.shutdown()
 
     def _collect_files(self):
-        self.ssh_client.write_lines(self.handler.stdin, [
-            "execute -H -f powershell -a {script}".format(script=self.change_wallpaper_ps_script),
-            "background"])
+        script = self.change_wallpaper_ps_script
+        self.ssh_client.write_lines(self.handler.stdin, [f"execute -H -f powershell -a {script}",
+                                                         "background"])
