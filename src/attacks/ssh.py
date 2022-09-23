@@ -47,7 +47,6 @@ class BREACHSSHClient(paramiko.SSHClient):
     channel_timeout = 300
     connect_timeout = 60
     stdin = None
-    env_str = "PYTHONUNBUFFERED=1"
 
     def __init__(self, target=None):
         super().__init__()
@@ -60,7 +59,7 @@ class BREACHSSHClient(paramiko.SSHClient):
     def exec_command_on_target(self, command, printer):
         self.connect_to_target()
         print_command(command)
-        command = self.set_envs(command)
+        command = self.wrap_command(command)
         stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
         self.stdin = stdin
         self.print_output(stdout, printer)
@@ -71,7 +70,7 @@ class BREACHSSHClient(paramiko.SSHClient):
         self.connect_to_target()
         for command in commands:
             print_command(command)
-            command = self.set_envs(command)
+            command = self.wrap_command(command)
             stdin, stdout, stderr = self.exec_command(command, timeout=self.channel_timeout, get_pty=True)
             self.stdin = stdin
             self.print_output(stdout, printer)
@@ -90,6 +89,25 @@ class BREACHSSHClient(paramiko.SSHClient):
         if command.startswith("sudo"):
             return command.replace("sudo", f"sudo {self.env_str}")
         return f"{self.env_str} {command}"
+
+    def _get_grc_string(self) -> str:
+        if not self.exec_command("which grc", timeout=2)[0].channel.recv_exit_status():
+            return "grc --colour=on"
+        return ""
+
+    def wrap_command(self, command: str) -> str:
+        if "windows" in self._transport.remote_version.lower():
+            return command
+
+        env_str: str = "PYTHONUNBUFFERED=1"
+        command_prefix: list[str] = [env_str, self._get_grc_string()]
+
+        command_prefix_str = " ".join(x for x in command_prefix if x)
+
+        if command.startswith("sudo"):
+            return command.replace("sudo", f"sudo {command_prefix_str}")
+        return f"{command_prefix_str} {command}"
+
 
     def print_output(self, msg_file, printer):
         if "windows" in self._transport.remote_version.lower():

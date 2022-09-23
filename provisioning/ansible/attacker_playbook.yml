@@ -31,3 +31,4 @@
     - generate_malware
     - ssh_config
     - dosfstools
+    - grc

@@ -1,0 +1,7 @@
+---
+
+- name: Install grc
+  apt:
+    name: grc={{ grc_version }}
+    state: present
+    update_cache: yes
