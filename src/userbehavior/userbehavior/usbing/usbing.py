@@ -52,6 +52,7 @@ class Usbing:
         self.saved_files = list()
         self.end_time = None
         self.timeout = 10
+        self.max_mount_retries = 3
 
     @classmethod
     def from_config(cls, config: UsbingConfig):
@@ -137,7 +138,11 @@ class Usbing:
 
     def mount_usb_device(self):
         logger.info("Mounting USB device")
-        self.usb_device.mount()
+        for i in range(self.max_mount_retries):
+            self.usb_device.mount()
+            if self.usb_device.is_mounted():
+                break
+            logger.info(f"Mounting attempt {i+1}/{self.max_mount_retries} failed.")
 
     def save_exes_from_mounted_device(self):
         files = self.usb_device.get_files()
