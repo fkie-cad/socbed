@@ -88,7 +88,7 @@ class Usbing:
         logger.info("Usbing ended")
 
     def loop_until_has_ended(self):
-        log = "Loop handling usb image"
+        log = "Loop handling USB image"
         if self.end_time is not None:
             log += " until " + time.ctime(self.end_time)
         logger.info(log)
@@ -105,11 +105,11 @@ class Usbing:
             return time.time() > self.end_time
 
     def device_is_available(self):
-        logger.info("Check if usb device is available")
+        logger.info("Check if USB device is available")
         return self.usb_device.is_available()
 
     def handle_usb_device(self):
-        logger.info("Handling usb image")
+        logger.info("Handling USB image")
         self.save_exes_from_usb_device()
         self.discard_old_usb_device()
         self.open_saved_exes()
@@ -121,8 +121,11 @@ class Usbing:
     def save_exes_from_usb_device(self):
         logger.info("Saving exes on USB device to tmp folder")
         self.mount_usb_device()
-        self.save_exes_from_mounted_device()
-        self.unmount_usb_device()
+        if self.usb_device_is_mounted():
+            self.save_exes_from_mounted_device()
+            self.unmount_usb_device()
+        else:
+            logger.info("Failed to mount USB device")
 
     def discard_old_usb_device(self):
         logger.info("Discarding old USB device")
@@ -146,17 +149,20 @@ class Usbing:
             self.save_in_tmp_folder(exe)
 
     def unmount_usb_device(self):
-        logger.info("Unmounting usb device")
+        logger.info("Unmounting USB device")
         self.usb_device.unmount()
 
     def save_in_tmp_folder(self, file):
-        dir, filename = os.path.split(file)
+        directory, filename = os.path.split(file)
         count = 0
         while os.path.isfile(os.path.join(self.tmp_folder, str(count) + "-" + filename)):
             count += 1
         file_dest = os.path.join(self.tmp_folder, str(count) + "-" + filename)
         self.copy(file, file_dest)
         self.saved_files.append(file_dest)
+
+    def usb_device_is_mounted(self):
+        return self.usb_device.is_mounted()
 
     @staticmethod
     def open(file):
