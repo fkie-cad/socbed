@@ -121,7 +121,7 @@ class Usbing:
     def save_exes_from_usb_device(self):
         logger.info("Saving exes on USB device to tmp folder")
         self.mount_usb_device()
-        if self.usb_device.is_mounted():
+        if self.usb_device_is_mounted():
             self.save_exes_from_mounted_device()
             self.unmount_usb_device()
         else:
@@ -160,6 +160,9 @@ class Usbing:
         file_dest = os.path.join(self.tmp_folder, str(count) + "-" + filename)
         self.copy(file, file_dest)
         self.saved_files.append(file_dest)
+
+    def usb_device_is_mounted(self):
+        return self.usb_device.is_mounted()
 
     @staticmethod
     def open(file):
