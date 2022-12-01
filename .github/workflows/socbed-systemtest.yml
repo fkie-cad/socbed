@@ -9,7 +9,7 @@ jobs:
   prepare-environment:
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Create virtual environment
         run: python3 -m venv /usr/share/runner-dependencies/socbed_env
@@ -31,7 +31,7 @@ jobs:
     needs: [prepare-environment]
     timeout-minutes: 480
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Activate virtual environment
         run: source /usr/share/runner-dependencies/socbed_env/bin/activate
@@ -96,7 +96,7 @@ jobs:
     runs-on: [self-hosted, linux]
     needs: [prepare-environment, build-machines]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Activate virtual environment
         run: source /usr/share/runner-dependencies/socbed_env/bin/activate
@@ -117,7 +117,7 @@ jobs:
     if: always()
     needs: [prepare-environment, build-machines, test-machines]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Delete created VMs
         run: ./tools/delete_vms
