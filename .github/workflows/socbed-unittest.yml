@@ -8,6 +8,6 @@ jobs:
   tox-unit-test:
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: tox -- -m "not systest"
 

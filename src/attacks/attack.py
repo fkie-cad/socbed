@@ -20,7 +20,6 @@ import re
 import socket
 from contextlib import contextmanager
 from types import SimpleNamespace
-from signal import SIGINT, default_int_handler, signal
 
 import paramiko
 from attacks.printer import Printer, ListPrinter, MultiPrinter

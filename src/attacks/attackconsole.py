@@ -75,7 +75,7 @@ class ISOFormatter(logging.Formatter):
         tz = cls._tz_fix.match(time.strftime("%z"))
         if time.timezone and tz:
             offset_hrs, offset_min = tz.groups()
-            isotime += "{0}:{1}".format(offset_hrs, offset_min)
+            isotime += f"{offset_hrs}:{offset_min}"
         else:
             isotime += "Z"
         record.__dict__["isotime"] = isotime
@@ -113,7 +113,7 @@ class SubAttackConsole(Cmd):
             option: self.options_class.__dict__[option]
             for option in self.attack_options}
         self.attack = self.attack_class(printer=ConsolePrinter())
-        self.prompt = "attackconsole ({name}) > ".format(name=self.attack_class.info.name)
+        self.prompt = f"attackconsole ({self.attack_class.info.name}) > "
 
     def precmd(self, line):
         if not self._stdin_is_a_tty():
@@ -150,12 +150,19 @@ class SubAttackConsole(Cmd):
             print("*** Invalid number of option arguments\n*** Usage: set <option> <value>")
 
     def complete_set(self, text, line, begidx, endidx):
+        opt = line.split(" ")[1].strip()
+        if opt in self.attack_option_descriptions.keys():
+            return [
+                option
+                for option in self.attack.options.__getattribute__(f"{opt}_choices")
+                if option.startswith(text)
+            ]
         return [option + " " for option in self.attack_option_descriptions.keys() if
                 option.startswith(text)]
 
     def do_reset(self, _arg):
-            self.attack.options._set_options_to_none()
-            self.attack.options._set_defaults()
+        self.attack.options._set_options_to_none()
+        self.attack.options._set_defaults()
 
     def do_run(self, arg):
         attack_name = self.attack.info.name
@@ -165,7 +172,7 @@ class SubAttackConsole(Cmd):
         try:
             self.attack.run()
         except AttackException as e:
-            print("*** Exception: {e}".format(e=e))
+            print(f"*** Exception: {e}")
             log_dict.update(event="attack_failed", failed_with=str(e).replace("\n", " "))
             self.logger.info("Attack failed", log_dict=log_dict)
         except KeyboardInterrupt:
@@ -222,7 +229,7 @@ class AttackConsole(Cmd):
                 attack_class=self.attack_classes[attack], **self.kwargs)
             sub_attack_console.cmdloop()
         else:
-            print("*** Unknown attack: {attack}".format(attack=attack))
+            print(f"*** Unknown attack: {attack}")
 
     def complete_use(self, text, line, begidx, endidx):
         return [attack for attack in self.attack_classes.keys() if attack.startswith(text)]
@@ -256,7 +263,7 @@ class IntroGenerator:
         intro = "\n".join([
             fortune,
             "+ -- - -= [\t BREACH Attack Console \t\t]",
-            "+ -- - -= [\t {} attack(s)          \t\t]".format(len(implemented_attacks)),
+            f"+ -- - -= [\t {len(implemented_attacks)} attack(s)          \t\t]",
             ""])
         return intro
 

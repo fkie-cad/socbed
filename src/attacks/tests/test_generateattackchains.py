@@ -125,7 +125,7 @@ class TestAttackBlockConsistency:
             assert block[-2].split()[0] == "run"
 
 
-class TestGraphConsistency():
+class TestGraphConsistency:
     start_attacks = AttackGraph.start_attacks
     end_attacks = AttackGraph.end_attacks
     successors = AttackGraph.attack_dict
@@ -152,7 +152,7 @@ class TestGraphConsistency():
         # ToDo: write test for valid end node
 
 
-class TestDeterminism():
+class TestDeterminism:
     def test_same_script_for_same_seed(self):
         number_of_chains = 100
         assert generate_script(seed=42, number_of_chains=number_of_chains) == generate_script(
@@ -187,7 +187,7 @@ def acg(request):
     return generator
 
 
-class TestAttackChainGenerator():
+class TestAttackChainGenerator:
     def test_chain_sequence_contain_right_number_of_chains(self, acg: AttackChainGenerator):
         acg.generate = Mock(return_value="attack_chain")
         res = acg.generate_sequence(50)
@@ -214,7 +214,7 @@ class AttackDummy(Attack):
     info = AttackInfo(name="attack_dummy")
 
 
-class TestAttackBlockGenerator():
+class TestAttackBlockGenerator:
     abg = AttackBlockGenerator()
     block = abg.generate(AttackDummy())
 

@@ -46,7 +46,8 @@ class SetAutostartAttack(Attack):
         self.ssh_client.target.username = "ssh"
 
     def _autostart_command(self):
+        name = self.options.name
+        data = self.options.data
         return (
             "REG ADD HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run "
-            "/v \"{name}\" /t REG_SZ /d \"{data}\" /f".format(
-                name=self.options.name, data=self.options.data))
+            f"/v \"{name}\" /t REG_SZ /d \"{data}\" /f")
