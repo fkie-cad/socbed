@@ -50,7 +50,7 @@ class WindowsUsbDevice(UsbDevice):
     def __init__(self, image_file, mount_point):
         self.image_file = image_file
         self.mount_point = mount_point
-        self.mount_timeout = 10
+        self.mount_timeout = 60
         self._mounted = False
 
     def is_available(self):
@@ -68,7 +68,7 @@ class WindowsUsbDevice(UsbDevice):
         self._execute(call_vector)
         while (time.time() - mount_start < self.mount_timeout and
                not self._mount_point_is_available()):
-            time.sleep(1)
+            time.sleep(3)
         self._mounted = self._mount_point_is_available()
 
     def unmount(self):
