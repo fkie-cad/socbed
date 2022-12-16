@@ -35,6 +35,9 @@ from attacks.attack_mimikatz import MimikatzAttack
 from attacks.attack_set_autostart import SetAutostartAttack
 from attacks.attack_sqlmap import SQLMapAttack
 from attacks.attack_take_screenshot import TakeScreenshotAttack
+from attacks.attack_nmap_host_discovery import NmapHostDiscoveryAttack
+from attacks.attack_nmap_portscan import NmapPortscanAttack
+from attacks.attack_nmap_service_discovery import NmapServiceDiscoveryAttack
 from attacks.printer import ListPrinter, MultiPrinter
 from systests.helpers import try_until_counter_reached
 from vmcontrol.sessionhandler import SessionHandler
@@ -67,6 +70,9 @@ class TestAttack:
         FlashdriveExfiltrationAttack(),
         SetAutostartAttack(),
         SQLMapAttack(),
+        NmapHostDiscoveryAttack(),
+        NmapPortscanAttack(),
+        NmapServiceDiscoveryAttack(),
         # Meterpreter-based attacks: These attacks either infect a client with a reverse HTTP
         # payload (attack name starts with "infect_") or start a Meterpreter shell on such a
         # connection and run attack-specific commands (attack name starts with "c2_".
