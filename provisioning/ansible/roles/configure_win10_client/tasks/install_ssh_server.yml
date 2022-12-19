@@ -23,17 +23,17 @@
 
 - name: SSH - Copy installation script
   win_template:
-    src: "{{ role_path }}/templates/install-openssh.ps1.j2"
+    src: "../templates/install-openssh.ps1.j2"
     dest: "C:\\install-openssh.ps1"
   when: not private_key.stat.exists
 
 - name: SSH - Run installation script
-  raw: "C:\\install-openssh.ps1"
+  win_shell: "C:\\install-openssh.ps1"
   when: not private_key.stat.exists
 
 - name: SSH - Deploy ssh server configuration
   win_template:
-    src: "{{ role_path }}/templates/sshd_config.j2"
+    src: "../templates/sshd_config.j2"
     dest: "{{ openssh_extract_dir }}\\{{ openssh_archive_name }}\\sshd_config"
   notify:
     - restart sshd
