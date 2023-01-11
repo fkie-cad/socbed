@@ -110,9 +110,9 @@ class Usbing:
 
     def handle_usb_device(self):
         logger.info("Handling USB image")
-        self.save_exes_from_usb_device()
-        self.discard_old_usb_device()
-        self.open_saved_exes()
+        if self.save_exes_from_usb_device():
+            self.discard_old_usb_device()
+            self.open_saved_exes()
 
     def take_timeout(self, secs=None):
         logger.info("Take timeout for " + str(secs or self.timeout) + " secs")
@@ -126,6 +126,7 @@ class Usbing:
             self.unmount_usb_device()
         else:
             logger.info("Failed to mount USB device")
+        return self.usb_device_is_mounted()
 
     def discard_old_usb_device(self):
         logger.info("Discarding old USB device")
