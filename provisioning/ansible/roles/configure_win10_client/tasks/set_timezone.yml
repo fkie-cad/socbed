@@ -1,0 +1,4 @@
+- name: Set time zone to CET and disable daylight saving time
+  community.windows.win_timezone:
+    timezone: Central European Standard Time_dstoff
+    # "_dstoff" disables daylight saving time

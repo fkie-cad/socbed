@@ -1,4 +1,5 @@
 - include: setup_user.yml
+- include: set_timezone.yml
 - include: add_exclusion_folder.yml
 - include: disable_firewall.yml
 - include: disable_screen_lock.yml
