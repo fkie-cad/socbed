@@ -50,10 +50,9 @@ The following packages are required for the tasks executed by the runner:
     sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
     ```
 
-- Python pip and virtual environments
+- Python pip, virtual environments and tox
     ```sh
-    sudo apt install -y python3-pip
-    sudo apt install -y python3-venv
+    sudo apt install -y python3-pip python3-venv tox
     ```
     
 - (optional) cowsay + fortunes
