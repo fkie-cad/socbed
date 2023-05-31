@@ -7,6 +7,8 @@
   get_url:
     url: "{{ spark_url }}"
     dest: "{{ spark_bin_tmp_archive }}"
+    # This particular task times out very often, this should hopefully alleviate that (default was 10)
+    timeout: 60
 
 - name: "Extract Spark Tarball and move Spark to install directory {{ spark_dir }}"
   unarchive:  
