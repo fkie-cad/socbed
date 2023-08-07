@@ -91,7 +91,7 @@
     },    
     {
       "inline": [
-        "iwr https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -UseBasicParsing | iex"
+        "iwr https://raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -UseBasicParsing | iex"
       ],
       "type": "powershell"
     },
