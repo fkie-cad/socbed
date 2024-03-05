@@ -8,7 +8,7 @@ jobs:
   prepare-environment:
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: dev
       
@@ -29,7 +29,7 @@ jobs:
     needs: [prepare-environment]
     timeout-minutes: 480
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: dev
       
@@ -37,56 +37,56 @@ jobs:
         run: source /usr/share/runner-dependencies/socbed_env/bin/activate
       
       - name: Build Internet Router
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
           command: ./tools/build_internetrouter runner
       
       - name: Build Company Router
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
           command: ./tools/build_companyrouter runner
         
       - name: Build Attacker
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_attacker runner
         
       - name: Build Log Server
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 120
           max_attempts: 3
           command: ./tools/build_logserver runner
         
       - name: Build Internal Server
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
           command: ./tools/build_internalserver runner
         
       - name: Build DMZ Server
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
           command: ./tools/build_dmzserver runner
         
       - name: Build Client
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 180
           max_attempts: 3
           command: ./tools/build_client runner
         
       - name: Run logging setup
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
@@ -96,7 +96,7 @@ jobs:
     runs-on: [self-hosted, linux]
     needs: [prepare-environment, build-machines]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: dev
       
@@ -107,7 +107,7 @@ jobs:
         run: ./tools/cleanup_failed_session
       
       - name: Run stable system tests
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 5
@@ -119,7 +119,7 @@ jobs:
     if: always()
     needs: [prepare-environment, build-machines, test-machines]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: dev
       
