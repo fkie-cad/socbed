@@ -3,6 +3,7 @@
 # dosfstools provide the mkfs.fat command, which is used by infect_flashdrive_exe
 - name: Install dosfstools
   apt:
-    name: dosfstools=4.2-1
+    name: dosfstools
     update_cache: yes
     state: present
+    force: yes
