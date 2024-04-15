@@ -6,4 +6,3 @@
     name: dosfstools
     update_cache: yes
     state: present
-    force: yes

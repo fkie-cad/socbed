@@ -1,0 +1,7 @@
+---
+
+# To avoid any dependency problems later on (which for some reason cannot be resolved automatically), upgrade binutils
+- name: Upgrade binutils
+  apt:
+    name: binutils
+    state: latest
