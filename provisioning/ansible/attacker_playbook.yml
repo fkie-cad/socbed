@@ -29,6 +29,7 @@
     - virtualhost
     - spearphishing
     - generate_malware
+    - upgrade_binutils
     - ssh_config
     - dosfstools
     - grc
