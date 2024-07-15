@@ -2,7 +2,7 @@ name: Nightly Build with System Tests (Development Branch)
 
 on:
   schedule:
-    - cron: "0 1 * * TUE,THU,SAT" # At 01:00 on Tuesday, Thursday and Saturday
+    - cron: "0 1 * * THU" # At 01:00 on Thursday
   
 jobs:
   prepare-environment:
