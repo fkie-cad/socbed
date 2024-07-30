@@ -2,7 +2,7 @@ name: Nightly Build with System Tests
 
 on:
   schedule:
-    - cron: "0 1 * * MON,WED,FRI" # At 01:00 on Monday, Wednesday and Friday
+    - cron: "0 1 * * MON" # At 01:00 on Monday
   workflow_dispatch:
   
 jobs:
