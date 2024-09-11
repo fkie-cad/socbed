@@ -20,7 +20,7 @@ __pycache__/
 ### Cache ###
 .cache/*
 
-# DS_STORE 
+# DS_STORE
 .DS_STORE
 
 ### PyCharm ###

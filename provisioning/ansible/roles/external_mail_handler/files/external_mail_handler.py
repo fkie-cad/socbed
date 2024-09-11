@@ -20,9 +20,10 @@
 
 import email
 from email.mime.text import MIMEText
-from smtpd import SMTPServer
+from aiosmtpd.controller import Controller
+from aiosmtpd.smtp import Envelope
+import asyncio
 from smtplib import SMTP
-import asyncore
 
 import time
 
@@ -43,39 +44,31 @@ def setup_logging():
         format="%(asctime)s" + gmt_offset_string + " %(name)s %(levelname)s %(message)s",
     )
 
+class Server:
+    def __init__(self, server_ip=None, server_port=None):
+        self.server_port: None | int = server_port
+        self.server_ip: None | str = server_ip
 
 logger = logging.getLogger(__name__)
+smtp_out = Server("127.0.0.1", 1025)
+smtp_in = Server("0.0.0.0", 1025)
 
 
-class Responder:
-    def __init__(self):
-        self.smtp_out = Server("172.18.0.2", 25)
-        self.smtp_in = Server("0.0.0.0", 25)
-        self.smtp_server = None
-
-    def run(self):
-        logger.info("Starting Mail Responder listening at " +
-                    str(self.smtp_in.server_ip) +
-                    ":" + str(self.smtp_in.server_port)
-                    )
-        logger.info("Sending responses to " +
-                    str(self.smtp_out.server_ip) +
-                    ":" + str(self.smtp_out.server_port)
-                    )
-        self.init_smtp_server()
-        asyncore.loop()
-
-    def init_smtp_server(self):
-        self.smtp_server = SMTPServer((self.smtp_in.server_ip, self.smtp_in.server_port), None)
-        self.smtp_server.process_message = self.process_message
-
-    def process_message(self, peer, mailfrom, rcpttos, data):
-        mail = mime_string_to_text_mail(data)
+class CustomHandler:
+    async def handle_DATA(self, server, session, envelope: Envelope):
+        # Contents are available raw bytes, thus requiring decoding
+        self.process(envelope.content.decode("utf8"), server)
+        # if error_occurred:
+        #     return '500 Could not process your message'
+        return '250 OK'
+    
+    def process(self, content, server):
+        mail = mime_string_to_text_mail(content)
         logger.info("Received mail from " + str(mail.sender) + " addressed to " + str(mail.receiver))
         self.swap_sender_receiver(mail)
         self.modify_text(mail)
-        self.send_mail(mail)
-
+        self.send_mail(mail, smtp_instance=server)
+        
     @staticmethod
     def swap_sender_receiver(mail):
         tmp = mail.sender
@@ -86,13 +79,13 @@ class Responder:
     def modify_text(mail):
         mail.text = "You sent me the following text:\n" + mail.text
 
-    def send_mail(self, mail):
-        con = SMTP()
-        try:
-            con.connect(host=self.smtp_out.server_ip, port=self.smtp_out.server_port)
-            con.send_message(mail.to_mime_text())
-        finally:
-            con.quit()
+    @staticmethod
+    def send_mail(mail, smtp_instance):
+        ip = smtp_out.server_ip
+        port = smtp_out.server_port
+        if ip and port:
+            smtp_instance.connect(host=ip, port=port)
+            smtp_instance.send_message(mail.to_mime_text())
 
 
 def mime_string_to_text_mail(mime_string):
@@ -131,11 +124,17 @@ class TextMail:
 
 class Server:
     def __init__(self, server_ip=None, server_port=None):
-        self.server_port = server_port
-        self.server_ip = server_ip
+        self.server_port: None | int = server_port
+        self.server_ip: None | str = server_ip
 
 
 if __name__ == "__main__":
     setup_logging()
-    responder = Responder()
-    responder.run()
+    logger.info("Starting Mail Responder listening at " + 
+                str(smtp_in.server_ip) + ":" + str(smtp_in.server_port))
+    logger.info("Sending responses to " + 
+                str(smtp_out.server_ip) + ":" + str(smtp_out.server_port))
+    controller = Controller(CustomHandler(), hostname=smtp_in.server_ip, port=smtp_in.server_port)
+    while True:
+        # don't care about stopping
+        pass

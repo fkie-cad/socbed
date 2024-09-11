@@ -7,3 +7,4 @@ pywinrm==0.4.1
 selenium==4.3.0
 tox==3.7.0
 veryprettytable==0.8.1
+asyncio==3.4.3
