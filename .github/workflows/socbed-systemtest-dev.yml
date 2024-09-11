@@ -13,16 +13,13 @@ jobs:
           ref: dev
       
       - name: Create virtual environment
-        run: python3 -m venv /usr/share/runner-dependencies/socbed_env
+        run: python -m venv /usr/share/runner-dependencies/socbed_env
         
       - name: Activate virtual environment
         run: source /usr/share/runner-dependencies/socbed_env/bin/activate
         
-      - name: Upgrade pip3 inside virtual environment
-        run: pip3 install --upgrade pip
-        
       - name: Install requirements in virtual environment (without using cached packages)
-        run: pip3 install -r requirements.txt --no-cache-dir
+        run: pip install -r requirements.txt --no-cache-dir
   
   build-machines:
     runs-on: [self-hosted, linux]
