@@ -21,13 +21,19 @@ from email.mime.text import MIMEText
 from unittest.mock import Mock, patch
 
 import pytest
+from aiosmtpd.controller import Controller
 
-from external_mail_handler import TextMail, mime_string_to_text_mail, Responder
+from external_mail_handler import TextMail, mime_string_to_text_mail, Responder, CustomHandler, Server
 
 
 @pytest.fixture()
-def r():
+def responder():
     return Responder()
+
+
+@pytest.fixture()
+def handler():
+    return CustomHandler(Server("172.18.0.2", 25))
 
 
 @pytest.fixture()
@@ -35,31 +41,6 @@ def patch_smtp(request):
     mock = MockSMTP()
     mock_smtp_creator = Mock(return_value=mock)
     p = patch(Responder.__module__ + ".SMTP", mock_smtp_creator)
-    p.start()
-    request.addfinalizer(p.stop)
-    return mock
-
-
-@pytest.fixture()
-def patch_smtp_server(request):
-    mock = MockSMTPServer()
-
-    def modify_mock(local_address, remote_address):
-        mock.local_address = local_address
-        mock.remote_address = remote_address
-        return mock
-
-    mock_smtp_server_creator = Mock(side_effect=modify_mock)
-    p = patch(Responder.__module__ + ".SMTPServer", mock_smtp_server_creator)
-    p.start()
-    request.addfinalizer(p.stop)
-    return mock
-
-
-@pytest.fixture()
-def patch_asyncore_loop(request):
-    mock = Mock()
-    p = patch(Responder.__module__ + ".asyncore.loop", mock)
     p.start()
     request.addfinalizer(p.stop)
     return mock
@@ -79,43 +60,53 @@ class MockSMTPServer:
         self.process_message = None
 
 
-class TestResponder:
-    def test_swap_sender_receiver(self, r: Responder):
+class TestCustomHandler:
+    def test_swap_sender_receiver(self, handler: CustomHandler):
         mail = TextMail(sender="some@sender", receiver="some@receiver")
-        r.swap_sender_receiver(mail)
+        handler.swap_sender_receiver(mail)
         assert mail.sender == "some@receiver"
         assert mail.receiver == "some@sender"
 
-    def test_send_mail(self, r: Responder, patch_smtp: MockSMTP):
+    def test_send_mail(self, handler: CustomHandler, patch_smtp: MockSMTP):
         mail = TextMail(sender="some@domain", receiver="some@other", text="Some text")
-        r.send_mail(mail)
+        handler.send_mail(mail)
         assert patch_smtp.connect.called
         assert patch_smtp.send_message.called
         assert patch_smtp.quit.called
 
-    def test_handler(self, r: Responder):
-        r.swap_sender_receiver = Mock()
-        r.send_mail = Mock()
+    @pytest.mark.asyncio
+    async def test_handler(self, handler: CustomHandler):
+        handler.swap_sender_receiver = Mock()
+        handler.send_mail = Mock()
+        envelope = Mock()
         mail = TextMail(sender="some@domain", receiver="other@domain", text="Hallo Welt")
-        peer = "127.0.0.1"
-        mailfrom = mail.sender
-        rcpttos = [mail.receiver]
-        data = mail.to_mime_text().as_string()
-        r.process_message(peer, mailfrom, rcpttos, data)
-        assert r.swap_sender_receiver.called
-        assert r.send_mail.called
+        envelope.peer = "127.0.0.1"
+        envelope.mail_to = mail.sender
+        envelope.rcpt_to = [mail.receiver]
+        envelope.data = mail.to_mime_text().as_string().encode('utf-8')
+        await handler.handle_DATA(None, None, envelope)
+        assert handler.swap_sender_receiver.called
+        assert handler.send_mail.called
 
-    def test_init_smtp_server(self, r: Responder, patch_smtp_server):
-        r.init_smtp_server()
-        assert r.smtp_server.local_address == ("0.0.0.0", 25)
-        assert r.smtp_server.remote_address is None
-        assert r.smtp_server.process_message == r.process_message
+    def test_init_controller(self, responder: Responder):
+        responder.init_controller()
 
-    def test_run(self, r: Responder, patch_asyncore_loop):
-        r.init_smtp_server = Mock()
-        r.run()
-        assert r.init_smtp_server.called
-        assert patch_asyncore_loop.called
+        assert isinstance(responder.controller, Controller)
+        assert isinstance(responder.controller.handler, CustomHandler)
+        assert responder.controller.hostname == responder.smtp_in.server_ip
+        assert responder.controller.port == responder.smtp_in.server_port
+
+    def test_run(self, responder: Responder):
+        responder.init_controller = Mock()
+        responder.controller = Mock()  # Mock the controller object itself
+        responder.controller.start = Mock()
+        responder.controller.stop = Mock()
+
+        with patch("builtins.input", return_value=""):
+            responder.run()
+        assert responder.init_controller.called
+        assert responder.controller.start.called
+        assert responder.controller.stop.called
 
 
 @pytest.fixture()
