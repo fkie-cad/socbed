@@ -1,4 +1,8 @@
-- include: install.yml packet=libestr-0.1.11-1.ipfire
-- include: install.yml packet=libfastjson-0.99.8-1.ipfire
-- include: install.yml packet=liblogging-1.0.6-1.ipfire
-- include: install.yml packet=rsyslog-8.1907.0-1.ipfire
+- include_tasks: install.yml
+  with_items:
+    - libestr-0.1.11-1.ipfire
+    - libfastjson-0.99.8-1.ipfire
+    - liblogging-1.0.6-1.ipfire
+    - rsyslog-8.1907.0-1.ipfire
+  vars:
+    packet: "{{ item }}"

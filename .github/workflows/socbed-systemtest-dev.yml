@@ -89,7 +89,7 @@ jobs:
         with:
           python-version: '3.12' 
       - name: Install dependencies
-        run: pip install tox
+        run: pip install tox==4.18.1
       
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
