@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: replace-smtpd-with-aiosmtpd
 
       - uses: actions/setup-python@v5
         with:
@@ -21,12 +21,6 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: pip install -r requirements.txt
-      
-      - name: Check Python and Ansible path
-        run: |
-          which python
-          which ansible-playbook
-          ansible-playbook --version
 
       - name: Build Internet Router
         uses: nick-invision/retry@v3
