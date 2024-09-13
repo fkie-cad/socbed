@@ -5,26 +5,20 @@ on:
     - cron: "0 1 * * THU" # At 01:00 on Thursday
   
 jobs:
-  prepare-environment:
-    runs-on: [self-hosted, linux]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12' 
-      - run: pip install -r requirements.txt
-  
   build-machines:
     runs-on: [self-hosted, linux]
-    needs: [prepare-environment]
     timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev
-      
-      - name: Activate virtual environment
-        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       
       - name: Build Internet Router
         uses: nick-invision/retry@v3
@@ -84,14 +78,16 @@ jobs:
         
   test-machines:
     runs-on: [self-hosted, linux]
-    needs: [prepare-environment, build-machines]
+    needs: [build-machines]
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev
-      
-      - name: Activate virtual environment
-        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+      - name: Install dependencies
+        run: pip install tox
       
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
@@ -107,7 +103,7 @@ jobs:
   delete-machines:
     runs-on: [self-hosted, linux]
     if: always()
-    needs: [prepare-environment, build-machines, test-machines]
+    needs: [build-machines, test-machines]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -115,10 +111,3 @@ jobs:
       
       - name: Delete created VMs
         run: ./tools/delete_vms
-        
-      - name: Deactivate virtual environment
-        run: deactivate || true
-        
-      - name: Delete virtual environment
-        run: rm -rf /usr/share/runner-dependencies/socbed_env
-
