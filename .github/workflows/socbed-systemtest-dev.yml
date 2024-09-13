@@ -1,10 +1,8 @@
 name: Nightly Build with System Tests (Development Branch)
 
 on:
-  push:
   schedule:
     - cron: "0 1 * * THU" # At 01:00 on Thursday
-  workflow_dispatch: # Remove this
   
 
 jobs:
@@ -13,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
+          ref: dev
       
       - uses: actions/setup-python@v5
         with:
@@ -31,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
+          ref: dev
 
       - uses: actions/setup-python@v5
         with:
@@ -100,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
+          ref: dev
 
       - uses: actions/setup-python@v5
         with:
@@ -125,7 +123,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
+          ref: dev
 
       - uses: actions/setup-python@v5
         with:
