@@ -3,6 +3,7 @@ name: Nightly Build with System Tests (Development Branch)
 on:
   schedule:
     - cron: "0 1 * * THU" # At 01:00 on Thursday
+  workflow_dispatch:
   
 jobs:
   build-machines:
