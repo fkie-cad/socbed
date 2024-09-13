@@ -9,17 +9,10 @@ jobs:
     runs-on: [self-hosted, linux]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          ref: dev
-      
-      - name: Create virtual environment
-        run: python -m venv /usr/share/runner-dependencies/socbed_env
-        
-      - name: Activate virtual environment
-        run: source /usr/share/runner-dependencies/socbed_env/bin/activate
-        
-      - name: Install requirements in virtual environment (without using cached packages)
-        run: pip install -r requirements.txt --no-cache-dir
+          python-version: '3.12' 
+      - run: pip install -r requirements.txt
   
   build-machines:
     runs-on: [self-hosted, linux]
