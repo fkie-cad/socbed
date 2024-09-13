@@ -22,6 +22,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       
+      - name: Check Python and Ansible path
+        run: |
+          which python
+          which ansible-playbook
+          ansible-playbook --version
+
       - name: Build Internet Router
         uses: nick-invision/retry@v3
         with:
