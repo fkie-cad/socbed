@@ -26,6 +26,7 @@ jobs:
 
   build-machines:
     runs-on: [self-hosted, linux]
+    needs: [prepare-environment]
     timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
