@@ -6,21 +6,31 @@ on:
     - cron: "0 1 * * THU" # At 01:00 on Thursday
   workflow_dispatch:
   
+
 jobs:
+  prepare-environment:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt --no-cache-dir
+      - name: Install SOCBED
+        run: pip install --editable .
+
   build-machines:
     runs-on: [self-hosted, linux]
     timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: replace-smtpd-with-aiosmtpd
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12' 
-          cache: 'pip'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
 
       - name: Build Internet Router
         uses: nick-invision/retry@v3
@@ -84,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12' 
@@ -109,7 +119,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
       
       - name: Delete created VMs
         run: ./tools/delete_vms
+
+      - name: Uninstall SOCBED
+        run: pip uninstall socbed -y
+
+      - name: Remove all installed packages
+        run: pip freeze | xargs pip uninstall -y
