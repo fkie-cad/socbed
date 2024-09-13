@@ -4,7 +4,7 @@ on:
   push:
   schedule:
     - cron: "0 1 * * THU" # At 01:00 on Thursday
-  workflow_dispatch:
+  workflow_dispatch: # Remove this
   
 
 jobs:
@@ -26,6 +26,7 @@ jobs:
 
   build-machines:
     runs-on: [self-hosted, linux]
+    needs: [prepare-environment]
     timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
@@ -95,11 +96,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: replace-smtpd-with-aiosmtpd # Change this to the development branch name
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12' 
-      - name: Install dependencies
-        run: pip install tox==4.18.1
       
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
@@ -115,7 +111,7 @@ jobs:
   delete-machines:
     runs-on: [self-hosted, linux]
     if: always()
-    needs: [build-machines, test-machines]
+    needs: [test-machines]
     steps:
       - uses: actions/checkout@v4
         with:
