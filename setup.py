@@ -33,7 +33,8 @@ setup(
         "selenium",
         "aiosmtpd",
         "pytest-asyncio",
-        "pytest-mock"
+        "pytest-mock",
+        "pytest-print"
     ],
     entry_points={
         'console_scripts': [
