@@ -23,4 +23,4 @@
     src: files/win10_firefox/mozilla.cfg
     dest: C:\Program Files (x86)\Mozilla Firefox\mozilla.cfg
 
-- include: set_default_browser.yml
+- include_tasks: set_default_browser.yml

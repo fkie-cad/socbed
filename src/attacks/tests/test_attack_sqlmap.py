@@ -16,7 +16,7 @@
 # along with SOCBED. If not, see <http://www.gnu.org/licenses/>.
 
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -31,10 +31,15 @@ def attack():
 
 
 class TestSQLMapAttack:
+
+
     def test_sqlmap_command(self, attack: SQLMapAttack):
-        assert attack._sqlmap_command() == (
-            "export COLUMNS=80; echo \"http://172.18.0.2/dvwa/vulnerabilities/sqli/?id=&Submit=Submit\" | "
-            "sqlmap --purge --batch --dump")
+        with patch("attacks.attack_sqlmap.get_terminal_size") as mock_get_terminal_size:
+            # on larger monitors, this value will be != 80
+            mock_get_terminal_size.return_value.columns = 80
+            assert attack._sqlmap_command() == (
+                "export COLUMNS=80; echo \"http://172.18.0.2/dvwa/vulnerabilities/sqli/?id=&Submit=Submit\" | "
+                "sqlmap --purge --batch --dump")
 
     def test_raise_exception_bad_output(self, attack: SQLMapAttack):
         attack.exec_commands_on_target = lambda _: attack.printer.print("Bad output")
