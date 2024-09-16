@@ -1,4 +1,4 @@
 ---
-- include: add_auditbeat_apt_repository.yml
-- include: install_auditbeat.yml
-- include: configure_auditbeat.yml
+- include_tasks: add_auditbeat_apt_repository.yml
+- include_tasks: install_auditbeat.yml
+- include_tasks: configure_auditbeat.yml

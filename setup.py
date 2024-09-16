@@ -30,7 +30,11 @@ setup(
         "paramiko",
         "pyvmomi",
         "veryprettytable",
-        "selenium"
+        "selenium",
+        "aiosmtpd",
+        "pytest-asyncio",
+        "pytest-mock",
+        "pytest-print"
     ],
     entry_points={
         'console_scripts': [

@@ -18,7 +18,7 @@ After the build process is finished, SOCBED sessions can be started, controlled,
 ## System Requirements
 
 * Physical host with Linux or macOS. Note: Running SOCBED (and therefore VirtualBox) in a virtual machine might work as well but was not tested.
-* Python v3.8 or newer
+* Python v3.9 or newer
 * RAM: 16 GB minimum, 32 GB recommended
 * CPU: Quad-core with hardware support for virtualization
 * HDD: 50 GB free, SSD strongly recommended
@@ -165,12 +165,12 @@ The domain name is `BREACH`.
 
 The following table shows all available web interfaces and their logins:
 
-| Machine | Service | Username | Password | URL |
-| --- | --- | --- | --- | --- |
-| Company Router | IPFire | admin | breach | https://192.168.56.10:444/ |
-| DMZ Server | phpMyAdmin | root | breach | http://192.168.56.20/phpmyadmin/ |
-| Log Server | Kibana | - | - | http://192.168.56.12:5601/app/kibana |
-| Internet Router | IPFire | admin | breach | https://192.168.56.30:444/ |
+| Machine         | Service    | Username | Password | URL                                  |
+| --------------- | ---------- | -------- | -------- | ------------------------------------ |
+| Company Router  | IPFire     | admin    | breach   | https://192.168.56.10:444/           |
+| DMZ Server      | phpMyAdmin | root     | breach   | http://192.168.56.20/phpmyadmin/     |
+| Log Server      | Kibana     | -        | -        | http://192.168.56.12:5601/app/kibana |
+| Internet Router | IPFire     | admin    | breach   | https://192.168.56.30:444/           |
 
 ## Documentation
 

@@ -9,5 +9,9 @@ jobs:
     runs-on: [self-hosted, linux]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+      - run: pip install tox==4.18.1
       - run: tox -- -m "not systest"
 
