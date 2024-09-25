@@ -68,5 +68,5 @@ class TakeScreenshotAttack(Attack):
 
     def _collect_files(self):
         file = self.screenshot_file
-        self.ssh_client.write_lines(self.handler.stdin, ["screenshot -p {file}",
+        self.ssh_client.write_lines(self.handler.stdin, [f"screenshot -p {file}",
                                                          "background"])
