@@ -64,6 +64,9 @@ class VMMController:
     def set_credentials(self, vm, user, password, domain):
         raise NotImplementedError()
 
+    def set_vdre_port(self, vm, port):
+        raise NotImplementedError()
+
 
 class VMMControllerException(Exception):
     pass
@@ -71,41 +74,42 @@ class VMMControllerException(Exception):
 
 class LoggingVMMController(VMMController):
     def start(self, vm):
-        logger.debug("Starting \"{vm}\"".format(vm=vm))
+        logger.debug('Starting "{vm}"'.format(vm=vm))
         super().start(vm)
 
     def poweroff(self, vm):
-        logger.debug("Turning off \"{vm}\"".format(vm=vm))
+        logger.debug('Turning off "{vm}"'.format(vm=vm))
         super().poweroff(vm)
 
     def delete(self, vm):
-        logger.debug("Deleting \"{vm}\"".format(vm=vm))
+        logger.debug('Deleting "{vm}"'.format(vm=vm))
         super().delete(vm)
 
     def set_mac(self, vm, mac, if_id=1):
         mac_string = hex(mac)[2:].rjust(12, "0")
-        logger.debug("Setting MAC address of \"{vm}\" interface {if_id} to {mac}"
-                     .format(vm=vm, if_id=if_id, mac=mac_string))
+        logger.debug(
+            'Setting MAC address of "{vm}" interface {if_id} to {mac}'.format(vm=vm, if_id=if_id, mac=mac_string)
+        )
         super().set_mac(vm, mac, if_id=if_id)
 
     def create_snapshot(self, vm, snapshot):
-        logger.debug("Creating snapshot \"{snapshot}\" for \"{vm}\"".format(vm=vm, snapshot=snapshot))
+        logger.debug('Creating snapshot "{snapshot}" for "{vm}"'.format(vm=vm, snapshot=snapshot))
         super().create_snapshot(vm, snapshot)
 
     def delete_snapshot(self, vm, snapshot):
-        logger.debug("Deleting snapshot \"{snapshot}\" of \"{vm}\"".format(vm=vm, snapshot=snapshot))
+        logger.debug('Deleting snapshot "{snapshot}" of "{vm}"'.format(vm=vm, snapshot=snapshot))
         super().delete_snapshot(vm, snapshot)
 
     def restore_snapshot(self, vm, snapshot):
-        logger.debug("Restoring snapshot \"{snapshot}\" of \"{vm}\"".format(vm=vm, snapshot=snapshot))
+        logger.debug('Restoring snapshot "{snapshot}" of "{vm}"'.format(vm=vm, snapshot=snapshot))
         super().restore_snapshot(vm, snapshot)
 
     def clone(self, vm, snapshot, clone):
-        logger.debug("Cloning \"{vm}\" with snapshot \"{snapshot}\" to \"{clone}\""
-                     .format(vm=vm, snapshot=snapshot, clone=clone))
+        logger.debug(
+            'Cloning "{vm}" with snapshot "{snapshot}" to "{clone}"'.format(vm=vm, snapshot=snapshot, clone=clone)
+        )
         super().clone(vm, snapshot, clone)
 
     def set_credentials(self, vm, user, password, domain):
-        logger.debug("Setting credentials of \"{vm}\" to {cred}"
-                     .format(vm=vm, cred=(user, password, domain)))
+        logger.debug('Setting credentials of "{vm}" to {cred}'.format(vm=vm, cred=(user, password, domain)))
         super().set_credentials(vm, user, password, domain)
