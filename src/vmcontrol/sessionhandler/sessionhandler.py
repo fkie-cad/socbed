@@ -34,7 +34,14 @@ class DictNamespace(SimpleNamespace):
 
 
 class SessionConfig(DictNamespace):
-    server_vms = ["Internet Router", "Attacker", "Company Router", "Log Server", "Internal Server", "DMZ Server"]
+    server_vms = [
+        "Internet Router",
+        "Attacker",
+        "Company Router",
+        "Log Server",
+        "Internal Server",
+        "DMZ Server",
+    ]
     client_vm = "Client"
     number_of_clones = 3
     vm_start_timeout = 0
