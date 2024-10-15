@@ -141,5 +141,5 @@ class MockVMMController(VMMController):
         pass
 
     @mock_print_decorator()
-    def set_vdre_port(self, vm, port):
+    def set_vrde_port(self, vm, port):
         pass

@@ -107,7 +107,7 @@ class VBoxController(VMMController):
         vbox_vector = ["controlvm", vm, "setcredentials", user, password, domain]
         self._vboxmanage_execute(vbox_vector)
 
-    def set_vdre_port(self, vm, port):
+    def set_vrde_port(self, vm, port):
         vbox_vector = ["modifyvm", vm, "--vrdeport", str(port)]
         self._vboxmanage_execute(vbox_vector)
 
@@ -136,7 +136,6 @@ class VBoxController(VMMController):
     @staticmethod
     def _vboxmanage_execute(vbox_vector):
         call_vector = ["vboxmanage"] + vbox_vector
-        print(call_vector)
         p = Popen(call_vector, stdout=PIPE, stderr=PIPE, universal_newlines=True)
         out, err = p.communicate()
         if p.returncode != 0:

@@ -55,18 +55,18 @@ class Clone(DictNamespace):
     user = None
     password = None
     domain = None
-    vdre_port = None
+    vrde_port = None
 
 
 class CloneCreator:
     def __init__(
-        self, father_vm, base_snapshot, number_of_clones, vmm_controller: VMMController, vdre_port_start=6000
+        self, father_vm, base_snapshot, number_of_clones, vmm_controller: VMMController, vrde_port_start=5000
     ):
         self.father_vm = father_vm
         self.base_snapshot = base_snapshot
         self.number_of_clones = number_of_clones
         self.vmmc = vmm_controller
-        self.vdre_port_start = vdre_port_start
+        self.vrde_port_start = vrde_port_start
         self._current_vms = self.vmmc.get_vms()
         self._clones = None
 
@@ -82,7 +82,7 @@ class CloneCreator:
         self.set_management_mac(clone)
         self.set_internal_mac(clone)
         self.set_credentials(clone)
-        self.set_vdre_port(clone)
+        self.set_vrde_port(clone)
 
     def set_vm_name(self, clone):
         clone.vm = self.father_vm + "Clone" + str(clone.id)
@@ -100,14 +100,14 @@ class CloneCreator:
         clone.password = "breach"
         clone.domain = "BREACH"
 
-    def set_vdre_port(self, clone):
-        clone.vdre_port = self.vdre_port_start + clone.id - 1
+    def set_vrde_port(self, clone):
+        clone.vrde_port = self.vrde_port_start + clone.id - 1
 
     def create_vm(self, clone):
         self.vmmc.clone(self.father_vm, self.base_snapshot, clone.vm)
         self.vmmc.set_mac(clone.vm, clone.management_mac, if_id=2)
         self.vmmc.set_mac(clone.vm, clone.internal_mac, if_id=1)
-        self.vmmc.set_vdre_port(clone.vm, clone.vdre_port)
+        self.vmmc.set_vrde_port(clone.vm, clone.vrde_port)
 
 
 class SessionHandler:

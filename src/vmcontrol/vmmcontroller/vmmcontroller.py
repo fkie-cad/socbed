@@ -64,7 +64,7 @@ class VMMController:
     def set_credentials(self, vm, user, password, domain):
         raise NotImplementedError()
 
-    def set_vdre_port(self, vm, port):
+    def set_vrde_port(self, vm, port):
         raise NotImplementedError()
 
 
