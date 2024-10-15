@@ -32,6 +32,11 @@
         notifempty
       }
 
+- name: "Install aiosmtpd Python package"
+  pip:
+    name: aiosmtpd
+    state: present
+
 - name: "Install script as a systemd service file"
   template:
     src: "../templates/{{ service_name }}.service.j2"
