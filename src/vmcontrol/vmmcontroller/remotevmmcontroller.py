@@ -51,9 +51,7 @@ class RemoteVMMController(VMMController):
             elif received_d["type"] == "exception":
                 raise VMMControllerException(received_d["value"])
             else:
-                raise VMMControllerException(
-                    "Unknown Received Message Type: {type}".format(type=received_d["type"])
-                )
+                raise VMMControllerException("Unknown Received Message Type: {type}".format(type=received_d["type"]))
         else:
             raise VMMControllerException("Connection to Daemon lost")
 
@@ -205,11 +203,11 @@ class Messenger:
 
     def _connect_to_remote_socket(self):
         while not self.data_socket:
-            self.data_socket = ssl.wrap_socket(
+            context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            context.load_verify_locations(os.path.join(self.cert_dir, "cert.pem"))
+            self.data_socket = context.wrap_socket(
                 socket.socket(socket.AF_INET, socket.SOCK_STREAM),
-                server_side=False,
-                cert_reqs=ssl.CERT_REQUIRED,
-                ca_certs=os.path.join(self.cert_dir, "cert.pem")
+                server_hostname=self.remote_address[0],
             )
             try:
                 logger.debug("Try to connect to {add}".format(add=self.remote_address))
@@ -230,12 +228,12 @@ class Messenger:
 
     def _wait_for_data_socket(self):
         new_sock, _ = self.listening_socket.accept()
-        self.data_socket = ssl.wrap_socket(
-            new_sock,
-            server_side=True,
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(
             certfile=os.path.join(self.cert_dir, "cert.pem"),
-            keyfile=os.path.join(self.cert_dir, "cert.key")
+            keyfile=os.path.join(self.cert_dir, "cert.key"),
         )
+        self.data_socket = context.wrap_socket(new_sock, server_side=True)
 
     def _close_data_socket(self):
         if self.data_socket:
