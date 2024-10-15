@@ -40,7 +40,8 @@ class SessionConfig(DictNamespace):
         "Company Router",
         "Log Server",
         "Internal Server",
-        "DMZ Server"]
+        "DMZ Server",
+    ]
     client_vm = "Client"
     number_of_clones = 3
     vm_start_timeout = 0
@@ -54,14 +55,18 @@ class Clone(DictNamespace):
     user = None
     password = None
     domain = None
+    vrde_port = None
 
 
 class CloneCreator:
-    def __init__(self, father_vm, base_snapshot, number_of_clones, vmm_controller: VMMController):
-        self.father_vm = father_vm
+    def __init__(
+        self, parent_vm, base_snapshot, number_of_clones, vmm_controller: VMMController, vrde_port_start=5000
+    ):
+        self.parent_vm = parent_vm
         self.base_snapshot = base_snapshot
         self.number_of_clones = number_of_clones
         self.vmmc = vmm_controller
+        self.vrde_port_start = vrde_port_start
         self._current_vms = self.vmmc.get_vms()
         self._clones = None
 
@@ -77,9 +82,10 @@ class CloneCreator:
         self.set_management_mac(clone)
         self.set_internal_mac(clone)
         self.set_credentials(clone)
+        self.set_vrde_port(clone)
 
     def set_vm_name(self, clone):
-        clone.vm = self.father_vm + "Clone" + str(clone.id)
+        clone.vm = self.parent_vm + "Clone" + str(clone.id)
         while clone.vm in self._current_vms:
             clone.vm += "a"
 
@@ -94,10 +100,14 @@ class CloneCreator:
         clone.password = "breach"
         clone.domain = "BREACH"
 
+    def set_vrde_port(self, clone):
+        clone.vrde_port = self.vrde_port_start + clone.id - 1
+
     def create_vm(self, clone):
-        self.vmmc.clone(self.father_vm, self.base_snapshot, clone.vm)
+        self.vmmc.clone(self.parent_vm, self.base_snapshot, clone.vm)
         self.vmmc.set_mac(clone.vm, clone.management_mac, if_id=2)
         self.vmmc.set_mac(clone.vm, clone.internal_mac, if_id=1)
+        self.vmmc.set_vrde_port(clone.vm, clone.vrde_port)
 
 
 class SessionHandler:
@@ -192,10 +202,9 @@ class SessionHandler:
 
     def create_clones(self):
         logger.info("Creating clones")
-        father_vm = self.config.client_vm
-        base_snapshot = self.backup_snapshots[father_vm]
-        clone_creator = self.clone_creator_class(
-            father_vm, base_snapshot, self.config.number_of_clones, self.vmmc)
+        parent_vm = self.config.client_vm
+        base_snapshot = self.backup_snapshots[parent_vm]
+        clone_creator = self.clone_creator_class(parent_vm, base_snapshot, self.config.number_of_clones, self.vmmc)
         self.clones = clone_creator.create()
 
     def start_all_vms(self):
@@ -256,8 +265,8 @@ class SessionHandler:
                 time.sleep(timeout)
         if snaps:
             raise SessionHandlerException(
-                "Could not restore and delete all snapshots. Failing: {snaps}"
-                    .format(snaps=snaps))
+                "Could not restore and delete all snapshots. Failing: {snaps}".format(snaps=snaps)
+            )
 
     def poweroff_vms(self, vms):
         fails, max_fails, timeout = 0, 100, 0.01
@@ -272,7 +281,8 @@ class SessionHandler:
                 time.sleep(timeout)
         if running_vms:
             raise SessionHandlerException(
-                "Could not poweroff all machines. Still alive: {vms}".format(vms=running_vms))
+                "Could not poweroff all machines. Still alive: {vms}".format(vms=running_vms)
+            )
 
     def delete_vms(self, vms):
         fails, max_fails, timeout = 0, 100, 0.01
@@ -287,8 +297,7 @@ class SessionHandler:
                 existing_vms.append(vm)
                 time.sleep(timeout)
         if existing_vms:
-            raise SessionHandlerException(
-                "Could not delete all machines. Still there: {vms}".format(vms=existing_vms))
+            raise SessionHandlerException("Could not delete all machines. Still there: {vms}".format(vms=existing_vms))
 
     def take_vm_start_timeout(self):
         time.sleep(self.config.vm_start_timeout)

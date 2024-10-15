@@ -39,11 +39,13 @@ class TestVBoxController:
         assert isinstance(vbc._vboxmanage_execute, Mock)
 
     def test_get_vms(self, vbc: VBoxController):
-        return_value = "\n".join([
-            "\"Attacker\" {8451900b-320a-43b4-9eb9-9bd6656f33ad}",
-            "\"Client\" {4d0986c7-eabc-4cd3-a2f3-e28111a66ac1}",
-            "\"Company Router\" {d75d3108-266b-420e-aa74-bc73f689ee9c}"
-        ])
+        return_value = "\n".join(
+            [
+                '"Attacker" {8451900b-320a-43b4-9eb9-9bd6656f33ad}',
+                '"Client" {4d0986c7-eabc-4cd3-a2f3-e28111a66ac1}',
+                '"Company Router" {d75d3108-266b-420e-aa74-bc73f689ee9c}',
+            ]
+        )
         vbc._vboxmanage_execute = Mock(return_value=return_value)
         vms = vbc.get_vms()
         assert_call(vbc, ["list", "vms"])
@@ -67,11 +69,13 @@ class TestVBoxController:
         assert not vbc.is_running("VM2")
 
     def test_get_running_vms(self, vbc: VBoxController):
-        return_value = "\n".join([
-            "\"Attacker\" {8451900b-320a-43b4-9eb9-9bd6656f33ad}",
-            "\"Client\" {4d0986c7-eabc-4cd3-a2f3-e28111a66ac1}",
-            "\"Company Router\" {d75d3108-266b-420e-aa74-bc73f689ee9c}"
-        ])
+        return_value = "\n".join(
+            [
+                '"Attacker" {8451900b-320a-43b4-9eb9-9bd6656f33ad}',
+                '"Client" {4d0986c7-eabc-4cd3-a2f3-e28111a66ac1}',
+                '"Company Router" {d75d3108-266b-420e-aa74-bc73f689ee9c}',
+            ]
+        )
         vbc._vboxmanage_execute = Mock(return_value=return_value)
         vms = vbc._get_running_vms()
         assert_call(vbc, ["list", "runningvms"])
@@ -89,7 +93,7 @@ class TestVBoxController:
         return_value = {
             "macaddress1": "0800278144CB",
             "macaddress2": "080027859405",
-            "othervalue": "ABAB"
+            "othervalue": "ABAB",
         }
         vbc._get_vm_info = Mock(return_value=return_value)
         macs = vbc.get_macs("VM")
@@ -100,7 +104,7 @@ class TestVBoxController:
         return_value = {
             "macaddress1": "0800278144CB",
             "macaddress2": "080027859405",
-            "othervalue": "ABAB"
+            "othervalue": "ABAB",
         }
         vbc._get_vm_info = Mock(return_value=return_value)
         mac = vbc.get_mac("VM", if_id=1)
@@ -111,7 +115,7 @@ class TestVBoxController:
         return_value = {
             "macaddress1": "0800278144CB",
             "macaddress2": "080027859405",
-            "othervalue": "ABAB"
+            "othervalue": "ABAB",
         }
         vbc._get_vm_info = Mock(return_value=return_value)
         mac = vbc.get_mac("VM", if_id=2)
@@ -122,7 +126,7 @@ class TestVBoxController:
         return_value = {
             "macaddress1": "0800278144CB",
             "macaddress2": "080027859405",
-            "othervalue": "ABAB"
+            "othervalue": "ABAB",
         }
         vbc._get_vm_info = Mock(return_value=return_value)
         with pytest.raises(VMMControllerException) as ei:
@@ -156,6 +160,7 @@ class TestVBoxController:
                 raise VMMControllerException("Some text....")
             else:
                 pass
+
         vbc._vboxmanage_execute = Mock(side_effect=vbox_causes_exception)
         # get_vms may be used for hack
         vbc.get_vms = Mock(return_value=[vm_without_snapshot])
@@ -176,18 +181,13 @@ class TestVBoxController:
 
     def test_clone(self, vbc: VBoxController):
         vbc.clone("VM", "Snapshot", "VMClone")
-        assert_call(vbc, [
-            "clonevm", "VM", "--name", "VMClone",
-            "--options", "link", "--snapshot", "Snapshot",
-            "--register"
-        ])
+        assert_call(
+            vbc, ["clonevm", "VM", "--name", "VMClone", "--options", "link", "--snapshot", "Snapshot", "--register"]
+        )
 
     def test_set_credentials(self, vbc: VBoxController):
         vbc.set_credentials("VM", "TheUser", "ThePassword", "TheDomain")
-        assert_call(vbc, [
-            "controlvm", "VM",
-            "setcredentials", "TheUser", "ThePassword", "TheDomain"
-        ])
+        assert_call(vbc, ["controlvm", "VM", "setcredentials", "TheUser", "ThePassword", "TheDomain"])
 
     def _some_vbox_info_output(self):
         return """name="Company Router"
@@ -339,7 +339,7 @@ CurrentSnapshotNode="SnapshotName-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1"
 
 
 """
-["VBoxManage", "clonevm", self.father, "--name", c.vm_name,
+["VBoxManage", "clonevm", self.parent, "--name", c.vm_name,
                      "--options", "link", "--snapshot", "CloneSnapshot",
                      "--register"])
 """

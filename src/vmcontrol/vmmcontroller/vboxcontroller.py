@@ -45,11 +45,7 @@ class VBoxController(VMMController):
 
     def get_macs(self, vm):
         vm_info = self._get_vm_info(vm)
-        macs = [
-            int(value, 16)
-            for key, value in vm_info.items()
-            if key.startswith("macaddress")
-            ]
+        macs = [int(value, 16) for key, value in vm_info.items() if key.startswith("macaddress")]
         return macs
 
     def get_mac(self, vm, if_id=1):
@@ -58,8 +54,7 @@ class VBoxController(VMMController):
             mac_string = vm_info["macaddress" + str(if_id)]
         except KeyError as e:
             raise VMMControllerException(
-                "Cannot find MAC address for interface {if_id} on VM \"{vm}\"".
-                    format(if_id=if_id, vm=vm)
+                'Cannot find MAC address for interface {if_id} on VM "{vm}"'.format(if_id=if_id, vm=vm)
             )
         mac = int(mac_string, 16)
         return mac
@@ -86,10 +81,10 @@ class VBoxController(VMMController):
             out_lines = out.splitlines()
             snapshot_lines = filter(lambda line: "=" in line, out_lines)
             snapshots = [
-                value.strip("\"")
+                value.strip('"')
                 for key, value in map(lambda line: line.split("=", maxsplit=1), snapshot_lines)
-                if key.strip("\"").startswith("SnapshotName")
-                ]
+                if key.strip('"').startswith("SnapshotName")
+            ]
         return snapshots
 
     def create_snapshot(self, vm, snapshot):
@@ -105,18 +100,15 @@ class VBoxController(VMMController):
         self._vboxmanage_execute(vbox_vector)
 
     def clone(self, vm, snapshot, clone):
-        vbox_vector = [
-            "clonevm", vm, "--name", clone,
-            "--options", "link", "--snapshot", snapshot,
-            "--register"
-        ]
+        vbox_vector = ["clonevm", vm, "--name", clone, "--options", "link", "--snapshot", snapshot, "--register"]
         self._vboxmanage_execute(vbox_vector)
 
     def set_credentials(self, vm, user, password, domain):
-        vbox_vector = [
-            "controlvm", vm,
-            "setcredentials", user, password, domain
-        ]
+        vbox_vector = ["controlvm", vm, "setcredentials", user, password, domain]
+        self._vboxmanage_execute(vbox_vector)
+
+    def set_vrde_port(self, vm, port):
+        vbox_vector = ["modifyvm", vm, "--vrdeport", str(port)]
         self._vboxmanage_execute(vbox_vector)
 
     def _get_running_vms(self):
@@ -127,7 +119,7 @@ class VBoxController(VMMController):
 
     def _vm_string_to_list(self, vm_string):
         lines = vm_string.splitlines()
-        vms = [line.split("\"")[1] for line in lines]
+        vms = [line.split('"')[1] for line in lines]
         return vms
 
     def _get_vm_info(self, vm):
@@ -136,10 +128,9 @@ class VBoxController(VMMController):
         out_lines = out.splitlines()
         info_lines = filter(lambda line: "=" in line, out_lines)
         vm_info = {
-            key.strip("\""): value.strip("\"")
-            for key, value in
-            map(lambda line: line.split("=", maxsplit=1), info_lines)
-            }
+            key.strip('"'): value.strip('"')
+            for key, value in map(lambda line: line.split("=", maxsplit=1), info_lines)
+        }
         return vm_info
 
     @staticmethod
@@ -149,11 +140,7 @@ class VBoxController(VMMController):
         out, err = p.communicate()
         if p.returncode != 0:
             raise VMMControllerException(
-                "Error in execution of {vector}\n"
-                "-------\n"
-                "{err}"
-                "-------"
-                    .format(vector=vbox_vector, err=err)
+                "Error in execution of {vector}\n" "-------\n" "{err}" "-------".format(vector=vbox_vector, err=err)
             )
         return out
 
