@@ -21,8 +21,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from vmcontrol.sessionhandler import SessionHandler, SessionConfig, SessionHandlerException, \
-    CloneCreator
+from vmcontrol.sessionhandler import SessionHandler, SessionConfig, SessionHandlerException, CloneCreator
 from vmcontrol.sessionhandler.sessionhandler import Clone, DictNamespace
 from vmcontrol.vmmcontroller import VMMControllerException
 from vmcontrol.vmmcontroller.tests.mocks import MockVMMController
@@ -109,8 +108,13 @@ class TestSessionHandler:
     def test_default_config(self):
         config = SessionHandler.default_config()
         assert config.server_vms == [
-            "Internet Router", "Attacker", "Company Router", "Log Server", "Internal Server",
-            "DMZ Server"]
+            "Internet Router",
+            "Attacker",
+            "Company Router",
+            "Log Server",
+            "Internal Server",
+            "DMZ Server",
+        ]
         assert config.client_vm == "Client"
         assert config.number_of_clones == 3
         assert config.vm_start_timeout == 0
@@ -209,8 +213,7 @@ class TestSessionHandler:
         sh.create_clones()
         sh.login_clones()
         for clone in sh.clones:
-            sh.vmmc.set_credentials.assert_any_call(
-                clone.vm, clone.user, clone.password, clone.domain)
+            sh.vmmc.set_credentials.assert_any_call(clone.vm, clone.user, clone.password, clone.domain)
 
     def test_start_session(self, sh: SessionHandler):
         server_vms = sh.config.server_vms
@@ -309,16 +312,16 @@ class TestClone:
 
 @pytest.fixture()
 def cc():
-    father_vm = "Client"
+    parent_vm = "Client"
     base_snapshot = "CloneShot"
     number_of_clones = 5
     mvmmc = MockVMMController()
     some_vm = mvmmc.get_vms()[0]
     some_shot = "Snap"
     mvmmc.create_snapshot(some_vm, some_shot)
-    mvmmc.clone(some_vm, some_shot, father_vm)
-    mvmmc.create_snapshot(father_vm, base_snapshot)
-    cc = CloneCreator(father_vm, base_snapshot, number_of_clones, mvmmc)
+    mvmmc.clone(some_vm, some_shot, parent_vm)
+    mvmmc.create_snapshot(parent_vm, base_snapshot)
+    cc = CloneCreator(parent_vm, base_snapshot, number_of_clones, mvmmc)
     return cc
 
 
@@ -334,7 +337,7 @@ class TestCloneCreator:
     def test_set_vm_name(self, cc: CloneCreator):
         clone = Clone(id=42)
         cc.set_vm_name(clone)
-        assert clone.vm.startswith(cc.father_vm)
+        assert clone.vm.startswith(cc.parent_vm)
 
     def test_set_vm_name_avoiding_current_vms(self, cc: CloneCreator):
         clone = Clone(id=42)

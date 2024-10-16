@@ -25,8 +25,11 @@ def mock_print_decorator():
             self = args[0]
             if self.printing:
                 method_name = str(method.__name__)[6:]
-                print("called \"{method_name}\" with {args} and {kwargs}"
-                      .format(method_name=method_name, args=args[1:], kwargs=kwargs))
+                print(
+                    'called "{method_name}" with {args} and {kwargs}'.format(
+                        method_name=method_name, args=args[1:], kwargs=kwargs
+                    )
+                )
             return method(*args, **kwargs)
 
         return printing_method
@@ -40,10 +43,7 @@ class VM:
     def __init__(self, name):
         self.name = name or ""
         self.snapshots = list()
-        self.macs = [
-            int("0080123456AA", 16) + self.mac_count,
-            int("00801BB456AA", 16) + self.mac_count
-        ]
+        self.macs = [int("0080123456AA", 16) + self.mac_count, int("00801BB456AA", 16) + self.mac_count]
         VM.mac_count += 1
 
 
@@ -138,4 +138,8 @@ class MockVMMController(VMMController):
 
     @mock_print_decorator()
     def set_credentials(self, vm, user, password, domain):
+        pass
+
+    @mock_print_decorator()
+    def set_vrde_port(self, vm, port):
         pass
