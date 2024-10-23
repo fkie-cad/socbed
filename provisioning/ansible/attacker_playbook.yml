@@ -21,7 +21,6 @@
 
 
   roles:
-    - kali_update_cert
     - ntp_kali
     - ftp
     - external_mail_handler
