@@ -4,6 +4,24 @@
 # Additionally, creates a logrotate config file for logs
 #
 
+- name: Upgrade binutils
+  apt:
+    name: binutils
+    state: latest
+    update_cache: yes
+
+- name: Install Python3
+  apt:
+    name: python3-full=3.12.6-1
+    update_cache: yes
+    state: present
+    
+- name: Install aiosmtpd (requirement) globally
+  apt:
+    name: python3-aiosmtpd
+    update_cache: yes
+    state: present
+
 - name: "Create script directory {{ script_dir }}"
   file:
     path: "{{ script_dir }}"
