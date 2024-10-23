@@ -16,9 +16,9 @@
       "vm_name": "Internet Router",
       "guest_additions_mode": "disable",
       "headless": "true",
-      "iso_checksum": "sha256:7793981fbe39cb1fa3cb2f89dd1472751d502823b2fc333449171af1bc225f8f",
+      "iso_checksum": "sha256:831ee9a6197e0f351fa477b81aab510df6874e7f0e6d16fe1683768b60ff9dc0",
       "iso_urls": [
-        "https://downloads.ipfire.org/releases/ipfire-2.x/2.25-core141/ipfire-2.25.x86_64-full-core141.iso"
+        "https://downloads.ipfire.org/releases/ipfire-2.x/2.25-core157/ipfire-2.25.x86_64-full-core157.iso"
       ],
       "ssh_host": "{{user `ssh_host_addr`}}",
       "ssh_password": "breach",
@@ -58,8 +58,8 @@
         "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>internetrouter<tab><spacebar>",
         "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>localdomain<tab><spacebar>",
         "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>breach<tab>breach<tab><spacebar>",
-        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>breach<tab>breach<tab><spacebar>",       
-	"<wait10s><tab><spacebar>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>breach<tab>breach<tab><spacebar>",
+        "<wait10s><tab><spacebar>",
         "<wait><down><down><tab><spacebar>",
         "<wait><down><tab><spacebar>",
         "<wait><tab><spacebar>",
@@ -82,7 +82,7 @@
         "<wait><tab><tab><spacebar>",
         "<wait><down><tab><tab><spacebar>",
         "<wait><tab><spacebar>",
-        "<wait><spacebar>",    
+        "<wait><spacebar>",
         "<wait60s>",
         "root<wait><enter>breach<wait><enter>",
         "<wait20s>iptables -I INPUT -p tcp --dport 444 -j ACCEPT<enter>",
@@ -98,7 +98,6 @@
         "<wait10s>/etc/init.d/sshd restart<enter>",
         "<wait10s>"
       ],
-
       "export_opts": [
         "--manifest",
         "--vsys",
@@ -111,9 +110,7 @@
       "output_directory": "{{user `vm_output`}}",
       "keep_registered": "true",
       "skip_export": "true",
-      
       "shutdown_command": "echo 'packer' | shutdown -h -P now",
-
       "vboxmanage_post": [
         [
           "modifyvm",
@@ -146,4 +143,3 @@
     }
   ]
 }
-
