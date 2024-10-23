@@ -83,7 +83,7 @@ class TestCustomHandler:
         envelope.peer = "127.0.0.1"
         envelope.mail_to = mail.sender
         envelope.rcpt_to = [mail.receiver]
-        envelope.data = mail.to_mime_text().as_string().encode('utf-8')
+        envelope.data = mail.to_mime_text().as_string().encode("utf-8")
         await handler.handle_DATA(None, None, envelope)
         assert handler.swap_sender_receiver.called
         assert handler.send_mail.called
@@ -102,8 +102,9 @@ class TestCustomHandler:
         responder.controller.start = Mock()
         responder.controller.stop = Mock()
 
-        with patch("builtins.input", return_value=""):
-            responder.run()
+        with patch("time.sleep", side_effect=[None, KeyboardInterrupt]):
+            with pytest.raises(KeyboardInterrupt):
+                responder.run()
         assert responder.init_controller.called
         assert responder.controller.start.called
         assert responder.controller.stop.called
