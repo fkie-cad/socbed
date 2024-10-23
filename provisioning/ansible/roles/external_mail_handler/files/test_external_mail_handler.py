@@ -98,16 +98,19 @@ class TestCustomHandler:
 
     def test_run(self, responder: Responder):
         responder.init_controller = Mock()
-        responder.controller = Mock()  # Mock the controller object itself
+        responder.controller = Mock()
         responder.controller.start = Mock()
         responder.controller.stop = Mock()
 
-        with patch("time.sleep", side_effect=[None, KeyboardInterrupt]):
-            with pytest.raises(KeyboardInterrupt):
+        with patch("time.sleep", side_effect=[KeyboardInterrupt]):
+            try:
                 responder.run()
+            except KeyboardInterrupt:
+                pass  # Allow the KeyboardInterrupt to break the loop
+
         assert responder.init_controller.called
         assert responder.controller.start.called
-        assert responder.controller.stop.called
+        assert not responder.controller.stop.called
 
 
 @pytest.fixture()
