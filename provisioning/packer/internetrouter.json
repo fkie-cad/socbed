@@ -96,6 +96,8 @@
         "<wait>sed -i 's/Port 22/Port 222/g' /etc/ssh/sshd_config<enter>",
         "<wait>/etc/rc.d/init.d/sshd restart<enter>",
         "<wait10s>/etc/init.d/sshd restart<enter>",
+        "<wait>echo '3,8.8.8.8,,enabled,' > /var/ipfire/dns/servers<enter>",
+        "<wait10s>/etc/init.d/unbound restart<enter>",
         "<wait10s>"
       ],
       "export_opts": [
