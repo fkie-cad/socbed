@@ -9,12 +9,6 @@
     name: binutils
     state: latest
     update_cache: yes
-
-- name: Install Python3
-  apt:
-    name: python3-full=3.12.6-1
-    update_cache: yes
-    state: present
     
 - name: Install aiosmtpd (requirement) globally
   apt:
