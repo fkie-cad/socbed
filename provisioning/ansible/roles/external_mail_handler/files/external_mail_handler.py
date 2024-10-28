@@ -53,7 +53,7 @@ class CustomHandler:
     async def handle_DATA(self, server, session, envelope):
         # peer, mail_from, mail_to, rcpt_tos and data are now all encapsulated in 'envelope'
         # keep in mind that envelope.data contains raw bytes which first have to be decoded
-        mail = mime_string_to_text_mail(envelope.data.decode("utf-8"))
+        mail = mime_string_to_text_mail(envelope.content.decode("utf-8"))
         logger.info("Received mail from " + str(mail.sender) + " addressed to " + str(mail.receiver))
         self.swap_sender_receiver(mail)
         self.modify_text(mail)
