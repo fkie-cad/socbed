@@ -83,7 +83,7 @@ class TestCustomHandler:
         envelope.peer = "127.0.0.1"
         envelope.mail_to = mail.sender
         envelope.rcpt_to = [mail.receiver]
-        envelope.data = mail.to_mime_text().as_string().encode("utf-8")
+        envelope.content = mail.to_mime_text().as_string().encode("utf-8")
         await handler.handle_DATA(None, None, envelope)
         assert handler.swap_sender_receiver.called
         assert handler.send_mail.called
@@ -106,7 +106,7 @@ class TestCustomHandler:
             try:
                 responder.run()
             except KeyboardInterrupt:
-                pass  # Allow the KeyboardInterrupt to break the loop
+                pass
 
         assert responder.init_controller.called
         assert responder.controller.start.called
