@@ -8,7 +8,8 @@
         "initrd=/install.amd/initrd.gz ",
         "auto-install/enable=true ",
         "debconf/priority=critical ",
-        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ", "<wait5s>",
+        "preseed/url=http://{{user `host_ip_addr`}}:{{.HTTPPort}}/attacker_preseed.cfg ",
+        "<wait5s>",
         "netcfg/choose_interface=enp0s8 ",
         "netcfg/disable_autoconfig=true ",
         "netcfg/get_ipaddress=192.168.56.31 ",
@@ -104,7 +105,7 @@
         "-i",
         "../ansible/hosts"
       ],
-      "pause_before": "5m",
+      "pause_before": "2m",
       "playbook_file": "../ansible/attacker_playbook.yml",
       "type": "ansible"
     }
@@ -118,5 +119,3 @@
     "vm_hostonlyif": "{{env `HOSTONLYIF`}}"
   }
 }
-
-

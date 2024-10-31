@@ -83,7 +83,7 @@ class TestCustomHandler:
         envelope.peer = "127.0.0.1"
         envelope.mail_to = mail.sender
         envelope.rcpt_to = [mail.receiver]
-        envelope.data = mail.to_mime_text().as_string().encode('utf-8')
+        envelope.content = mail.to_mime_text().as_string().encode("utf-8")
         await handler.handle_DATA(None, None, envelope)
         assert handler.swap_sender_receiver.called
         assert handler.send_mail.called
@@ -98,15 +98,19 @@ class TestCustomHandler:
 
     def test_run(self, responder: Responder):
         responder.init_controller = Mock()
-        responder.controller = Mock()  # Mock the controller object itself
+        responder.controller = Mock()
         responder.controller.start = Mock()
         responder.controller.stop = Mock()
 
-        with patch("builtins.input", return_value=""):
-            responder.run()
+        with patch("time.sleep", side_effect=[KeyboardInterrupt]):
+            try:
+                responder.run()
+            except KeyboardInterrupt:
+                pass
+
         assert responder.init_controller.called
         assert responder.controller.start.called
-        assert responder.controller.stop.called
+        assert not responder.controller.stop.called
 
 
 @pytest.fixture()
