@@ -28,7 +28,7 @@ The numbers above are valid for small simulations with 1-3 clients.
 
 ## Installation
 
-The installation instructions below were tested on a fresh Ubuntu 20.04 LTS system.
+The installation instructions below were tested on a fresh Ubuntu 24.04 LTS system.
 Please adhere strictly to the instructions as different software versions might not work as expected.
 
 ```sh

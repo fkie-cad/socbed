@@ -4,6 +4,18 @@
 # Additionally, creates a logrotate config file for logs
 #
 
+- name: Ensure compatible version of binutils
+  apt:
+    name: binutils=2.43.1-5
+    state: present
+    update_cache: yes
+    
+- name: Install aiosmtpd (requirement) globally
+  apt:
+    name: python3-aiosmtpd=1.4.6-1
+    update_cache: yes
+    state: present
+
 - name: "Create script directory {{ script_dir }}"
   file:
     path: "{{ script_dir }}"

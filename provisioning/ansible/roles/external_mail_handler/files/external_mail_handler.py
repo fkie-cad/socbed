@@ -33,7 +33,7 @@ def setup_logging():
     logging.Formatter.converter = time.localtime
     logging.Formatter.default_time_format = "%Y-%m-%dT%H:%M:%S"
     is_dst = time.daylight and time.localtime().tm_isdst > 0
-    gmt_offset_secs = - (time.altzone if is_dst else time.timezone)
+    gmt_offset_secs = -(time.altzone if is_dst else time.timezone)
     gmt_offset_string = "{0:+03d}:00".format(gmt_offset_secs // 3600)
     log_handler = WatchedFileHandler(filename="/var/log/breach/external_mail_handler.log")
     logging.basicConfig(
@@ -53,13 +53,13 @@ class CustomHandler:
     async def handle_DATA(self, server, session, envelope):
         # peer, mail_from, mail_to, rcpt_tos and data are now all encapsulated in 'envelope'
         # keep in mind that envelope.data contains raw bytes which first have to be decoded
-        mail = mime_string_to_text_mail(envelope.data.decode("utf-8"))
+        mail = mime_string_to_text_mail(envelope.content.decode("utf-8"))
         logger.info("Received mail from " + str(mail.sender) + " addressed to " + str(mail.receiver))
         self.swap_sender_receiver(mail)
         self.modify_text(mail)
         self.send_mail(mail)
         # A return message is mandatory
-        return '250 OK'
+        return "250 OK"
 
     @staticmethod
     def swap_sender_receiver(mail):
@@ -84,19 +84,17 @@ class Responder:
     def __init__(self):
         self.smtp_out = Server("172.18.0.2", 25)
         self.smtp_in = Server("0.0.0.0", 25)
-        self.controller: Controller|None = None
+        self.controller: Controller | None = None
 
     def run(self):
-        logger.info("Starting Mail Responder listening at " +
-                    str(self.smtp_in.server_ip) +
-                    ":" + str(self.smtp_in.server_port))
-        logger.info("Sending responses to " +
-                    str(self.smtp_out.server_ip) +
-                    ":" + str(self.smtp_out.server_port))
+        logger.info(
+            "Starting Mail Responder listening at " + str(self.smtp_in.server_ip) + ":" + str(self.smtp_in.server_port)
+        )
+        logger.info("Sending responses to " + str(self.smtp_out.server_ip) + ":" + str(self.smtp_out.server_port))
         self.init_controller()
         self.controller.start()  # detaches from current thread
-        input('SMTP server running. Press Return to stop server and exit.')
-        self.controller.stop()
+        while True:
+            time.sleep(1)
 
     def init_controller(self):
         handler = CustomHandler(self.smtp_out)

@@ -16,7 +16,7 @@
       "guest_os_type": "Linux_64",
       "vm_name": "Company Router",
       "guest_additions_mode": "disable",
-      "headless": "true",  
+      "headless": "true",
       "iso_checksum": "sha256:7793981fbe39cb1fa3cb2f89dd1472751d502823b2fc333449171af1bc225f8f",
       "iso_urls": [
         "https://downloads.ipfire.org/releases/ipfire-2.x/2.25-core141/ipfire-2.25.x86_64-full-core141.iso"
@@ -164,4 +164,3 @@
     }
   ]
 }
-
