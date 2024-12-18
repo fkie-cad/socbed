@@ -12,7 +12,7 @@
     
 - name: Install aiosmtpd (requirement) globally
   apt:
-    name: python3-aiosmtpd=1.4.6
+    name: python3-aiosmtpd=1.4.6-3
     update_cache: yes
     state: present
 
