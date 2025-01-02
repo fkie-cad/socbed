@@ -4,39 +4,28 @@
 # Additionally, creates a logrotate config file for logs
 #
 
-- name: Remove existing binutils and binutils-common packages
+- name: Add Kali Linux archive repository
+  apt_repository:
+    repo: "deb http://old.kali.org/kali 2024.4 main contrib non-free"
+    state: present
+    trusted: yes  # Bypass signature verification
+
+- name: Update apt cache ignoring signature verification
+  shell: apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true
+  args:
+    warn: false
+
+- name: Ensure compatible version of binutils
   apt:
-    name: 
-      - binutils
-      - binutils-common
-    state: absent
+    name: binutils=2.43.1-5
+    state: present
+    allow_downgrade: yes
 
-- name: Download binutils-common package
-  get_url:
-    url: "https://old.kali.org/kali/pool/main/b/binutils/binutils-common_2.43.1-5_amd64.deb"
-    dest: "/tmp/binutils-common_2.43.1-5_amd64.deb"
-
-- name: Install binutils-common package
+- name: Install aiosmtpd (requirement) globally
   apt:
-    deb: "/tmp/binutils-common_2.43.1-5_amd64.deb"
-
-- name: Download binutils package
-  get_url:
-    url: "https://old.kali.org/kali/pool/main/b/binutils/binutils_2.43.1-5_amd64.deb"
-    dest: "/tmp/binutils_2.43.1-5_amd64.deb"
-
-- name: Install binutils package
-  apt:
-    deb: "/tmp/binutils_2.43.1-5_amd64.deb"
-
-- name: Download python3-aiosmtpd package
-  get_url:
-    url: "https://old.kali.org/kali/pool/main/p/python-aiosmtpd/python3-aiosmtpd_1.4.6-1_all.deb"
-    dest: "/tmp/python3-aiosmtpd_1.4.6-3_all.deb"
-
-- name: Install python3-aiosmtpd package
-  apt:
-    deb: "/tmp/python3-aiosmtpd_1.4.6-3_all.deb"
+    name: python3-aiosmtpd=1.4.6-3
+    state: present
+    allow_downgrade: yes
 
 - name: "Create script directory {{ script_dir }}"
   file:
