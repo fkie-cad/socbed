@@ -4,6 +4,13 @@
 # Additionally, creates a logrotate config file for logs
 #
 
+- name: Remove existing binutils and binutils-common packages
+  apt:
+    name: 
+      - binutils
+      - binutils-common
+    state: absent
+
 - name: Download binutils-common package
   get_url:
     url: "https://old.kali.org/kali/pool/main/b/binutils/binutils-common_2.43.1-5_amd64.deb"
