@@ -4,16 +4,23 @@
 # Additionally, creates a logrotate config file for logs
 #
 
+- name: Add Kali Linux archive repository
+  apt_repository:
+    repo: "deb http://old.kali.org/kali kali-rolling main contrib non-free"
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
 - name: Ensure compatible version of binutils
   apt:
     name: binutils=2.43.1-5
     state: present
-    update_cache: yes
     
 - name: Install aiosmtpd (requirement) globally
   apt:
     name: python3-aiosmtpd=1.4.6-3
-    update_cache: yes
     state: present
 
 - name: "Create script directory {{ script_dir }}"
