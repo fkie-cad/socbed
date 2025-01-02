@@ -4,24 +4,23 @@
 # Additionally, creates a logrotate config file for logs
 #
 
-- name: Add specific Kali Linux repository
-  apt_repository:
-    repo: "deb http://old.kali.org/kali 2024.4 main contrib non-free"
-    state: present
+- name: Download binutils package
+  get_url:
+    url: "https://old.kali.org/kali/pool/main/b/binutils/binutils_2.43.1-5_amd64.deb"
+    dest: "/tmp/binutils_2.43.1-5_amd64.deb"
 
-- name: Update apt cache
+- name: Install binutils package
   apt:
-    update_cache: yes
+    deb: "/tmp/binutils_2.43.1-5_amd64.deb"
 
-- name: Ensure compatible version of binutils
+- name: Download python3-aiosmtpd package
+  get_url:
+    url: "https://old.kali.org/kali/pool/main/p/python-aiosmtpd/python3-aiosmtpd_1.4.6-1_all.deb"
+    dest: "/tmp/python3-aiosmtpd_1.4.6-3_all.deb"
+
+- name: Install python3-aiosmtpd package
   apt:
-    name: binutils=2.43.1-5
-    state: present
-    
-- name: Install aiosmtpd (requirement) globally
-  apt:
-    name: python3-aiosmtpd=1.4.6-3
-    state: present
+    deb: "/tmp/python3-aiosmtpd_1.4.6-3_all.deb"
 
 - name: "Create script directory {{ script_dir }}"
   file:
