@@ -4,9 +4,9 @@
 # Additionally, creates a logrotate config file for logs
 #
 
-- name: Add Kali Linux archive repository
+- name: Add specific Kali Linux repository
   apt_repository:
-    repo: "deb http://old.kali.org/kali kali-rolling main contrib non-free"
+    repo: "deb http://old.kali.org/kali 2024.4 main contrib non-free"
     state: present
 
 - name: Update apt cache
