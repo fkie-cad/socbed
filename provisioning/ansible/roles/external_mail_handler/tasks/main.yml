@@ -4,6 +4,15 @@
 # Additionally, creates a logrotate config file for logs
 #
 
+- name: Download binutils-common package
+  get_url:
+    url: "https://old.kali.org/kali/pool/main/b/binutils/binutils-common_2.43.1-5_amd64.deb"
+    dest: "/tmp/binutils-common_2.43.1-5_amd64.deb"
+
+- name: Install binutils-common package
+  apt:
+    deb: "/tmp/binutils-common_2.43.1-5_amd64.deb"
+
 - name: Download binutils package
   get_url:
     url: "https://old.kali.org/kali/pool/main/b/binutils/binutils_2.43.1-5_amd64.deb"
