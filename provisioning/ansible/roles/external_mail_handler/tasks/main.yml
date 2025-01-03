@@ -11,8 +11,6 @@
 
 - name: Update apt cache ignoring signature verification
   shell: apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true
-  args:
-    warn: false
 
 - name: Ensure compatible version of binutils
   apt:
@@ -33,8 +31,6 @@
 
 - name: Update apt cache after removing repository
   shell: apt-get update
-  args:
-    warn: false
 
 - name: "Create script directory {{ script_dir }}"
   file:
