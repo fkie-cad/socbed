@@ -12,11 +12,11 @@
 - name: Update apt cache ignoring signature verification
   shell: apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true
 
-- name: Ensure compatible version of binutils
-  apt:
-    name: binutils=2.43.1-5
-    state: present
-    allow_downgrade: yes
+# - name: Ensure compatible version of binutils
+#   apt:
+#     name: binutils=2.43.1-5
+#     state: present
+#     allow_downgrade: yes
 
 - name: Install aiosmtpd (requirement) globally
   apt:
