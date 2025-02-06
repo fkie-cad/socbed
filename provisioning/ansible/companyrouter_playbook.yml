@@ -8,3 +8,4 @@
     - rsyslog_install_ipfire
     - rsyslog_ISO8601
     - rsyslog_forwarding
+    - auditbeat_forwarding
