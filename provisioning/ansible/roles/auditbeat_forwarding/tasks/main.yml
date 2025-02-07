@@ -1,0 +1,5 @@
+- name: Configure firewall to allow auditbeat on the DMZ (ORANGE) to communicate with the logserver (GREEN)
+  lineinfile:
+    path: /var/ipfire/firewall/config
+    line: "8,ACCEPT,FORWARDFW,ON,std_net_src,ORANGE,std_net_tgt,GREEN,,TCP,,,ON,,,TGT_PORT,9200,Allow elasticsearch log TCP on port 9200 from ORANGE to GREEN,,,,,,,,,,00:00,00:00,,AUTO,,dnat,,,,,second"
+    state: present
