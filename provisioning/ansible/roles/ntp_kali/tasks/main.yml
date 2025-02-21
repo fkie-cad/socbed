@@ -2,9 +2,8 @@
 
 - name: Install NTP
   apt:
-    name: ntp
-    update_cache: yes
-    state: present
+    name: ntp=1:4.2.8p18+dfsg-2~1.2.3+dfsg1-3
+    allow_downgrade: yes
 
 - name: Disable default NTP servers
   replace:

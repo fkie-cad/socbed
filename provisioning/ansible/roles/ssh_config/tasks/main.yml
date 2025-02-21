@@ -1,9 +1,8 @@
 - name: Install sshpass
   apt:
-    name: sshpass
-    state: present
-    update_cache: yes
-    
+    name: sshpass=1.10-0.1
+    allow_downgrade: yes
+
 - name: Create .ssh directory
   file:
     path: /root/.ssh

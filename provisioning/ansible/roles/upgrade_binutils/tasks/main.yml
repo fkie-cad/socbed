@@ -1,0 +1,6 @@
+---
+
+- name: Upgrade binutils
+  apt:
+    name: binutils=2.43.1-5
+    allow_downgrade: yes

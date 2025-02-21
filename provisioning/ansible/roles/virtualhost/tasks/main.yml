@@ -4,9 +4,8 @@
 #
 - name: "Install Apache"
   apt:
-    name: apache2
-    update_cache: yes
-    state: present # can also be set to latest
+    name: apache2=2.4.62-3
+    allow_downgrade: yes
 
 - name: "Create virtualhost directories"
   file:

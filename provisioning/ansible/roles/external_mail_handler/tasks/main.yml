@@ -4,17 +4,10 @@
 # Additionally, creates a logrotate config file for logs
 #
 
-- name: Add Kali Linux archive repository manually
-  copy:
-    dest: /etc/apt/sources.list.d/kali-archive.list
-    content: "deb [trusted=yes] http://old.kali.org/kali 2024.4 main contrib non-free"
-
 - name: Install aiosmtpd (requirement) globally
   apt:
     name: python3-aiosmtpd=1.4.6-1
-    state: present
     allow_downgrade: yes
-    update_cache: yes
 
 - name: "Create script directory {{ script_dir }}"
   file:

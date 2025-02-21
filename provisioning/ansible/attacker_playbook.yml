@@ -19,6 +19,15 @@
         line: '127.0.1.1	attacker'
         state: absent
 
+    - name: Add Kali Linux archive repository
+      copy:
+        dest: /etc/apt/sources.list.d/kali-archive.list
+        content: "deb [trusted=yes] http://old.kali.org/kali 2024.4 main contrib non-free"
+
+    - name: Update cache
+      apt:
+        update_cache: yes
+
 
   roles:
     - ntp_kali

@@ -2,6 +2,5 @@
 
 - name: Install grc
   apt:
-    name: grc={{ grc_version }}
-    state: present
-    update_cache: yes
+    name: grc=1.13.1-1
+    allow_downgrade: yes
