@@ -4,27 +4,11 @@
 # Additionally, creates a logrotate config file for logs
 #
 
-- name: Add Kali Linux archive repository manually
-  copy:
-    dest: /etc/apt/sources.list.d/kali-archive.list
-    content: "deb [trusted=yes] http://old.kali.org/kali 2024.4 main contrib non-free"
-
-- name: Update apt cache ignoring signature verification
-  shell: apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true
-
 - name: Install aiosmtpd (requirement) globally
   apt:
     name: python3-aiosmtpd=1.4.6-3
     state: present
-    allow_downgrade: yes
-
-- name: Remove Kali Linux archive repository after installing required packages
-  apt_repository:
-    repo: "deb http://old.kali.org/kali 2024.4 main contrib non-free"
-    state: absent
-
-- name: Update apt cache after removing repository
-  shell: apt-get update
+    update_cache: yes
 
 - name: "Create script directory {{ script_dir }}"
   file:
