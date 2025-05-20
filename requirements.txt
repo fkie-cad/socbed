@@ -8,5 +8,5 @@ selenium==4.3.0
 tox==4.18.1
 veryprettytable==0.8.1
 asyncio==3.4.3
-setuptools~=74.1.2
+setuptools~=78.1.1
 aiosmtpd~=1.4.6
