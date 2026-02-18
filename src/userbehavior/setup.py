@@ -5,7 +5,7 @@ setup(
     version="1.0.3",
     packages=find_packages(exclude=["*tests"]),
     package_data={"userbehavior.browsing": ["firefox_extensions/*.xpi"]},
-    install_requires=["selenium==3.141.0"],
+    install_requires=["selenium==4.39.0"],
     entry_points={
         "console_scripts": [
             "userbehavior = userbehavior.run:main",

@@ -30,17 +30,17 @@ setup(
         "paramiko",
         "pyvmomi",
         "veryprettytable",
-        "selenium",
+        "selenium==4.39.0",
         "aiosmtpd",
         "pytest-asyncio",
         "pytest-mock",
-        "pytest-print"
+        "pytest-print",
     ],
     entry_points={
-        'console_scripts': [
-            'attackconsole = attacks.attackconsole:main',
-            'generateattackchains = attacks.generateattackchains:main',
-            'vmconsole = vmcontrol.vmconsole:main'
+        "console_scripts": [
+            "attackconsole = attacks.attackconsole:main",
+            "generateattackchains = attacks.generateattackchains:main",
+            "vmconsole = vmcontrol.vmconsole:main",
         ]
-    }
+    },
 )
