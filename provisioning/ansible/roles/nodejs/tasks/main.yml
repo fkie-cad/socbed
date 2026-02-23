@@ -1,5 +1,4 @@
 ---
-
 #
 # Install NodeJS
 #
@@ -18,5 +17,4 @@
     name: nodejs
     update_cache: yes
     state: present
-
-
+    allow_unauthenticated: yes
