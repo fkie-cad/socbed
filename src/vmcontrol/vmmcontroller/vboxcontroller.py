@@ -118,8 +118,11 @@ class VBoxController(VMMController):
         return running_vms
 
     def _vm_string_to_list(self, vm_string):
-        lines = vm_string.splitlines()
-        vms = [line.split('"')[1] for line in lines]
+        # A VM entry looks like: "VM Name" {8451900b-320a-43b4-9eb9-9bd6656f33ad}
+        # VBoxManage also prints warnings to stdout (e.g. about LOGNAME/USER not
+        # matching the effective user id), which never start with a quote.
+        vm_lines = (line for line in vm_string.splitlines() if line.startswith('"'))
+        vms = [line[1:].rsplit('"', maxsplit=1)[0] for line in vm_lines]
         return vms
 
     def _get_vm_info(self, vm):

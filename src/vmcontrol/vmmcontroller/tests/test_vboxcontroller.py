@@ -51,6 +51,43 @@ class TestVBoxController:
         assert_call(vbc, ["list", "vms"])
         assert vms == ["Attacker", "Client", "Company Router"]
 
+    def test_get_vms_ignores_vboxmanage_warnings(self, vbc: VBoxController):
+        return_value = "\n".join(
+            [
+                "WARNING: Environment variable LOGNAME or USER does not correspond to effective user id.",
+                '"Attacker" {8451900b-320a-43b4-9eb9-9bd6656f33ad}',
+                '"Client" {4d0986c7-eabc-4cd3-a2f3-e28111a66ac1}',
+            ]
+        )
+        vbc._vboxmanage_execute = Mock(return_value=return_value)
+        vms = vbc.get_vms()
+        assert vms == ["Attacker", "Client"]
+
+    @pytest.mark.parametrize(
+        "line, expected",
+        [
+            # Format used by VirtualBox 4.x through 7.x
+            ('"Attacker" {8451900b-320a-43b4-9eb9-9bd6656f33ad}', "Attacker"),
+            ('"Company Router" {d75d3108-266b-420e-aa74-bc73f689ee9c}', "Company Router"),
+            # Unregistered/broken VMs are listed with a placeholder name
+            ('"<inaccessible>" {d75d3108-266b-420e-aa74-bc73f689ee9c}', "<inaccessible>"),
+            # Names may themselves contain quotes or braces
+            ('"My "quoted" VM" {d75d3108-266b-420e-aa74-bc73f689ee9c}', 'My "quoted" VM'),
+            ('"VM {1}" {d75d3108-266b-420e-aa74-bc73f689ee9c}', "VM {1}"),
+        ],
+    )
+    def test_vm_string_to_list_entry_formats(self, vbc: VBoxController, line, expected):
+        assert vbc._vm_string_to_list(line) == [expected]
+
+    @pytest.mark.parametrize(
+        "line", ['"Odd Entry" [no-braces]', '"Name Only"', '"Unterminated']
+    )
+    def test_vm_string_to_list_keeps_entries_in_unknown_formats(self, vbc: VBoxController, line):
+        """Entries must never be dropped silently just because a VirtualBox version
+        formats them unexpectedly: callers use the result to decide whether a VM
+        already exists, so a missing entry is worse than a malformed name."""
+        assert vbc._vm_string_to_list(line) != []
+
     def test_start(self, vbc: VBoxController):
         vbc.start("VM")
         assert_call(vbc, ["startvm", "VM", "--type", "headless"])
@@ -80,6 +117,16 @@ class TestVBoxController:
         vms = vbc._get_running_vms()
         assert_call(vbc, ["list", "runningvms"])
         assert vms == ["Attacker", "Client", "Company Router"]
+
+    def test_get_running_vms_ignores_vboxmanage_warnings(self, vbc: VBoxController):
+        return_value = "\n".join(
+            [
+                "WARNING: Environment variable LOGNAME or USER does not correspond to effective user id.",
+                '"Attacker" {8451900b-320a-43b4-9eb9-9bd6656f33ad}',
+            ]
+        )
+        vbc._vboxmanage_execute = Mock(return_value=return_value)
+        assert vbc._get_running_vms() == ["Attacker"]
 
     def test_get_vm_info(self, vbc: VBoxController):
         vbc._vboxmanage_execute = Mock(return_value=self._some_vbox_info_output())
