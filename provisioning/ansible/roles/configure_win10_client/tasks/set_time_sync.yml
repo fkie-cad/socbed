@@ -1,6 +1,5 @@
-# The client's hardware clock is set to UTC (--rtcuseutc in the packer template),
-# which Windows would otherwise read as local time and be wrong by the host's UTC
-# offset for as long as the machine runs.
+# The hardware clock is set to UTC (--rtcuseutc in the packer template), which
+# Windows would otherwise read as local time.
 - name: Read the hardware clock as UTC
   win_regedit:
     path: HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
@@ -17,17 +16,14 @@
 - name: Configure the Windows Time service to sync from the Company Router
   win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
 
-# These go under Policies, not under the service's own key: every time w32time
-# starts it rewrites its own key with the defaults that belong to its current
-# provider type, so values written there are gone after the next boot. Values
-# under Policies take precedence and are left alone.
+# Under Policies, not under the service's own key: w32time rewrites that key with
+# the defaults of its current provider type whenever it starts, so values written
+# there are gone after the next boot.
 #
-# MaxAllowedPhaseOffset decides whether w32time sets the clock or eases it over.
-# Windows ships 300, so any offset below five minutes is slewed, which is far too
-# slow to repair a clock an attack has moved; at 1 second, anything larger is
-# corrected at once. SpikeWatchPeriod would otherwise have w32time dismiss such
-# an offset as implausible for its first 900 seconds. The short poll keeps the
-# client asking while the Company Router is still stratum 16 after boot.
+# Windows ships MaxAllowedPhaseOffset at 300, which slews any offset below five
+# minutes rather than setting the clock, and SpikeWatchPeriod at 900, which
+# dismisses a sudden offset as implausible for a quarter of an hour. Together
+# they leave the client unable to repair a clock an attack has moved.
 - name: Configure the polling and correction limits of the Windows Time service
   win_regedit:
     path: HKLM:\SOFTWARE\Policies\Microsoft\W32Time\{{ item.key }}
@@ -63,12 +59,18 @@
   register: w32time_configuration
   changed_when: false
 
-# A value w32time still reports as (Local) is one it will reset on the next boot,
-# which silently leaves the client unable to correct a wrong clock.
+# Anything w32time still reports as (Local) is a value it will reset on the next
+# boot.
 - name: Fail unless the Windows Time settings are in effect as policy
   assert:
-    that:
-      - "'MaxAllowedPhaseOffset: 1 (Policy)' in w32time_configuration.stdout"
-      - "'MinPollInterval: 6 (Policy)' in w32time_configuration.stdout"
-      - "'SpecialPollInterval: 64 (Policy)' in w32time_configuration.stdout"
+    that: "'{{ item.name }}: {{ item.data }} (Policy)' in w32time_configuration.stdout"
     fail_msg: "{{ w32time_configuration.stdout }}"
+  loop:
+    - {name: MinPollInterval, data: 6}
+    - {name: MaxPollInterval, data: 6}
+    - {name: MaxAllowedPhaseOffset, data: 1}
+    - {name: SpikeWatchPeriod, data: 60}
+    - {name: UpdateInterval, data: 100}
+    - {name: MaxPosPhaseCorrection, data: 4294967295}
+    - {name: MaxNegPhaseCorrection, data: 4294967295}
+    - {name: SpecialPollInterval, data: 64}

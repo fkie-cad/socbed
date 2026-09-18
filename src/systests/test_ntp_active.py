@@ -75,7 +75,7 @@ class ActiveNTPTest:
         else:
             pass
         timer_start = time.time()
-        old_ntp_datetime, __ = Time.get_time(machine)
+        old_ntp_datetime = Time.get_time(machine)
         return old_ntp_datetime, timer_start
 
     def restart_ntp_services(self, machine, sleep_time_after_restarting_ntp_services):
@@ -86,7 +86,7 @@ class ActiveNTPTest:
             pass
         NtpdControl.start_ntp_server(machine)
         time.sleep(sleep_time_after_restarting_ntp_services)
-        new_ntp_datetime, __ = Time.get_time(machine)
+        new_ntp_datetime = Time.get_time(machine)
         timer_end = time.time()
         return new_ntp_datetime, timer_end
 
@@ -95,7 +95,7 @@ class ActiveNTPTest:
             old_ntp_datetime \
             - datetime.timedelta(seconds=deferred_time_in_seconds)
         self.set_time_manually(machine, deferred_datetime_for_manual_time_setting.time())
-        actual_deferred_time, __ = Time.get_time(machine)
+        actual_deferred_time = Time.get_time(machine)
         time_difference = \
             actual_deferred_time \
             - deferred_datetime_for_manual_time_setting
@@ -189,9 +189,8 @@ class TestDistributingFakeTime(ActiveNTPTest):
     ntpd_state_change_attempts = 15
     ntpd_state_change_interval_in_seconds = 2
     ntpd_start_attempts = 3
-    # The same command line the IPFire init script uses, with a trailing wait:
-    # BREACHSSHClient allocates a pty, and tearing it down kills the daemon ntpd
-    # forks off unless that fork has finished detaching from it by then.
+    # Tearing down the pty BREACHSSHClient allocates kills the daemon ntpd forks
+    # off, unless that fork has finished detaching by then.
     ntpd_start_command = "/usr/bin/ntpd -Ap /var/run/ntpd.pid; sleep 5"
     test_machines = server_machines + \
                     [SSHTargetsForNtp.company_router] + \
@@ -213,7 +212,7 @@ class TestDistributingFakeTime(ActiveNTPTest):
     def inject_false_local_time_on_internet_router(self, machine):
         self.stop_ntpd_on_ip_cop(machine)
         self.change_ntp_config_to_local_clock(machine)
-        old_ntp_datetime, __ = Time.get_time(machine)
+        old_ntp_datetime = Time.get_time(machine)
         print("Old NTP datetime before injecting false local time: {}".format(old_ntp_datetime))
         actual_deferred_time = self.set_system_clock_back(machine, old_ntp_datetime,
                                                           self.deferred_time_in_seconds)

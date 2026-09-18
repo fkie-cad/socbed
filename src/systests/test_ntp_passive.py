@@ -32,30 +32,17 @@ from vmcontrol.vmmcontroller import VBoxController
 pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
 
-terminal_escapes = re.compile(r"\x1b\][^\x07]*\x07|\x1b\[[0-9;?]*[a-zA-Z]")
+terminal_escapes = re.compile(r"\x1b\][^\x07\x1b\r\n]*(?:\x07|\x1b\\)|\x1b\[[0-9;?]*[a-zA-Z]")
 
 
-def strip_terminal_escapes(text):
-    """Remove ANSI/OSC escape sequences from captured command output.
-
-    The Windows client's console emits a window-title sequence and a
-    show-cursor sequence that print_windows_output does not strip, and they end
-    up glued to the front of the first line of real output.
-    """
-    return terminal_escapes.sub("", text)
+def captured_text(list_printer):
+    # BREACHSSHClient streams Linux output a byte at a time and Windows output a
+    # line at a time, so printed holds single characters for Linux targets.
+    return terminal_escapes.sub("", "".join(list_printer.printed))
 
 
 def printed_lines(list_printer):
-    """Return a ListPrinter's captured output as a list of non-empty lines.
-
-    BREACHSSHClient streams Linux output one byte at a time and Windows output
-    one line at a time, so ``printed`` holds single characters for Linux
-    targets. Joining before splitting makes both cases behave the same, and
-    stripping the escape sequences first keeps them from forming lines of their
-    own on the Windows console.
-    """
-    text = strip_terminal_escapes("".join(list_printer.printed))
-    return [line for line in text.splitlines() if line.strip()]
+    return [line for line in captured_text(list_printer).splitlines() if line.strip()]
 
 
 @pytest.fixture(scope="module")
@@ -68,20 +55,23 @@ def session():
 
 
 class MachineProperties:
-    # BREACHSSHClient.print_output stops reading as soon as the channel reports
-    # no more data, which occasionally truncates a command's output to nothing,
-    # so a single empty read must not be taken for an unknown machine.
     os_detection_attempts = 3
+    os_detection_interval_in_seconds = 5
+    undetectable_os = "Can not determine os"
 
     @classmethod
     def get_os(cls, machine):
+        # print_output stops reading as soon as the channel reports no more
+        # data, which occasionally truncates a command's output to nothing.
         for attempt in range(cls.os_detection_attempts):
             try:
                 return cls._detect_os(machine)
-            except Exception:
+            except Exception as error:
+                if cls.undetectable_os not in str(error):
+                    raise
                 if attempt == cls.os_detection_attempts - 1:
                     raise
-                time.sleep(5)
+                time.sleep(cls.os_detection_interval_in_seconds)
 
     @classmethod
     def _detect_os(cls, machine):
@@ -103,7 +93,7 @@ class MachineProperties:
             elif cls.check_if_machine_is_windows_system(machine):
                 return "Windows"
             else:
-                raise Exception("Can not determine os")
+                raise Exception(cls.undetectable_os)
         except paramiko.ssh_exception.NoValidConnectionsError:
             raise Exception("Can not connect to machine. Check if machine is started.")
 
@@ -136,8 +126,6 @@ class MachineProperties:
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target("cmd.exe /c ver", list_printer)
         sys_info = "".join(list_printer.printed)
-        # Matching on the version number would tie this to one Windows release;
-        # SOCBED has shipped a Windows 10 client since the initial import.
         if "Microsoft Windows" in sys_info:
             return True
         else:
@@ -213,14 +201,8 @@ all_machines = machines_using_ntpd + [SSHTargetsForNtp.client_1]
 class Time:
     @classmethod
     def get_time(cls, machine):
-        # Detect the OS before timing: calculate_time_diff subtracts the elapsed
-        # time from the reading, and OS detection costs several SSH sessions.
         machine.os = MachineProperties.get_os(machine)
-        timer_start = time.time()
-        actual_time = cls.request_actual_time(machine)
-        timer_end = time.time()
-        elapsed_time_of_time_request = timer_end - timer_start
-        return actual_time, elapsed_time_of_time_request
+        return cls.request_actual_time(machine)
 
     @staticmethod
     def request_actual_time(machine):
@@ -253,14 +235,8 @@ class Time:
 
     @classmethod
     def get_clock_offset(cls, machine):
-        """Return how far a machine's clock is ahead of the test host's clock.
-
-        A clock can only be read across an SSH round trip, which takes long
-        enough to matter here, and it is not known where inside that round trip
-        the reading was taken. Sampling the host clock on both sides and using
-        the middle of the window bounds the error by half the round trip instead
-        of leaving a full round trip as a systematic offset.
-        """
+        # The reading is taken somewhere inside an SSH round trip, so the host
+        # clock either side of it brackets when it was taken.
         machine.os = MachineProperties.get_os(machine)
         before = time.time()
         reading = cls.request_actual_time(machine)
@@ -274,11 +250,6 @@ class Time:
 
     @staticmethod
     def calculate_time_diff(first_machine, second_machine, print_time_diff=False):
-        """Difference between two machines' clocks, via the host clock.
-
-        Both machines are compared against the same reference rather than
-        against each other, so the cost of reading either clock cancels out.
-        """
         offset_first_machine = Time.get_clock_offset(first_machine)
         offset_second_machine = Time.get_clock_offset(second_machine)
         time_diff = offset_first_machine - offset_second_machine
@@ -408,10 +379,7 @@ class TestNTPConfig:
                 list_printer)
         else:
             raise Exception("No config for machine defined")
-        config = printed_lines(list_printer)
-        while config and not config[-1].strip():
-            config.pop()
-        return config
+        return printed_lines(list_printer)
 
     @staticmethod
     def get_expected_ntp_config(machine):
@@ -447,9 +415,8 @@ class TestNTPConfig:
 class NtpdStatus:
     def check_if_ntpd_is_running(self, machine, print_ntpd_status):
         ntp_daemon_status = self.get_ntp_daemon_status(machine, print_ntpd_status)
-        machine.os = MachineProperties.get_os(machine)
-        # Match anywhere in the output: the line index of the interesting line
-        # shifts between systemd versions, and `ps` may prepend a warning.
+        # The line index shifts between systemd versions, and ps may prepend a
+        # warning, so match anywhere in the output.
         status = "\n".join(ntp_daemon_status)
         ntp_daemon_is_running = (
                 (machine.os in ["Ubuntu 14.04"] and
@@ -469,12 +436,9 @@ class NtpdStatus:
         list_printer = ListPrinter()
         machine.os = MachineProperties.get_os(machine)
         if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]:
-            # systemd pipes `status` through a pager when it sees the pty that
-            # BREACHSSHClient allocates, so the command would never exit. Piping
-            # into cat makes stdout a non-tty, which suppresses the pager.
-            # Setting SYSTEMD_PAGER instead does not work: BREACHSSHClient
-            # prefixes grc on hosts that have it (Kali), which would swallow the
-            # assignment.
+            # systemd pages when it sees the pty BREACHSSHClient allocates and
+            # the command never exits; cat makes stdout a non-tty. SYSTEMD_PAGER
+            # does not work here, grc swallows the assignment on Kali.
             ssh_client.exec_command_on_target(
                 "sudo service ntp status | cat", list_printer)
         elif machine.os in ["IPCop", "IPFire"]:
@@ -569,10 +533,8 @@ class TestNTPStateLinux(NtpdStatus):
     def test_ntpq_if_internet_router_is_using_ntp_servers(self):
         machine = SSHTargetsForNtp.internet_router
         actual_ntp_server_peer_list = self.get_ntp_server_peer_list(machine, output=True)
-        try:
-            ntp_peers_status = actual_ntp_server_peer_list[2:5]
-        except IndexError:
-            print("No valid peer list")
+        ntp_peers_status = actual_ntp_server_peer_list[2:5]
+        assert ntp_peers_status, actual_ntp_server_peer_list
         print("\n" + "Expected: Ntpq reach values for NTP servers must be greater than 0")
         ntpq_reach_values = []
         for ntp_peer_status in ntp_peers_status:
@@ -612,9 +574,8 @@ class TestNTPStateLinux(NtpdStatus):
 
 
 class W32timeStatus:
-    # A /dataonly sample is "09:01:25, +01.3062897s"; some Windows versions
-    # label the columns instead: "09:01:25, d:+00.0000131s o:-00.0044906s".
-    # The offset is the last figure either way.
+    # "09:01:25, +01.3062897s", or "09:01:25, d:+00.0000131s o:-00.0044906s" on
+    # some Windows versions; the offset is the last figure either way.
     stripchart_offset = re.compile(r"(?:o:)?([-+]\d+[.,]\d+)s")
     stripchart_attempts = 3
     stripchart_interval_in_seconds = 5
@@ -641,29 +602,10 @@ class W32timeStatus:
                 pass  # no attribute value pair
         return status_dict
 
-    def get_ntp_last_sync_time(self):
-        machine = SSHTargetsForNtp.client_1
-        status_dict = self.convert_status_lines_to_dict(self.request_w32tm_status(machine))
-        sync_time_string = status_dict["Last Successful Sync Time"]
-        try:
-            last_sync_time = datetime.datetime.strptime(sync_time_string, "%m/%d/%Y %I:%M:%S %p")
-        except ValueError:
-            print("No valid timestamp format")
-            print("Last Successful Sync Time:", status_dict["Last Successful Sync Time"])
-        return last_sync_time
-
-    def get_sync_time_diff(self, last_sync_time, actual_time):
-        time_diff = (actual_time - last_sync_time).total_seconds()
-        return time_diff
-
     def measure_clock_offset(self, machine, ntp_server_ip):
-        """Offset of a Windows clock against an NTP server, measured over NTP.
-
-        Reading the clock over SSH is far too coarse for the tolerances here -
-        starting PowerShell alone costs about a second - so the client measures
-        its own offset instead. A single sample occasionally comes back without
-        a figure, so it is asked more than once.
-        """
+        # Reading the clock over SSH costs more than the tolerances checked here
+        # - starting PowerShell alone takes a second - so the client measures its
+        # own offset. Occasionally a run comes back without a figure.
         output = ""
         for attempt in range(self.stripchart_attempts):
             if attempt:
@@ -673,10 +615,12 @@ class W32timeStatus:
             ssh_client.exec_command_on_target(
                 "cmd.exe /c w32tm /stripchart /computer:{ip} /samples:2 /dataonly".format(
                     ip=ntp_server_ip), list_printer)
-            output = strip_terminal_escapes("".join(list_printer.printed))
+            output = captured_text(list_printer)
             offsets = self.stripchart_offset.findall(output)
             if offsets:
-                return float(offsets[-1].replace(",", "."))
+                # w32tm reports the server ahead of the client; every other
+                # offset here is the machine ahead of its reference.
+                return -float(offsets[-1].replace(",", "."))
         raise AssertionError(output)
 
 
@@ -692,7 +636,7 @@ class TestWindowsClientTimeSync(W32timeStatus):
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target(
             "cmd.exe /c w32tm /query /{}".format(argument), list_printer)
-        output = strip_terminal_escapes("".join(list_printer.printed))
+        output = captured_text(list_printer)
         print(output)
         return output
 
@@ -701,7 +645,7 @@ class TestWindowsClientTimeSync(W32timeStatus):
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target(
             "cmd.exe /c sc query w32time", list_printer)
-        status = strip_terminal_escapes("".join(list_printer.printed))
+        status = captured_text(list_printer)
         print(status)
         assert "RUNNING" in status
 
@@ -712,15 +656,9 @@ class TestWindowsClientTimeSync(W32timeStatus):
         # Not the leap indicator: Windows keeps reporting "not synchronized" on a
         # machine that is not domain joined, even once it has set the clock.
         status = self.w32tm_query("status")
-        last_sync = self.get_status_value(status, "Last Successful Sync Time")
+        last_sync = self.convert_status_lines_to_dict(
+            status.splitlines()).get("Last Successful Sync Time")
         assert last_sync not in (None, "unspecified"), status
-
-    @staticmethod
-    def get_status_value(status, field):
-        for line in status.splitlines():
-            if line.strip().startswith(field):
-                return line.split(":", maxsplit=1)[1].strip()
-        return None
 
     def test_client_clock_matches_internet_router(self):
         offset = self.measure_clock_offset(self.machine, NTPServers.internetrouter.ip)
@@ -728,15 +666,21 @@ class TestWindowsClientTimeSync(W32timeStatus):
         assert abs(offset) < self.acceptable_time_diff_in_seconds
 
     def test_client_clock_is_corrected_after_being_set_wrong(self):
+        # w32time steps the clock on its next poll, which can land before the
+        # check that the clock was moved at all, so it is stopped meanwhile.
+        self.set_w32time_running(False)
         try:
+            offset_before = Time.get_clock_offset(self.machine)
             self.set_clock_back(self.deferred_time_in_seconds)
-            deferred_offset = self.measure_clock_offset(
-                self.machine, NTPServers.internetrouter.ip)
-            print("Client clock offset after being set wrong:", deferred_offset)
-            assert abs(deferred_offset) > self.acceptable_time_diff_in_seconds, \
+            offset_after = Time.get_clock_offset(self.machine)
+            print("Client clock moved by {} seconds".format(offset_after - offset_before))
+            assert offset_before - offset_after > self.acceptable_time_diff_in_seconds, \
                 "clock was not actually set wrong, so self-healing is not being tested"
+        finally:
+            self.set_w32time_running(True)
 
-            time_diff = deferred_offset
+        try:
+            time_diff = None
             timer_start = time.time()
             while time.time() - timer_start < self.max_correction_time_in_seconds:
                 time.sleep(30)
@@ -751,7 +695,6 @@ class TestWindowsClientTimeSync(W32timeStatus):
                 "clock was still off by {}s after {}s".format(
                     time_diff, self.max_correction_time_in_seconds))
         finally:
-            # Leaving a wrong clock behind would fail the later tests too.
             self.resync()
 
     def set_clock_back(self, seconds):
@@ -762,6 +705,11 @@ class TestWindowsClientTimeSync(W32timeStatus):
     def resync(self):
         BREACHSSHClient(target=self.machine).exec_command_on_target(
             "cmd.exe /c w32tm /resync /rediscover", ListPrinter())
+
+    def set_w32time_running(self, running):
+        BREACHSSHClient(target=self.machine).exec_command_on_target(
+            "cmd.exe /c net {} w32time".format("start" if running else "stop"),
+            ListPrinter())
 
 
 @pytest.mark.usefixtures("session")
@@ -811,7 +759,12 @@ class TestNTPTimeComparison(W32timeStatus):
             pass
 
     def check_client_offset(self, machine):
-        offset = self.measure_clock_offset(machine, NTPServers.internetrouter.ip)
+        try:
+            offset = self.measure_clock_offset(machine, NTPServers.internetrouter.ip)
+        except AssertionError as error:
+            # Another pass of the loop can still measure it.
+            print("No offset for " + machine.name + ":", error)
+            return
         print("Clock offset of " + machine.name + " against the Internet Router:", offset)
         if abs(offset) < self.acceptable_time_diff_client_vs_internet_router:
             self.machines_adopted_correct_time.add(machine.name)
