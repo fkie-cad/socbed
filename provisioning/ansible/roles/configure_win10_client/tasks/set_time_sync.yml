@@ -1,0 +1,50 @@
+# The client's hardware clock is set to UTC (--rtcuseutc in the packer template),
+# which Windows would otherwise read as local time and be wrong by the host's UTC
+# offset for as long as the machine runs.
+- name: Read the hardware clock as UTC
+  win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
+    name: RealTimeIsUniversal
+    data: 1
+    type: dword
+
+- name: Start the Windows Time service on boot
+  win_service:
+    name: w32time
+    start_mode: auto
+    state: started
+
+# The Company Router advertises stratum 16 for the first minutes after boot while
+# it syncs upstream, and w32time backs off to a 1024s poll once it has rejected
+# those samples. A short fixed poll keeps it asking until the server is usable.
+# The phase correction limits lift the 15 hour cap on a single correction.
+- name: Configure the polling and correction limits of the Windows Time service
+  win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\{{ item.key }}
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    type: dword
+  loop:
+    - {key: "TimeProviders\\NtpClient", name: SpecialPollInterval, data: 64}
+    - {key: Config, name: MinPollInterval, data: 6}
+    - {key: Config, name: MaxPollInterval, data: 6}
+    - {key: Config, name: UpdateInterval, data: 100}
+    - {key: Config, name: MaxPosPhaseCorrection, data: 4294967295}
+    - {key: Config, name: MaxNegPhaseCorrection, data: 4294967295}
+
+- name: Configure the Windows Time service to sync from the Company Router
+  win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
+
+- name: Restart the Windows Time service to apply the configuration
+  win_service:
+    name: w32time
+    state: restarted
+
+# /rediscover rather than /force: w32tm has no /force option and rejects it.
+- name: Sync the clock now
+  win_command: w32tm /resync /rediscover
+  register: w32tm_resync
+  retries: 5
+  delay: 10
+  until: w32tm_resync is succeeded
+  ignore_errors: true

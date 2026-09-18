@@ -1,5 +1,6 @@
 - include_tasks: setup_user.yml
 - include_tasks: set_timezone.yml
+- include_tasks: set_time_sync.yml
 - include_tasks: add_exclusion_folder.yml
 - include_tasks: disable_firewall.yml
 - include_tasks: disable_screen_lock.yml
