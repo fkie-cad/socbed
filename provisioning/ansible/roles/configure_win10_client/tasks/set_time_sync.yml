@@ -14,26 +14,35 @@
     start_mode: auto
     state: started
 
-# The Company Router advertises stratum 16 for the first minutes after boot while
-# it syncs upstream, and w32time backs off to a 1024s poll once it has rejected
-# those samples. A short fixed poll keeps it asking until the server is usable.
-# The phase correction limits lift the 15 hour cap on a single correction.
+- name: Configure the Windows Time service to sync from the Company Router
+  win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
+
+# These go under Policies, not under the service's own key: every time w32time
+# starts it rewrites its own key with the defaults that belong to its current
+# provider type, so values written there are gone after the next boot. Values
+# under Policies take precedence and are left alone.
+#
+# MaxAllowedPhaseOffset decides whether w32time sets the clock or eases it over.
+# Windows ships 300, so any offset below five minutes is slewed, which is far too
+# slow to repair a clock an attack has moved; at 1 second, anything larger is
+# corrected at once. SpikeWatchPeriod would otherwise have w32time dismiss such
+# an offset as implausible for its first 900 seconds. The short poll keeps the
+# client asking while the Company Router is still stratum 16 after boot.
 - name: Configure the polling and correction limits of the Windows Time service
   win_regedit:
-    path: HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\{{ item.key }}
+    path: HKLM:\SOFTWARE\Policies\Microsoft\W32Time\{{ item.key }}
     name: "{{ item.name }}"
     data: "{{ item.data }}"
     type: dword
   loop:
-    - {key: "TimeProviders\\NtpClient", name: SpecialPollInterval, data: 64}
     - {key: Config, name: MinPollInterval, data: 6}
     - {key: Config, name: MaxPollInterval, data: 6}
+    - {key: Config, name: MaxAllowedPhaseOffset, data: 1}
+    - {key: Config, name: SpikeWatchPeriod, data: 60}
     - {key: Config, name: UpdateInterval, data: 100}
     - {key: Config, name: MaxPosPhaseCorrection, data: 4294967295}
     - {key: Config, name: MaxNegPhaseCorrection, data: 4294967295}
-
-- name: Configure the Windows Time service to sync from the Company Router
-  win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
+    - {key: "TimeProviders\\NtpClient", name: SpecialPollInterval, data: 64}
 
 - name: Restart the Windows Time service to apply the configuration
   win_service:
@@ -48,3 +57,18 @@
   delay: 10
   until: w32tm_resync is succeeded
   ignore_errors: true
+
+- name: Read back the effective Windows Time configuration
+  win_command: w32tm /query /configuration
+  register: w32time_configuration
+  changed_when: false
+
+# A value w32time still reports as (Local) is one it will reset on the next boot,
+# which silently leaves the client unable to correct a wrong clock.
+- name: Fail unless the Windows Time settings are in effect as policy
+  assert:
+    that:
+      - "'MaxAllowedPhaseOffset: 1 (Policy)' in w32time_configuration.stdout"
+      - "'MinPollInterval: 6 (Policy)' in w32time_configuration.stdout"
+      - "'SpecialPollInterval: 64 (Policy)' in w32time_configuration.stdout"
+    fail_msg: "{{ w32time_configuration.stdout }}"
