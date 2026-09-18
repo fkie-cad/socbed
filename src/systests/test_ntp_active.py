@@ -287,7 +287,6 @@ class TestDistributingFakeTime(ActiveNTPTest):
                             pass
                     else:
                         pass
-            self.restart_all_services_of_ntp_clients()
             time.sleep(10)
         print("----------")
         print("Test duration: " + str(round(self.get_test_duration(), 2)) + " seconds")

@@ -32,6 +32,32 @@ from vmcontrol.vmmcontroller import VBoxController
 pytestmark = [pytest.mark.systest, pytest.mark.unstable]
 
 
+terminal_escapes = re.compile(r"\x1b\][^\x07]*\x07|\x1b\[[0-9;?]*[a-zA-Z]")
+
+
+def strip_terminal_escapes(text):
+    """Remove ANSI/OSC escape sequences from captured command output.
+
+    The Windows client's console emits a window-title sequence and a
+    show-cursor sequence that print_windows_output does not strip, and they end
+    up glued to the front of the first line of real output.
+    """
+    return terminal_escapes.sub("", text)
+
+
+def printed_lines(list_printer):
+    """Return a ListPrinter's captured output as a list of non-empty lines.
+
+    BREACHSSHClient streams Linux output one byte at a time and Windows output
+    one line at a time, so ``printed`` holds single characters for Linux
+    targets. Joining before splitting makes both cases behave the same, and
+    stripping the escape sequences first keeps them from forming lines of their
+    own on the Windows console.
+    """
+    text = strip_terminal_escapes("".join(list_printer.printed))
+    return [line for line in text.splitlines() if line.strip()]
+
+
 @pytest.fixture(scope="module")
 def session():
     sh = SessionHandler(VBoxController())
@@ -42,8 +68,23 @@ def session():
 
 
 class MachineProperties:
+    # BREACHSSHClient.print_output stops reading as soon as the channel reports
+    # no more data, which occasionally truncates a command's output to nothing,
+    # so a single empty read must not be taken for an unknown machine.
+    os_detection_attempts = 3
+
     @classmethod
     def get_os(cls, machine):
+        for attempt in range(cls.os_detection_attempts):
+            try:
+                return cls._detect_os(machine)
+            except Exception:
+                if attempt == cls.os_detection_attempts - 1:
+                    raise
+                time.sleep(5)
+
+    @classmethod
+    def _detect_os(cls, machine):
         try:
             ssh_client = BREACHSSHClient(target=machine)
             list_printer = ListPrinter()
@@ -59,8 +100,8 @@ class MachineProperties:
                 return "IPCop"
             elif cls.check_if_machine_is_ip_fire(machine):
                 return "IPFire"
-            elif cls.check_if_machine_is_win7_system(machine):
-                return "Windows 7"
+            elif cls.check_if_machine_is_windows_system(machine):
+                return "Windows"
             else:
                 raise Exception("Can not determine os")
         except paramiko.ssh_exception.NoValidConnectionsError:
@@ -90,12 +131,14 @@ class MachineProperties:
             return False
 
     @staticmethod
-    def check_if_machine_is_win7_system(machine):
+    def check_if_machine_is_windows_system(machine):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target("cmd.exe /c ver", list_printer)
         sys_info = "".join(list_printer.printed)
-        if "Version 6" in sys_info:
+        # Matching on the version number would tie this to one Windows release;
+        # SOCBED has shipped a Windows 10 client since the initial import.
+        if "Microsoft Windows" in sys_info:
             return True
         else:
             return False
@@ -107,9 +150,9 @@ class NTPServer(SimpleNamespace):
 
 
 class NTPServers(SimpleNamespace):
-    ipfire_pool_0 = NTPServer(name="0.ipcop.pool.ntp.org")
-    ipfire_pool_1 = NTPServer(name="1.ipcop.pool.ntp.org")
-    ipfire_pool_2 = NTPServer(name="2.ipcop.pool.ntp.org")
+    ipfire_pool_0 = NTPServer(name="0.pool.ntp.org")
+    ipfire_pool_1 = NTPServer(name="1.pool.ntp.org")
+    ipfire_pool_2 = NTPServer(name="2.pool.ntp.org")
     internetrouter = NTPServer(name="internetrouter", ip="172.18.0.1")
     companyrouter = NTPServer(name="companyrouter", ip="172.16.0.1")
 
@@ -170,6 +213,9 @@ all_machines = machines_using_ntpd + [SSHTargetsForNtp.client_1]
 class Time:
     @classmethod
     def get_time(cls, machine):
+        # Detect the OS before timing: calculate_time_diff subtracts the elapsed
+        # time from the reading, and OS detection costs several SSH sessions.
+        machine.os = MachineProperties.get_os(machine)
         timer_start = time.time()
         actual_time = cls.request_actual_time(machine)
         timer_end = time.time()
@@ -180,10 +226,9 @@ class Time:
     def request_actual_time(machine):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
-        machine.os = MachineProperties.get_os(machine)
         if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux", "IPCop", "IPFire"]:
             return Time.request_actual_time_of_linux_machine(list_printer, ssh_client)
-        elif machine.os in ["Windows 7"]:
+        elif machine.os in ["Windows"]:
             actual_time = Time.request_actual_time_of_win_client(list_printer, ssh_client)
             return actual_time
         else:
@@ -192,7 +237,7 @@ class Time:
     @staticmethod
     def request_actual_time_of_linux_machine(list_printer, ssh_client):
         ssh_client.exec_command_on_target("date --iso-8601=ns --utc", list_printer)
-        actual_time = datetime.datetime.strptime(list_printer.printed[0][0:26],
+        actual_time = datetime.datetime.strptime(printed_lines(list_printer)[0][0:26],
                                                  "%Y-%m-%dT%H:%M:%S,%f")
         return actual_time
 
@@ -202,8 +247,8 @@ class Time:
         ssh_client.exec_command_on_target(
             "powershell -InputFormat none -OutputFormat text -Command \"& {cmd}\"".format(
                 cmd=powershell_cmd_for_date), list_printer)
-        actual_time = datetime.datetime.strptime(list_printer.printed[0].strip(),
-                                                 "%Y%m%dT%H%M%S%fZ")
+        actual_time = datetime.datetime.strptime(
+            printed_lines(list_printer)[0].strip(), "%Y%m%dT%H%M%S%fZ")
         return actual_time
 
     @staticmethod
@@ -343,7 +388,10 @@ class TestNTPConfig:
                 list_printer)
         else:
             raise Exception("No config for machine defined")
-        return list_printer.printed
+        config = printed_lines(list_printer)
+        while config and not config[-1].strip():
+            config.pop()
+        return config
 
     @staticmethod
     def get_expected_ntp_config(machine):
@@ -370,7 +418,7 @@ class TestNTPConfig:
         ssh_client.exec_command_on_target("cat {file}".format(file=self.ntpd_config_file),
                                           list_printer)
         ntpstats_enabled = False
-        for line in list_printer.printed:
+        for line in printed_lines(list_printer):
             if "statsdir /var/log/ntpstats/" in line:
                 if "#" not in line:
                     ntpstats_enabled = True
@@ -382,15 +430,18 @@ class NtpdStatus:
     def check_if_ntpd_is_running(self, machine, print_ntpd_status):
         ntp_daemon_status = self.get_ntp_daemon_status(machine, print_ntpd_status)
         machine.os = MachineProperties.get_os(machine)
+        # Match anywhere in the output: the line index of the interesting line
+        # shifts between systemd versions, and `ps` may prepend a warning.
+        status = "\n".join(ntp_daemon_status)
         ntp_daemon_is_running = (
                 (machine.os in ["Ubuntu 14.04"] and
-                 "NTP server is running" in ntp_daemon_status[0])
+                 "NTP server is running" in status)
                 or
                 (machine.os in ["Ubuntu 16.04", "Kali Linux"] and
-                 "Active: active (running)" in ntp_daemon_status[2])
+                 "Active: active (running)" in status)
                 or
                 (machine.os in ["IPCop", "IPFire"] and
-                 "/usr/bin/ntpd" in ntp_daemon_status[0])
+                 "/usr/bin/ntpd" in status)
         )
         assert ntp_daemon_is_running
 
@@ -400,15 +451,23 @@ class NtpdStatus:
         list_printer = ListPrinter()
         machine.os = MachineProperties.get_os(machine)
         if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]:
-            ssh_client.exec_command_on_target("sudo service ntp status", list_printer)
+            # systemd pipes `status` through a pager when it sees the pty that
+            # BREACHSSHClient allocates, so the command would never exit. Piping
+            # into cat makes stdout a non-tty, which suppresses the pager.
+            # Setting SYSTEMD_PAGER instead does not work: BREACHSSHClient
+            # prefixes grc on hosts that have it (Kali), which would swallow the
+            # assignment.
+            ssh_client.exec_command_on_target(
+                "sudo service ntp status | cat", list_printer)
         elif machine.os in ["IPCop", "IPFire"]:
             ssh_client.exec_command_on_target("ps -ax | grep ntp", list_printer)
         else:
             raise Exception("Unknown OS or machine not started")
+        status_lines = printed_lines(list_printer)
         if print_ntpd_status:
-            for line in list_printer.printed:
+            for line in status_lines:
                 print(line)
-        return list_printer.printed
+        return status_lines
 
 
 @pytest.mark.usefixtures("session")
@@ -442,10 +501,11 @@ class TestNTPStateLinux(NtpdStatus):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target("ntpq --peer", list_printer)
+        peer_lines = printed_lines(list_printer)
         if output is True:
-            for line in list_printer.printed:
+            for line in peer_lines:
                 print(line)
-        return list_printer.printed
+        return peer_lines
 
     @staticmethod
     def get_correct_indicator_for_ntpq_ntp_server_test(machine):
@@ -506,40 +566,29 @@ class TestNTPStateLinux(NtpdStatus):
     @pytest.mark.parametrize("machine", machines_using_ntpd_without_routers, ids=lambda m: m.name)
     def test_timedatectl_status_if_correct_value_for_ntp_option(self, machine):
         timedatectl_actual_state = self.get_timedatectl_status_actual_state(machine)
-        timedatectl_expected_state = self.get_timedatectl_status_expected_state(machine)
-        ntp_is_enabled = timedatectl_expected_state["ntp_enabled_string"] in \
-                         timedatectl_actual_state[
-                             timedatectl_expected_state["ntp_enabled_line_index"]]
-        assert ntp_is_enabled
+        status = "\n".join(timedatectl_actual_state)
+        assert any(expected in status
+                   for expected in self.get_timedatectl_status_expected_state(machine))
 
     @staticmethod
     def get_timedatectl_status_actual_state(machine):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
         ssh_client.exec_command_on_target("timedatectl status", list_printer)
-        for line in list_printer.printed:
+        status_lines = printed_lines(list_printer)
+        for line in status_lines:
             print(line)
-        return list_printer.printed
+        return status_lines
 
     @staticmethod
     def get_timedatectl_status_expected_state(machine):
         machine.os = MachineProperties.get_os(machine)
-        if machine.os in ["Ubuntu 14.04"]:
-            return {
-                "ntp_enabled_line_index": 4,
-                "ntp_enabled_string": "NTP enabled: yes",
-            }
-        elif machine.os in ["Kali Linux"]:
-            return {
-                "ntp_enabled_line_index": 4,
-                "ntp_enabled_string": "Network time on: yes",
-            }
-        elif machine.os in ["Ubuntu 16.04"]:
-            return {
-                "ntp_enabled_line_index": 4,
-                "ntp_enabled_string": "Network time on: no",
-                # because system should use ntpd, and should not use the default daemon timesyncd
-            }
+        if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]:
+            # These machines run ntpd, so systemd-timesyncd must not manage the
+            # clock. Its field is named "Network time on" up to systemd 239 and
+            # "NTP service" afterwards.
+            return ["NTP enabled: no", "Network time on: no",
+                    "NTP service: inactive", "NTP service: n/a"]
         else:
             raise Exception("No config for OS defined")
 
@@ -552,7 +601,7 @@ class W32timeStatus:
         ssh_client.exec_command_on_target(
             "powershell -InputFormat none -OutputFormat text -Command \"& {cmd}\"".format(
                 cmd=powershell_cmd_for_date), list_printer)
-        return list_printer.printed
+        return printed_lines(list_printer)
 
     def convert_status_lines_to_dict(self, lines):
         key_value_pattern = re.compile("^(.*?): (.*)$")
@@ -584,6 +633,88 @@ class W32timeStatus:
 
 
 @pytest.mark.usefixtures("session")
+class TestWindowsClientTimeSync:
+    acceptable_time_diff_in_seconds = 1.0
+    deferred_time_in_seconds = 120
+    max_correction_time_in_seconds = 600
+    machine = SSHTargetsForNtp.client_1
+
+    def w32tm_query(self, argument):
+        ssh_client = BREACHSSHClient(target=self.machine)
+        list_printer = ListPrinter()
+        ssh_client.exec_command_on_target(
+            "cmd.exe /c w32tm /query /{}".format(argument), list_printer)
+        output = strip_terminal_escapes("".join(list_printer.printed))
+        print(output)
+        return output
+
+    def test_w32time_service_is_running(self):
+        ssh_client = BREACHSSHClient(target=self.machine)
+        list_printer = ListPrinter()
+        ssh_client.exec_command_on_target(
+            "cmd.exe /c sc query w32time", list_printer)
+        status = strip_terminal_escapes("".join(list_printer.printed))
+        print(status)
+        assert "RUNNING" in status
+
+    def test_w32time_uses_company_router_as_ntp_server(self):
+        assert NTPServers.companyrouter.ip in self.w32tm_query("source")
+
+    def test_w32time_has_synchronized(self):
+        # Not the leap indicator: Windows keeps reporting "not synchronized" on a
+        # machine that is not domain joined, even once it has set the clock.
+        status = self.w32tm_query("status")
+        last_sync = self.get_status_value(status, "Last Successful Sync Time")
+        assert last_sync not in (None, "unspecified"), status
+
+    @staticmethod
+    def get_status_value(status, field):
+        for line in status.splitlines():
+            if line.strip().startswith(field):
+                return line.split(":", maxsplit=1)[1].strip()
+        return None
+
+    def test_client_clock_matches_internet_router(self):
+        time_diff = Time.calculate_time_diff(
+            self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
+        assert abs(time_diff) < self.acceptable_time_diff_in_seconds
+
+    def test_client_clock_is_corrected_after_being_set_wrong(self):
+        try:
+            self.set_clock_back(self.deferred_time_in_seconds)
+            deferred_diff = Time.calculate_time_diff(
+                self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
+            assert abs(deferred_diff) > self.acceptable_time_diff_in_seconds, \
+                "clock was not actually set wrong, so self-healing is not being tested"
+
+            time_diff = deferred_diff
+            timer_start = time.time()
+            while time.time() - timer_start < self.max_correction_time_in_seconds:
+                time.sleep(30)
+                time_diff = Time.calculate_time_diff(
+                    self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
+                if abs(time_diff) < self.acceptable_time_diff_in_seconds:
+                    print("Clock corrected after {} seconds".format(
+                        round(time.time() - timer_start, 2)))
+                    return
+            raise AssertionError(
+                "clock was still off by {}s after {}s".format(
+                    time_diff, self.max_correction_time_in_seconds))
+        finally:
+            # Leaving a wrong clock behind would fail the later tests too.
+            self.resync()
+
+    def set_clock_back(self, seconds):
+        BREACHSSHClient(target=self.machine).exec_command_on_target(
+            "powershell -Command \"Set-Date (Get-Date).AddSeconds(-{})\"".format(seconds),
+            ListPrinter())
+
+    def resync(self):
+        BREACHSSHClient(target=self.machine).exec_command_on_target(
+            "cmd.exe /c w32tm /resync /rediscover", ListPrinter())
+
+
+@pytest.mark.usefixtures("session")
 class TestNTPTimeComparison:
     max_test_duration_in_seconds = 1200
     default_acceptable_time_diff_in_seconds = 1.0
@@ -611,7 +742,7 @@ class TestNTPTimeComparison:
             else:
                 for machine in self.machines_without_internet_router:
                     machine.os = MachineProperties.get_os(machine)
-                    if machine.os in ["Windows 7"]:
+                    if machine.os in ["Windows"]:
                         self.check_time_diff(machine,
                                              SSHTargetsForNtp.internet_router,
                                              self.acceptable_time_diff_client_vs_internet_router)
