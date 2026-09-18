@@ -1,0 +1,73 @@
+# --rtcuseutc in the packer template presents the hardware clock as UTC.
+- name: Read the hardware clock as UTC
+  win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
+    name: RealTimeIsUniversal
+    data: 1
+    type: dword
+
+- name: Start the Windows Time service on boot
+  win_service:
+    name: w32time
+    start_mode: auto
+    state: started
+
+- name: Configure the Windows Time service to sync from the Company Router
+  win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
+
+# w32time rewrites HKLM\SYSTEM\...\W32Time with the defaults of its current
+# provider type whenever it starts, so values written there last until the next
+# boot. Values under Policies take precedence and survive.
+#
+# Windows ships MaxAllowedPhaseOffset at 300, which slews any offset below five
+# minutes, and SpikeWatchPeriod at 900, which ignores a sudden offset for a
+# quarter of an hour. Together they leave the client unable to repair a clock an
+# attack has moved.
+- name: Configure the polling and correction limits of the Windows Time service
+  win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\W32Time\{{ item.key }}
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    type: dword
+  loop:
+    - {key: Config, name: MinPollInterval, data: 6}
+    - {key: Config, name: MaxPollInterval, data: 6}
+    - {key: Config, name: MaxAllowedPhaseOffset, data: 1}
+    - {key: Config, name: SpikeWatchPeriod, data: 60}
+    - {key: Config, name: UpdateInterval, data: 100}
+    - {key: Config, name: MaxPosPhaseCorrection, data: 4294967295}
+    - {key: Config, name: MaxNegPhaseCorrection, data: 4294967295}
+    - {key: "TimeProviders\\NtpClient", name: SpecialPollInterval, data: 64}
+
+- name: Restart the Windows Time service to apply the configuration
+  win_service:
+    name: w32time
+    state: restarted
+
+- name: Sync the clock now
+  win_command: w32tm /resync /rediscover
+  register: w32tm_resync
+  retries: 5
+  delay: 10
+  until: w32tm_resync is succeeded
+  ignore_errors: true
+
+- name: Read back the effective Windows Time configuration
+  win_command: w32tm /query /configuration
+  register: w32time_configuration
+  changed_when: false
+
+# A value w32time reports as (Local) will be reset on the next boot.
+- name: Fail unless the Windows Time settings are in effect as policy
+  assert:
+    that: "'{{ item.name }}: {{ item.data }} (Policy)' in w32time_configuration.stdout"
+    fail_msg: "{{ w32time_configuration.stdout }}"
+  loop:
+    - {name: MinPollInterval, data: 6}
+    - {name: MaxPollInterval, data: 6}
+    - {name: MaxAllowedPhaseOffset, data: 1}
+    - {name: SpikeWatchPeriod, data: 60}
+    - {name: UpdateInterval, data: 100}
+    - {name: MaxPosPhaseCorrection, data: 4294967295}
+    - {name: MaxNegPhaseCorrection, data: 4294967295}
+    - {name: SpecialPollInterval, data: 64}

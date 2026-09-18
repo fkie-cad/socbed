@@ -75,7 +75,7 @@ class ActiveNTPTest:
         else:
             pass
         timer_start = time.time()
-        old_ntp_datetime, __ = Time.get_time(machine)
+        old_ntp_datetime = Time.get_time(machine)
         return old_ntp_datetime, timer_start
 
     def restart_ntp_services(self, machine, sleep_time_after_restarting_ntp_services):
@@ -86,7 +86,7 @@ class ActiveNTPTest:
             pass
         NtpdControl.start_ntp_server(machine)
         time.sleep(sleep_time_after_restarting_ntp_services)
-        new_ntp_datetime, __ = Time.get_time(machine)
+        new_ntp_datetime = Time.get_time(machine)
         timer_end = time.time()
         return new_ntp_datetime, timer_end
 
@@ -95,7 +95,7 @@ class ActiveNTPTest:
             old_ntp_datetime \
             - datetime.timedelta(seconds=deferred_time_in_seconds)
         self.set_time_manually(machine, deferred_datetime_for_manual_time_setting.time())
-        actual_deferred_time, __ = Time.get_time(machine)
+        actual_deferred_time = Time.get_time(machine)
         time_difference = \
             actual_deferred_time \
             - deferred_datetime_for_manual_time_setting
@@ -186,6 +186,12 @@ class TestDistributingFakeTime(ActiveNTPTest):
     max_test_duration_in_seconds = 3600
     deferred_time_in_seconds = 120
     acceptable_time_diff_in_seconds = 3
+    ntpd_state_change_attempts = 15
+    ntpd_state_change_interval_in_seconds = 2
+    ntpd_start_attempts = 3
+    # Tearing down the pty BREACHSSHClient allocates kills the daemon ntpd forks
+    # off, unless that fork has finished detaching by then.
+    ntpd_start_command = "/usr/bin/ntpd -Ap /var/run/ntpd.pid; sleep 5"
     test_machines = server_machines + \
                     [SSHTargetsForNtp.company_router] + \
                     [SSHTargetsForNtp.attacker]
@@ -206,7 +212,7 @@ class TestDistributingFakeTime(ActiveNTPTest):
     def inject_false_local_time_on_internet_router(self, machine):
         self.stop_ntpd_on_ip_cop(machine)
         self.change_ntp_config_to_local_clock(machine)
-        old_ntp_datetime, __ = Time.get_time(machine)
+        old_ntp_datetime = Time.get_time(machine)
         print("Old NTP datetime before injecting false local time: {}".format(old_ntp_datetime))
         actual_deferred_time = self.set_system_clock_back(machine, old_ntp_datetime,
                                                           self.deferred_time_in_seconds)
@@ -216,12 +222,9 @@ class TestDistributingFakeTime(ActiveNTPTest):
         self.start_ntpd_on_ip_cop(machine)
 
     def stop_ntpd_on_ip_cop(self, machine):
-        ssh_client = BREACHSSHClient(target=machine)
-        list_printer = ListPrinter()
-        ssh_client.exec_command_on_target("killall ntpd | echo 'ntpd killed'", list_printer)
-        response = "".join(list_printer.printed)
-        if "ntpd killed" not in response:
-            raise Exception("Can not change ntp.conf")
+        self.execute_on_machine(machine, "killall ntpd")
+        if not self.wait_for_ntpd(machine, running=False):
+            raise Exception("Can not stop ntpd on {}".format(machine.name))
 
     def change_ntp_config_to_local_clock(self, machine):
         ssh_client = BREACHSSHClient(target=machine)
@@ -235,12 +238,31 @@ class TestDistributingFakeTime(ActiveNTPTest):
             raise Exception("Can not change ntp.conf")
 
     def start_ntpd_on_ip_cop(self, machine):
+        for __ in range(self.ntpd_start_attempts):
+            self.execute_on_machine(machine, self.ntpd_start_command)
+            if self.wait_for_ntpd(machine, running=True):
+                time.sleep(self.ntpd_state_change_interval_in_seconds)
+                if self.ntpd_is_running(machine):
+                    return
+        raise Exception("Can not start ntpd on {}".format(machine.name))
+
+    def wait_for_ntpd(self, machine, running):
+        for __ in range(self.ntpd_state_change_attempts):
+            if self.ntpd_is_running(machine) == running:
+                return True
+            time.sleep(self.ntpd_state_change_interval_in_seconds)
+        return False
+
+    @staticmethod
+    def ntpd_is_running(machine):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
-        ssh_client.exec_command_on_target("/usr/bin/ntpd | echo 'ntpd started'", list_printer)
-        response = "".join(list_printer.printed)
-        if "ntpd started" not in response:
-            raise Exception("Can not change ntp.conf")
+        ssh_client.exec_command_on_target("ps -ax | grep ntp", list_printer)
+        return "/usr/bin/ntpd" in "".join(list_printer.printed)
+
+    @staticmethod
+    def execute_on_machine(machine, command):
+        BREACHSSHClient(target=machine).exec_command_on_target(command, ListPrinter())
 
     def restart_ntp_service_of_company_router(self):
         self.stop_ntpd_on_ip_cop(SSHTargetsForNtp.company_router)
@@ -251,7 +273,8 @@ class TestDistributingFakeTime(ActiveNTPTest):
             NtpdControl().stop_ntp_server(machine)
             NtpdControl().start_ntp_server(machine)
         time.sleep(5)
-        self.check_if_ntp_services_are_running(machine)
+        for machine in machines_using_ntpd_without_routers:
+            self.check_if_ntp_services_are_running(machine)
 
     def check_if_ntp_services_are_running(self, machine):
         machine.os = MachineProperties.get_os(machine)
@@ -287,7 +310,6 @@ class TestDistributingFakeTime(ActiveNTPTest):
                             pass
                     else:
                         pass
-            self.restart_all_services_of_ntp_clients()
             time.sleep(10)
         print("----------")
         print("Test duration: " + str(round(self.get_test_duration(), 2)) + " seconds")

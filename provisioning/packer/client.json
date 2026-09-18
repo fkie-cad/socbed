@@ -48,6 +48,12 @@
           "Internal",
           "--macaddress3",
           "005056000001"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--rtcuseutc",
+          "on"
         ]
       ],
       "vboxmanage_post": [
