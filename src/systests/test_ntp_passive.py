@@ -251,21 +251,42 @@ class Time:
             printed_lines(list_printer)[0].strip(), "%Y%m%dT%H%M%S%fZ")
         return actual_time
 
+    @classmethod
+    def get_clock_offset(cls, machine):
+        """Return how far a machine's clock is ahead of the test host's clock.
+
+        A clock can only be read across an SSH round trip, which takes long
+        enough to matter here, and it is not known where inside that round trip
+        the reading was taken. Sampling the host clock on both sides and using
+        the middle of the window bounds the error by half the round trip instead
+        of leaving a full round trip as a systematic offset.
+        """
+        machine.os = MachineProperties.get_os(machine)
+        before = time.time()
+        reading = cls.request_actual_time(machine)
+        after = time.time()
+        return (reading - cls.host_time_utc((before + after) / 2)).total_seconds()
+
+    @staticmethod
+    def host_time_utc(timestamp):
+        return datetime.datetime.fromtimestamp(
+            timestamp, datetime.timezone.utc).replace(tzinfo=None)
+
     @staticmethod
     def calculate_time_diff(first_machine, second_machine, print_time_diff=False):
-        actual_time_first_machine, __ = Time.get_time(first_machine)
+        """Difference between two machines' clocks, via the host clock.
 
-        actual_time_second_machine, elapsed_time_of_time_request = Time.get_time(
-            second_machine)
-        adjusted_actual_time_second_machine = \
-            actual_time_second_machine \
-            - datetime.timedelta(seconds=elapsed_time_of_time_request)
-        time_diff = (
-                adjusted_actual_time_second_machine -
-                actual_time_first_machine).total_seconds()
+        Both machines are compared against the same reference rather than
+        against each other, so the cost of reading either clock cancels out.
+        """
+        offset_first_machine = Time.get_clock_offset(first_machine)
+        offset_second_machine = Time.get_clock_offset(second_machine)
+        time_diff = offset_first_machine - offset_second_machine
         if print_time_diff:
-            print("Datetime of " + first_machine.name + ":", actual_time_first_machine)
-            print("Datetime of " + second_machine.name + ":", adjusted_actual_time_second_machine)
+            print("Clock offset of " + first_machine.name + " against the test host:",
+                  offset_first_machine)
+            print("Clock offset of " + second_machine.name + " against the test host:",
+                  offset_second_machine)
             print("Time difference (" + first_machine.name + " - " + second_machine.name + ") is: "
                   + str(time_diff) + " seconds \n")
         return time_diff
@@ -350,7 +371,6 @@ class TestNTPConfig:
     ntpd_config_file = "/etc/ntp.conf"
     machines_for_full_config_check = router_machines
     machines_for_last_line_config_check = machines_using_ntpd_without_routers
-    machines_for_windows_registry_check = [SSHTargetsForNtp.client_1]
     os_with_ntpstats = ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]
 
     @pytest.mark.parametrize("machine", machines_using_ntpd, ids=lambda m: m.name)
@@ -407,8 +427,6 @@ class TestNTPConfig:
             return NTPConfig().internal_server_last_line_config
         elif machine == SSHTargetsForNtp.internet_router:
             return NTPConfig().internet_router_full_config
-        elif machine == SSHTargetsForNtp.client_1:
-            return NTPConfig().client_1_registry_for_w32tm
         else:
             raise Exception("No config for machine defined")
 
@@ -594,6 +612,13 @@ class TestNTPStateLinux(NtpdStatus):
 
 
 class W32timeStatus:
+    # A /dataonly sample is "09:01:25, +01.3062897s"; some Windows versions
+    # label the columns instead: "09:01:25, d:+00.0000131s o:-00.0044906s".
+    # The offset is the last figure either way.
+    stripchart_offset = re.compile(r"(?:o:)?([-+]\d+[.,]\d+)s")
+    stripchart_attempts = 3
+    stripchart_interval_in_seconds = 5
+
     def request_w32tm_status(self, machine):
         ssh_client = BREACHSSHClient(target=machine)
         list_printer = ListPrinter()
@@ -631,9 +656,32 @@ class W32timeStatus:
         time_diff = (actual_time - last_sync_time).total_seconds()
         return time_diff
 
+    def measure_clock_offset(self, machine, ntp_server_ip):
+        """Offset of a Windows clock against an NTP server, measured over NTP.
+
+        Reading the clock over SSH is far too coarse for the tolerances here -
+        starting PowerShell alone costs about a second - so the client measures
+        its own offset instead. A single sample occasionally comes back without
+        a figure, so it is asked more than once.
+        """
+        output = ""
+        for attempt in range(self.stripchart_attempts):
+            if attempt:
+                time.sleep(self.stripchart_interval_in_seconds)
+            ssh_client = BREACHSSHClient(target=machine)
+            list_printer = ListPrinter()
+            ssh_client.exec_command_on_target(
+                "cmd.exe /c w32tm /stripchart /computer:{ip} /samples:2 /dataonly".format(
+                    ip=ntp_server_ip), list_printer)
+            output = strip_terminal_escapes("".join(list_printer.printed))
+            offsets = self.stripchart_offset.findall(output)
+            if offsets:
+                return float(offsets[-1].replace(",", "."))
+        raise AssertionError(output)
+
 
 @pytest.mark.usefixtures("session")
-class TestWindowsClientTimeSync:
+class TestWindowsClientTimeSync(W32timeStatus):
     acceptable_time_diff_in_seconds = 1.0
     deferred_time_in_seconds = 120
     max_correction_time_in_seconds = 600
@@ -675,24 +723,26 @@ class TestWindowsClientTimeSync:
         return None
 
     def test_client_clock_matches_internet_router(self):
-        time_diff = Time.calculate_time_diff(
-            self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
-        assert abs(time_diff) < self.acceptable_time_diff_in_seconds
+        offset = self.measure_clock_offset(self.machine, NTPServers.internetrouter.ip)
+        print("Client clock offset against the Internet Router:", offset)
+        assert abs(offset) < self.acceptable_time_diff_in_seconds
 
     def test_client_clock_is_corrected_after_being_set_wrong(self):
         try:
             self.set_clock_back(self.deferred_time_in_seconds)
-            deferred_diff = Time.calculate_time_diff(
-                self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
-            assert abs(deferred_diff) > self.acceptable_time_diff_in_seconds, \
+            deferred_offset = self.measure_clock_offset(
+                self.machine, NTPServers.internetrouter.ip)
+            print("Client clock offset after being set wrong:", deferred_offset)
+            assert abs(deferred_offset) > self.acceptable_time_diff_in_seconds, \
                 "clock was not actually set wrong, so self-healing is not being tested"
 
-            time_diff = deferred_diff
+            time_diff = deferred_offset
             timer_start = time.time()
             while time.time() - timer_start < self.max_correction_time_in_seconds:
                 time.sleep(30)
-                time_diff = Time.calculate_time_diff(
-                    self.machine, SSHTargetsForNtp.internet_router, print_time_diff=True)
+                time_diff = self.measure_clock_offset(
+                    self.machine, NTPServers.internetrouter.ip)
+                print("Client clock offset:", time_diff)
                 if abs(time_diff) < self.acceptable_time_diff_in_seconds:
                     print("Clock corrected after {} seconds".format(
                         round(time.time() - timer_start, 2)))
@@ -715,7 +765,7 @@ class TestWindowsClientTimeSync:
 
 
 @pytest.mark.usefixtures("session")
-class TestNTPTimeComparison:
+class TestNTPTimeComparison(W32timeStatus):
     max_test_duration_in_seconds = 1200
     default_acceptable_time_diff_in_seconds = 1.0
     acceptable_time_diff_client_vs_internet_router = 0.5
@@ -743,9 +793,7 @@ class TestNTPTimeComparison:
                 for machine in self.machines_without_internet_router:
                     machine.os = MachineProperties.get_os(machine)
                     if machine.os in ["Windows"]:
-                        self.check_time_diff(machine,
-                                             SSHTargetsForNtp.internet_router,
-                                             self.acceptable_time_diff_client_vs_internet_router)
+                        self.check_client_offset(machine)
                     else:
                         self.check_time_diff(machine,
                                              SSHTargetsForNtp.internet_router,
@@ -759,6 +807,14 @@ class TestNTPTimeComparison:
         time_diff = Time.calculate_time_diff(first_machine, second_machine, print_time_diff=True)
         if abs(time_diff) < acceptable_time_diff_in_seconds:
             self.machines_adopted_correct_time.add(first_machine.name)
+        else:
+            pass
+
+    def check_client_offset(self, machine):
+        offset = self.measure_clock_offset(machine, NTPServers.internetrouter.ip)
+        print("Clock offset of " + machine.name + " against the Internet Router:", offset)
+        if abs(offset) < self.acceptable_time_diff_client_vs_internet_router:
+            self.machines_adopted_correct_time.add(machine.name)
         else:
             pass
 
