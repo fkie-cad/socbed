@@ -1,5 +1,4 @@
-# The hardware clock is set to UTC (--rtcuseutc in the packer template), which
-# Windows would otherwise read as local time.
+# --rtcuseutc in the packer template presents the hardware clock as UTC.
 - name: Read the hardware clock as UTC
   win_regedit:
     path: HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation
@@ -16,14 +15,14 @@
 - name: Configure the Windows Time service to sync from the Company Router
   win_command: w32tm /config /manualpeerlist:"{{ company_router_ip }},0x9" /syncfromflags:manual /update
 
-# Under Policies, not under the service's own key: w32time rewrites that key with
-# the defaults of its current provider type whenever it starts, so values written
-# there are gone after the next boot.
+# w32time rewrites HKLM\SYSTEM\...\W32Time with the defaults of its current
+# provider type whenever it starts, so values written there last until the next
+# boot. Values under Policies take precedence and survive.
 #
 # Windows ships MaxAllowedPhaseOffset at 300, which slews any offset below five
-# minutes rather than setting the clock, and SpikeWatchPeriod at 900, which
-# dismisses a sudden offset as implausible for a quarter of an hour. Together
-# they leave the client unable to repair a clock an attack has moved.
+# minutes, and SpikeWatchPeriod at 900, which ignores a sudden offset for a
+# quarter of an hour. Together they leave the client unable to repair a clock an
+# attack has moved.
 - name: Configure the polling and correction limits of the Windows Time service
   win_regedit:
     path: HKLM:\SOFTWARE\Policies\Microsoft\W32Time\{{ item.key }}
@@ -45,7 +44,6 @@
     name: w32time
     state: restarted
 
-# /rediscover rather than /force: w32tm has no /force option and rejects it.
 - name: Sync the clock now
   win_command: w32tm /resync /rediscover
   register: w32tm_resync
@@ -59,8 +57,7 @@
   register: w32time_configuration
   changed_when: false
 
-# Anything w32time still reports as (Local) is a value it will reset on the next
-# boot.
+# A value w32time reports as (Local) will be reset on the next boot.
 - name: Fail unless the Windows Time settings are in effect as policy
   assert:
     that: "'{{ item.name }}: {{ item.data }} (Policy)' in w32time_configuration.stdout"

@@ -235,8 +235,9 @@ class Time:
 
     @classmethod
     def get_clock_offset(cls, machine):
-        # The reading is taken somewhere inside an SSH round trip, so the host
-        # clock either side of it brackets when it was taken.
+        # The reading is taken at an unknown point inside an SSH round trip.
+        # Sampling the host clock either side of it bounds the error at half
+        # that round trip.
         machine.os = MachineProperties.get_os(machine)
         before = time.time()
         reading = cls.request_actual_time(machine)
@@ -416,7 +417,7 @@ class NtpdStatus:
     def check_if_ntpd_is_running(self, machine, print_ntpd_status):
         ntp_daemon_status = self.get_ntp_daemon_status(machine, print_ntpd_status)
         # The line index shifts between systemd versions, and ps may prepend a
-        # warning, so match anywhere in the output.
+        # warning.
         status = "\n".join(ntp_daemon_status)
         ntp_daemon_is_running = (
                 (machine.os in ["Ubuntu 14.04"] and
@@ -436,9 +437,9 @@ class NtpdStatus:
         list_printer = ListPrinter()
         machine.os = MachineProperties.get_os(machine)
         if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]:
-            # systemd pages when it sees the pty BREACHSSHClient allocates and
-            # the command never exits; cat makes stdout a non-tty. SYSTEMD_PAGER
-            # does not work here, grc swallows the assignment on Kali.
+            # systemd pages when it sees the pty BREACHSSHClient allocates, and
+            # the command then hangs; cat makes stdout a non-tty. grc swallows a
+            # SYSTEMD_PAGER assignment on Kali.
             ssh_client.exec_command_on_target(
                 "sudo service ntp status | cat", list_printer)
         elif machine.os in ["IPCop", "IPFire"]:
@@ -564,9 +565,9 @@ class TestNTPStateLinux(NtpdStatus):
     def get_timedatectl_status_expected_state(machine):
         machine.os = MachineProperties.get_os(machine)
         if machine.os in ["Ubuntu 14.04", "Ubuntu 16.04", "Kali Linux"]:
-            # These machines run ntpd, so systemd-timesyncd must not manage the
-            # clock. Its field is named "Network time on" up to systemd 239 and
-            # "NTP service" afterwards.
+            # These machines run ntpd and leave systemd-timesyncd disabled.
+            # timedatectl names the field "Network time on" up to systemd 239
+            # and "NTP service" afterwards.
             return ["NTP enabled: no", "Network time on: no",
                     "NTP service: inactive", "NTP service: n/a"]
         else:
@@ -603,9 +604,9 @@ class W32timeStatus:
         return status_dict
 
     def measure_clock_offset(self, machine, ntp_server_ip):
-        # Reading the clock over SSH costs more than the tolerances checked here
-        # - starting PowerShell alone takes a second - so the client measures its
-        # own offset. Occasionally a run comes back without a figure.
+        # Reading the clock over SSH costs more than the tolerances checked
+        # here; starting PowerShell alone takes a second. A run occasionally
+        # comes back without a figure.
         output = ""
         for attempt in range(self.stripchart_attempts):
             if attempt:
@@ -618,8 +619,8 @@ class W32timeStatus:
             output = captured_text(list_printer)
             offsets = self.stripchart_offset.findall(output)
             if offsets:
-                # w32tm reports the server ahead of the client; every other
-                # offset here is the machine ahead of its reference.
+                # w32tm reports the server ahead of the client; the offsets
+                # here are the machine ahead of its reference.
                 return -float(offsets[-1].replace(",", "."))
         raise AssertionError(output)
 
@@ -653,8 +654,8 @@ class TestWindowsClientTimeSync(W32timeStatus):
         assert NTPServers.companyrouter.ip in self.w32tm_query("source")
 
     def test_w32time_has_synchronized(self):
-        # Not the leap indicator: Windows keeps reporting "not synchronized" on a
-        # machine that is not domain joined, even once it has set the clock.
+        # Windows reports the leap indicator as "not synchronized" on a machine
+        # outside a domain even once it has set the clock.
         status = self.w32tm_query("status")
         last_sync = self.convert_status_lines_to_dict(
             status.splitlines()).get("Last Successful Sync Time")
@@ -667,7 +668,7 @@ class TestWindowsClientTimeSync(W32timeStatus):
 
     def test_client_clock_is_corrected_after_being_set_wrong(self):
         # w32time steps the clock on its next poll, which can land before the
-        # check that the clock was moved at all, so it is stopped meanwhile.
+        # check that the clock was moved at all.
         self.set_w32time_running(False)
         try:
             offset_before = Time.get_clock_offset(self.machine)
@@ -762,7 +763,6 @@ class TestNTPTimeComparison(W32timeStatus):
         try:
             offset = self.measure_clock_offset(machine, NTPServers.internetrouter.ip)
         except AssertionError as error:
-            # Another pass of the loop can still measure it.
             print("No offset for " + machine.name + ":", error)
             return
         print("Clock offset of " + machine.name + " against the Internet Router:", offset)
