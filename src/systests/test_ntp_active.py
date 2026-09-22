@@ -28,7 +28,7 @@ from systests.test_ntp_passive import Time, MachineProperties, machines_using_nt
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
-pytestmark = [pytest.mark.systest, pytest.mark.unstable]
+pytestmark = pytest.mark.systest
 
 
 @pytest.fixture(scope="module")

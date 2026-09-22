@@ -108,13 +108,13 @@ jobs:
       - name: Ensure all machines are powered off
         run: ./tools/cleanup_failed_session
       
-      - name: Run stable system tests
+      - name: Run system tests
         uses: nick-fields/retry@v4
         with:
-          timeout_minutes: 60
+          timeout_minutes: 120
           max_attempts: 5
           on_retry_command: ./tools/cleanup_failed_session
-          command: tox -- -m "systest and not unstable"
+          command: tox -- -m "systest"
    
   delete-machines:
     runs-on: [self-hosted, linux]

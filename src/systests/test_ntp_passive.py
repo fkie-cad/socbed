@@ -29,7 +29,7 @@ from attacks.ssh import BREACHSSHClient, SSHTargets
 from vmcontrol.sessionhandler import SessionHandler
 from vmcontrol.vmmcontroller import VBoxController
 
-pytestmark = [pytest.mark.systest, pytest.mark.unstable]
+pytestmark = pytest.mark.systest
 
 
 terminal_escapes = re.compile(r"\x1b\][^\x07\x1b\r\n]*(?:\x07|\x1b\\)|\x1b\[[0-9;?]*[a-zA-Z]")
