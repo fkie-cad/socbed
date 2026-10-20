@@ -1,4 +1,5 @@
 ---
+company_router_ip: 172.16.0.1
 disable_defender_version: 0.0.1
 imdisk_version: 20.11.20
 sysmon_version: 13.01
